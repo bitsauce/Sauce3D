@@ -1,7 +1,7 @@
-NibbleSauce3D
+Sauce3D
 ===============
 
-NibbleSauce3D is a game engine built on the [Simple DirectMedia Library](https://www.libsdl.org/). The engine adds high-level classes and functionality for easier handling of the graphics, input, window, etc.
+Sauce3D is a game engine built on the [Simple DirectMedia Library](https://www.libsdl.org/). The engine adds high-level classes and functionality for easier handling of the graphics, input, window, etc.
 
 # Features
 **Engine**

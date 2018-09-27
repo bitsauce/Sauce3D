@@ -45,258 +45,258 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\Common\Window.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Window.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Console.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Console.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\FileSystem.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\FileSystem.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\IniParser.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\IniParser.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Math.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Math.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\ResourceManager.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\ResourceManager.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Timer.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Timer.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Utilities.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Utilities.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Animation.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Animation.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\BlendState.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\BlendState.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Font.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Font.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Graphics.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\GraphicsContext.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\GraphicsContext.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Pixmap.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Pixmap.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\RenderTarget.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\RenderTarget.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Shader.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Shader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Sprite.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Sprite.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\SpriteBatch.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\SpriteBatch.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Texture.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Texture.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\TextureAtlas.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\TextureAtlas.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\TextureRegion.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\TextureRegion.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Vertex.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Vertex.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\VertexBuffer.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\VertexBuffer.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\Viewport.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\Viewport.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Input\InputContext.cpp">
+    <ClCompile Include="$(SolutionDir)source\Input\InputContext.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Math\Matrix.cpp">
+    <ClCompile Include="$(SolutionDir)source\Math\Matrix.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Math\Random.cpp">
+    <ClCompile Include="$(SolutionDir)source\Math\Random.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Math\RectanglePacker.cpp">
+    <ClCompile Include="$(SolutionDir)source\Math\RectanglePacker.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Math\Vector.cpp">
+    <ClCompile Include="$(SolutionDir)source\Math\Vector.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Game.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Game.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Input\InputManager.cpp">
+    <ClCompile Include="$(SolutionDir)source\Input\InputManager.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Math\Rectangle.cpp">
+    <ClCompile Include="$(SolutionDir)source\Math\Rectangle.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Input\InputButton.cpp">
+    <ClCompile Include="$(SolutionDir)source\Input\InputButton.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\tinyxml2.cpp">
+    <ClCompile Include="$(SolutionDir)source\common\tinyxml2.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Common\Callstack.cpp">
+    <ClCompile Include="$(SolutionDir)source\Common\Callstack.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\OpenGL\OpenGLContext.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLContext.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\OpenGL\OpenGLShader.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLShader.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\OpenGL\OpenGLTexture.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLTexture.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\Graphics\OpenGL\OpenGLRenderTarget.cpp">
+    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLRenderTarget.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Sauce\Math\Matrix.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math\Matrix.h">
       <Filter>Include\Sauce\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Math\Random.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math\Random.h">
       <Filter>Include\Sauce\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Math\Rectangle.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math\Rectangle.h">
       <Filter>Include\Sauce\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Math\RectanglePacker.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math\RectanglePacker.h">
       <Filter>Include\Sauce\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Math\Vector.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math\Vector.h">
       <Filter>Include\Sauce\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Audio.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Audio.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Config.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Config.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Math.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Math.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\Event.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\Event.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\EventHandler.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\EventHandler.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\Game.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\Game.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\IniParser.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\IniParser.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\ResourceManager.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\ResourceManager.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Animation.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Animation.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\BlendState.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\BlendState.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Font.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Font.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Font_Old.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Font_Old.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\GraphicsContext.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Pixmap.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Pixmap.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\RenderTarget.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\RenderTarget.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Shader.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Shader.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Sprite.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Sprite.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\SpriteBatch.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\SpriteBatch.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Texture.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Texture.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\TextureAtlas.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\TextureAtlas.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\TextureRegion.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\TextureRegion.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Vertex.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Vertex.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\VertexBuffer.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\VertexBuffer.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\Viewport.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Viewport.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input\InputManager.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input\InputManager.h">
       <Filter>Include\Sauce\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input\Keycodes.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input\Keycodes.h">
       <Filter>Include\Sauce\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input\Scancodes.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input\Scancodes.h">
       <Filter>Include\Sauce\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Sauce.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Sauce.h">
       <Filter>Include\Sauce</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input\Inputcontext.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input\Inputcontext.h">
       <Filter>Include\Sauce\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Input\InputButton.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Input\InputButton.h">
       <Filter>Include\Sauce\Input</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\tinyxml2.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\tinyxml2.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\SceneObject.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\SceneObject.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Common\Callstack.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Common\Callstack.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\OpenGL\OpenGLContext.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\OpenGL\OpenGLShader.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLShader.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\OpenGL\OpenGLTexture.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLTexture.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h">
+    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>

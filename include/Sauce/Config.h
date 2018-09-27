@@ -90,7 +90,7 @@ typedef double SFloat;
 #define BEGIN_SAUCE_NAMESPACE namespace sauce {
 #define END_SAUCE_NAMESPACE }
 
-#define SAUCE_DEFAULT_ORGANIZATION "SuperSauceEngine"
+#define SAUCE_DEFAULT_ORGANIZATION "Sauce3D"
 
 BEGIN_SAUCE_NAMESPACE
 

@@ -22,7 +22,7 @@ distribution.
 */
 
 /*
-This code has been altered to fit the needs of the SuperSauce Engine.
+This code has been altered to fit the needs of the Sauce3D.
 */
 
 #include <Sauce/Common/tinyxml2.h>
