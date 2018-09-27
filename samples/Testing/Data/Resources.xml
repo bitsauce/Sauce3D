@@ -1,0 +1,56 @@
+<resources>
+	<font>
+		<name>Arial</name>
+		<path>Arial.fnt</path>
+	</font>
+	<texture>
+		<name>Koala</name>
+		<path>Koala.jpg</path>
+	</texture>
+	<texture>
+		<name>Tile</name>
+		<path>Tile.png</path>
+	</texture>
+	<texture>
+		<name>Building</name>
+		<path>Building.png</path>
+	</texture>
+	<texture>
+		<name>UnitA</name>
+		<path>UnitA.png</path>
+	</texture>
+	<texture>
+		<name>UnitB</name>
+		<path>UnitB.png</path>
+	</texture>
+
+	<shader>
+		<name>BuildingsShader</name>
+		<vertexFilePath>BuildingsShader.vert</vertexFilePath>
+		<fragmentFilePath>BuildingsShader.frag</fragmentFilePath>
+	</shader>
+
+	<shader>
+		<name>UnitsShader</name>
+		<vertexFilePath>UnitsShader.vert</vertexFilePath>
+		<fragmentFilePath>UnitsShader.frag</fragmentFilePath>
+	</shader>
+
+	<shader>
+		<name>TileDepth</name>
+		<vertexFilePath>TileDepth.vert</vertexFilePath>
+		<fragmentFilePath>TileDepth.frag</fragmentFilePath>
+	</shader>
+
+	<shader>
+		<name>UnitDepth</name>
+		<vertexFilePath>UnitDepth.vert</vertexFilePath>
+		<fragmentFilePath>UnitDepth.frag</fragmentFilePath>
+	</shader>
+
+	<shader>
+		<name>FinalShader</name>
+		<vertexFilePath>FinalShader.vert</vertexFilePath>
+		<fragmentFilePath>FinalShader.frag</fragmentFilePath>
+	</shader>
+</resources>

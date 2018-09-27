@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\Source\Main.cpp" />
+    <ClCompile Include="..\Source\Gui\Gui.cpp">
+      <Filter>Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\Background.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\Button.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\Slider.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\UiObject.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\Label.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\LineEdit.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\AspectRatioContainer.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\Menu\MainMenu.cpp">
+      <Filter>Gui\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\Menu\OptionsMenu.cpp">
+      <Filter>Gui\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\Menu\SinglePlayerMenu.cpp">
+      <Filter>Gui\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\DialogBox.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Gui\UiObjects\Canvas.cpp">
+      <Filter>Gui\UiObjects</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\Config.h" />
+    <ClInclude Include="..\Source\Gui\UiEvents.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\Gui.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\Background.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\Button.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\Slider.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\UiObject.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\Label.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\LineEdit.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\AspectRatioContainer.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\Menu\MainMenu.h">
+      <Filter>Gui\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\Menu\OptionsMenu.h">
+      <Filter>Gui\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\Menu\SinglePlayerMenu.h">
+      <Filter>Gui\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\DialogBox.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gui\UiObjects\Canvas.h">
+      <Filter>Gui\UiObjects</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\Data\Resources.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Gui">
+      <UniqueIdentifier>{ddc1ae98-f3fb-4e09-bd26-6c59732d84a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gui\UiObjects">
+      <UniqueIdentifier>{4bf9b169-e5ef-468b-bdf4-dd2ef80afb24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gui\Menu">
+      <UniqueIdentifier>{13a59a34-3437-41d8-9512-5c62c82a3508}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

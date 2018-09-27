@@ -1,0 +1,26 @@
+<resources>
+	<font>
+		<name>Fonts/Debug_Font</name>
+		<path>Fonts/Debug_Font.fnt</path>
+	</font>
+		
+	<texture>
+		<name>Sprites/Scene</name>
+		<path>Sprites/Scene.png</path>
+	</texture>
+	<texture>
+		<name>Sprites/Tile</name>
+		<path>Sprites/Tile.png</path>
+	</texture>
+
+	<shader>
+		<name>Shaders/Shadow_Map</name>
+		<vertexFilePath>Shaders/Shadow_Map.vert</vertexFilePath>
+		<fragmentFilePath>Shaders/Shadow_Map.frag</fragmentFilePath>
+	</shader>
+	<shader>
+		<name>Shaders/Shadow_Render</name>
+		<vertexFilePath>Shaders/Shadow_Render.vert</vertexFilePath>
+		<fragmentFilePath>Shaders/Shadow_Render.frag</fragmentFilePath>
+	</shader>
+</resources>
