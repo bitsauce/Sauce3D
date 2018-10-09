@@ -1,3 +1,4 @@
+#ifdef __WINDOWS__
 /**********************************************************************
 *
 * StackWalker.cpp
@@ -358,7 +359,7 @@ private:
 		pGMI = (tGMI)GetProcAddress(hPsapi, "GetModuleInformation");
 		if ((pEPM == NULL) || (pGMFNE == NULL) || (pGMBN == NULL) || (pGMI == NULL))
 		{
-			// we couldn´t find all functions
+			// we couldnï¿½t find all functions
 			FreeLibrary(hPsapi);
 			return FALSE;
 		}
@@ -990,3 +991,5 @@ void Callstack::OnOutput(LPCSTR buffer)
 {
 	OutputDebugString(buffer);
 }
+
+#endif

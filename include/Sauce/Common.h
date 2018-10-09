@@ -4,7 +4,6 @@
 #include <Sauce/Common/Game.h>
 #include <Sauce/Common/SceneObject.h>
 #include <Sauce/Common/Event.h>
-#include <Sauce/Common/IniParser.h>
 #include <Sauce/Common/ResourceManager.h>
 #include <Sauce/Common/tinyxml2.h>
 

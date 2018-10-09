@@ -69,8 +69,6 @@ protected:
 	PixelFormat m_pixelFormat;
 };
 
-template class SAUCE_API shared_ptr<Texture2D>;
-
 class TextureResourceDesc : public ResourceDesc
 {
 public:
@@ -89,5 +87,7 @@ private:
 };
 
 END_SAUCE_NAMESPACE
+
+template class SAUCE_API std::shared_ptr<sauce::Texture2D>;
 
 #endif // SAUCE_TEXTURE_H

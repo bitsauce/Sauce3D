@@ -16,9 +16,23 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+#ifdef __LINUX__
+ int _vscprintf (const char * format, va_list pargs) { 
+      int retval; 
+      va_list argcopy; 
+      va_copy(argcopy, pargs); 
+      retval = vsnprintf(NULL, 0, format, argcopy); 
+      va_end(argcopy); 
+      return retval; 
+   }
+#endif
+
 Exception::Exception(RetCode code, const char * msg, ...) :
-	m_errorCode(code),
+	m_errorCode(code)
+#ifdef __WINDOWS__
+	,
 	m_callstack()
+#endif
 {
 	va_list args;
 	va_start(args, msg);
@@ -33,7 +47,7 @@ Exception::Exception(RetCode code, const char * msg, ...) :
 #ifdef USE_CTR_SECURE
 	vsprintf_s(&m_message[0], size + 1, msg, args);
 #else
-	vsprintf(out, msg, args);
+	vsprintf(&m_message[0], msg, args);
 #endif
 
 	va_end(args);
@@ -102,6 +116,7 @@ int Game::run()
 		// default.getValue("Window/ResolutionX");
 		// etc...
 
+#ifdef __WINDOWS__
 		for(int i = 0; i < __argc; i++)
 		{
 			string argType = __argv[i];
@@ -111,6 +126,7 @@ int Game::run()
 				SetCurrentDirectory(arg.c_str());
 			}
 		}
+#endif
 
 		// Set game root directory
 		m_binaryPath = SDL_GetBasePath();

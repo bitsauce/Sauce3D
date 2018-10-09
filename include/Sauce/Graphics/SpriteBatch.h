@@ -2,12 +2,12 @@
 #define SAUCE_BATCH_H
 
 #include <Sauce/Common.h>
-#include <Sauce/Graphics/vertex.h>
-#include <Sauce/Graphics/vertexBuffer.h>
-#include <Sauce/Graphics/blendState.h>
-#include <Sauce/Graphics/texture.h>
-#include <Sauce/Graphics/shader.h>
-#include <Sauce/Graphics/font.h>
+#include <Sauce/Graphics/Vertex.h>
+#include <Sauce/Graphics/VertexBuffer.h>
+#include <Sauce/Graphics/BlendState.h>
+#include <Sauce/Graphics/Texture.h>
+#include <Sauce/Graphics/Shader.h>
+#include <Sauce/Graphics/Font.h>
 
 BEGIN_SAUCE_NAMESPACE
 

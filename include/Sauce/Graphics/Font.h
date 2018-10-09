@@ -149,8 +149,6 @@ protected:
 	vector<shared_ptr<Texture2D>> m_pages;
 };
 
-template SAUCE_API class shared_ptr<Font>;
-
 class FontResourceDesc : public ResourceDesc
 {
 public:
@@ -169,5 +167,7 @@ private:
 };
 
 END_SAUCE_NAMESPACE
+
+template SAUCE_API class std::shared_ptr<sauce::Font>;
 
 #endif // SAUCE_FONT_H

@@ -60,7 +60,7 @@ public:
 	template<typename U>
 	inline T angle(const Vector2<U> &v2) const
 	{
-		return acos(dot(v2) / (magnitude() * v2.magnitude()));
+		return acos(dot(v2) / (length() * v2.length()));
 	}
 
 	inline void normalize()

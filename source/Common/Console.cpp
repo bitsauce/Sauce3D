@@ -33,8 +33,20 @@ Console::~Console()
 	s_this = 0;
 }
 
+#ifdef __LINUX__
+ int _vscprintf (const char * format, va_list pargs) { 
+      int retval; 
+      va_list argcopy; 
+      va_copy(argcopy, pargs); 
+      retval = vsnprintf(NULL, 0, format, argcopy); 
+      va_end(argcopy); 
+      return retval; 
+   }
+#endif
+
 void Console::call_log(const char *msg, va_list args)
 {
+	#ifdef __WINDOWS__
 	// Get string length
 	int size = _vscprintf(msg, args);
 
@@ -46,7 +58,7 @@ void Console::call_log(const char *msg, va_list args)
 #ifdef USE_CTR_SECURE
 	vsprintf_s(&out[0], size + 1, msg, args);
 #else
-	vsprintf(out, msg, args);
+	vsprintf(&out[0], msg, args);
 #endif
 
 	// System log
@@ -66,8 +78,10 @@ void Console::call_log(const char *msg, va_list args)
 	// Append to console buffer
 	m_log.append(out);
 	m_buffer.append(out);
+	#endif
 }
 
+#ifdef __WINDOWS__
 #ifndef USE_CTR_SECURE
 #define CALL_LOG(format, ...)						\
 	int size = _scprintf(format, __VA_ARGS__) + 1;	\
@@ -83,6 +97,7 @@ void Console::call_log(const char *msg, va_list args)
 	s_this->call_log(newMsg, args);					\
 	delete newMsg;
 #endif
+#endif
 
 void Console::Log(const char *function, const int line, const char *msg, ...)
 {
@@ -90,7 +105,9 @@ void Console::Log(const char *function, const int line, const char *msg, ...)
 	va_list args;
 	va_start(args, msg);
 
+#ifdef __WINDOWS__
 	CALL_LOG("[%s (%i)] %s", function, line, msg);
+#endif
 
 	va_end(args);
 }

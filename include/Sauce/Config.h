@@ -3,7 +3,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_mixer.h>
 
 /*********************************************************************
 **	Compiler preprocessor											**
@@ -50,21 +49,36 @@
 	#include <sstream>
 	#include <memory>
 	#include <queue>
+	#include <chrono>
 	#include "..\3rdparty\gl3w\include\GL\gl3w.h"
 	#include "..\3rdparty\gl3w\include\GL\wglext.h"
 #elif __LINUX__
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <fcntl.h>
-	#include <stdlib.h>
-	#include <math.h>
-	#include <float.h>
 	#include <string>
 	#include <vector>
 	#include <list>
+	#include <cmath>
 	#include <assert.h>
 	#include <algorithm>
+	#include <functional>
 	#include <map>
+	#include <unordered_map>
+	#include <set>
+	#include <stack>
+	#include <exception>
+	#include <sstream>
+	#include <thread>
+	#include <mutex>
+	#include <assert.h>
+	#include <fstream>
+	#include <sstream>
+	#include <memory>
+	#include <queue>
+	#include <chrono>
+	#include <GL/gl.h>
+	#include <GL/glut.h>
+
+	#undef major
+	#undef minor
 #endif
 
 
@@ -185,8 +199,8 @@ namespace util
 
 	enum UnicodeByteOrder
 	{
-		LITTLE_ENDIAN,
-		BIG_ENDIAN,
+		DECODE_LITTLE_ENDIAN,
+		DECODE_BIG_ENDIAN,
 	};
 
 	// This function will attempt to decode a UTF-8 encoded character in the buffer.
@@ -199,11 +213,11 @@ namespace util
 
 	// This function will attempt to decode a UTF-16 encoded character in the buffer.
 	// If the encoding is invalid, the function returns -1.
-	int decodeUTF16(const char *encodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = LITTLE_ENDIAN);
+	int decodeUTF16(const char *encodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = DECODE_LITTLE_ENDIAN);
 
 	// This function will encode the value into the buffer.
 	// If the value is invalid, the function returns -1, else the encoded length.
-	int encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = LITTLE_ENDIAN);
+	int encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = DECODE_LITTLE_ENDIAN);
 }
 
 END_SAUCE_NAMESPACE

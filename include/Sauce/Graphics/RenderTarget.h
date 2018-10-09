@@ -2,8 +2,8 @@
 #define SAUCE_RENDER_TARGET_H
 
 #include <Sauce/Common.h>
-#include <Sauce/graphics/graphicsContext.h>
-#include <Sauce/graphics/texture.h>
+#include <Sauce/Graphics/GraphicsContext.h>
+#include <Sauce/Graphics/Texture.h>
 
 BEGIN_SAUCE_NAMESPACE
 

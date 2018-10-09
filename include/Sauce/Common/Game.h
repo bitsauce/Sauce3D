@@ -1,39 +1,9 @@
-/**
- * \def	LOG(str, ...) Console::Log(str, __VA_ARGS__);
- *
- * \brief	A macro that defines log.
- *
- * \todo TODO: Add timestap to all console messages
- *
- * \param	str	The string.
- * \param	...	Variable arguments providing additional information.
- */
-
-#define LOG(str, ...) Console::Log(__FUNCTION__, __LINE__, str, __VA_ARGS__)
-
-/**
- * \def	THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__);
- *
- * \brief	A macro that defines throw.
- *
- * \param	str	The string.
- * \param	...	Variable arguments providing additional information.
- */
-
-#define THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
-
 #ifndef SAUCE_ENGINE_H
 #define SAUCE_ENGINE_H
 
 #include <Sauce/Config.h>
 #include <Sauce/Math.h>
 #include <Sauce/Input.h>
-
-#include <Sauce/Common/ResourceManager.h>
-#include <Sauce/Common/IniParser.h>
-#include <Sauce/Common/SceneObject.h>
-#include <Sauce/Common/Event.h>
-#include <Sauce/Common/Callstack.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -156,10 +126,65 @@ private:
 ///< .
 };
 
+/**
+ * \def	LOG(str, ...) Console::Log(str, __VA_ARGS__);
+ *
+ * \brief	A macro that defines log.
+ *
+ * \todo TODO: Add timestap to all console messages
+ *
+ * \param	str	The string.
+ * \param	...	Variable arguments providing additional information.
+ */
+
+#define LOG(str, ...) Console::Log(__FUNCTION__, __LINE__, str, ## __VA_ARGS__)
+
+/**
+ * \def	THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__);
+ *
+ * \brief	A macro that defines throw.
+ *
+ * \param	str	The string.
+ * \param	...	Variable arguments providing additional information.
+ */
+
+#define THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, ## __VA_ARGS__)
+
+END_SAUCE_NAMESPACE
+
+#include <Sauce/Common/ResourceManager.h>
+#include <Sauce/Common/SceneObject.h>
+#include <Sauce/Common/Event.h>
+#include <Sauce/Common/Callstack.h>
+
+BEGIN_SAUCE_NAMESPACE
+
 /*********************************************************************
 **	Event handler													**
 **********************************************************************/
 
+#ifdef __LINUX__
+#include <stdint.h>
+
+typedef uint8_t BYTE;
+typedef uint32_t DWORD;
+typedef int32_t LONG;
+typedef int64_t LONGLONG;
+
+typedef union _LARGE_INTEGER {
+  struct {
+    DWORD LowPart;
+    LONG  HighPart;
+  };
+  struct {
+    DWORD LowPart;
+    LONG  HighPart;
+  } u;
+  LONGLONG QuadPart;
+} LARGE_INTEGER, *PLARGE_INTEGER;
+#endif
+
+#ifdef __WINDOWS__
 class SAUCE_API Timer
 {
 public:
@@ -198,6 +223,39 @@ private:
 	/** \brief	true to running. */
 	bool m_running;
 };
+
+#else
+
+class SAUCE_API Timer {
+public:
+    Timer() :
+		m_start(clock_::now()),
+		m_end(clock_::now())
+	{
+    }
+    
+	void start()
+	{
+        m_start = clock_::now();
+    }
+
+	void stop()
+	{
+		m_end = clock_::now();
+	}
+
+    double getElapsedTime() const
+	{
+        return std::chrono::duration_cast<std::chrono::milliseconds>(m_end - m_start).count();
+    }
+
+private:
+    typedef std::chrono::high_resolution_clock clock_;
+    typedef std::chrono::duration<double, std::ratio<1> > second_;
+    std::chrono::time_point<clock_> m_start, m_end;
+};
+
+#endif
 
 class SAUCE_API SimpleTimer
 {
@@ -751,6 +809,7 @@ public:
 	 */
 
 	Exception(RetCode code, const char * msg, ...);
+	~Exception() throw() {}
 
 	RetCode errorCode() const
 	{
@@ -762,11 +821,15 @@ public:
 		return m_message;
 	}
 
-	const char *what() const { return m_message.c_str(); }
+	const char *what() const noexcept override { return m_message.c_str(); }
 
 	string callstack() const
 	{
+		#ifdef __WINDOWS__
 		return m_callstack.toString();
+		#else
+		return "Missing";
+		#endif
 	}
 
 private:
@@ -776,15 +839,17 @@ private:
 	/** \brief	The error code. */
 	RetCode m_errorCode;
 
+#ifdef __WINDOWS__
 	/** \brief Callstack of point of error */
 	Callstack m_callstack;
+#endif
 };
 
 class SAUCE_API Scene
 {
 	friend class Game;
 public:
-	SceneObject *getRoot() const
+	sauce::SceneObject *getRoot() const
 	{
 		return m_root;
 	}
@@ -799,6 +864,7 @@ private:
 };
 
 class SpriteBatch;
+class ResourceManager;
 
 class SAUCE_API Game : public SceneObject
 {

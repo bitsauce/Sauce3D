@@ -42,12 +42,12 @@ float minimum(const float a, const float b)
 
 uint ror(const uint a, const uint b)
 {
-	return (a << b) | (a >> (sizeof(uint)*CHAR_BIT-b));
+	return (a << b) | (a >> (sizeof(uint)*numeric_limits<unsigned char>::digits-b));
 }
 
 uint rol(const uint a, const uint b)
 {
-	return (a >> b) | (a << (sizeof(uint)*CHAR_BIT-b));
+	return (a >> b) | (a << (sizeof(uint)*std::numeric_limits<unsigned char>::digits-b));
 }
 
 float round(const float v)

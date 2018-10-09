@@ -13,6 +13,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+#ifdef __WINDOWS__
 Timer::Timer() :
 	m_running(false)
 {
@@ -44,6 +45,8 @@ double Timer::getElapsedTime() const
 	double endTime = end.QuadPart * (1.0 / m_frequency.QuadPart);
     return endTime - startTime;
 }
+
+#endif
 
 SimpleTimer::SimpleTimer() :
 	m_startTick(0),

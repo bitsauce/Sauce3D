@@ -11,6 +11,8 @@
 
 #pragma once
 
+#ifdef __WINDOWS__
+
 #include <windows.h>
 #include <string>
 
@@ -130,3 +132,7 @@ protected:
     c.ContextFlags = contextFlags; \
     RtlCaptureContext(&c); \
 } while(0);
+
+#else
+
+#endif
