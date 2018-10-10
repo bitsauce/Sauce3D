@@ -74,8 +74,9 @@
 	#include <memory>
 	#include <queue>
 	#include <chrono>
-	#include <GL/gl.h>
+	#include <GL/glew.h>
 	#include <GL/glut.h>
+	
 
 	#undef major
 	#undef minor

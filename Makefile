@@ -1,9 +1,10 @@
 CC      = g++
-CFLAGS  = -Wall -fsigned-char -std=c++11 -D__LINUX__
-LDFLAGS = 
+CXXFLAGS  = -Wall -fsigned-char -std=c++11 -D__LINUX__ -D_REENTRANT -fPIC
+LDFLAGS = -lGLEW -lGLU -lGL -L/usr/lib/x86_64-linux-gnu -lSDL2 -lSDL2_image
 
-BUILD_DIR = ./build/
-BINARY    = $(BUILD_DIR)Sauce3D
+BUILD_DIR_RELEASE = ./build/linux/release/
+BUILD_DIR_DEBUG   = ./build/linux/debug/
+SAUCE_LIB         = Sauce3D.so
 
 SOURCE_DIR    = ./source/
 SOURCE_FILES := $(shell find $(SOURCE_DIR) -name '*.cpp')
@@ -11,26 +12,45 @@ SOURCE_FILES := $(shell find $(SOURCE_DIR) -name '*.cpp')
 HEADER_DIR    = ./include/
 HEADER_FILES := $(shell find $(HEADER_DIR) -name '*.h')
 
-OBJECT_FILES := $(addprefix $(BUILD_DIR)/,$(SOURCE_FILES:%.cpp=%.o))
+OBJECT_FILES_RELEASE := $(addprefix $(BUILD_DIR_RELEASE),$(SOURCE_FILES:%.cpp=%.o))
+OBJECT_FILES_DEBUG := $(addprefix $(BUILD_DIR_DEBUG),$(SOURCE_FILES:%.cpp=%.o))
 
 SDL2_CONFIG      = sdl2-config
 SDL2_INCLUDE_DIR = /usr/include/SDL2/
-GL3W_INCLUDE_DIR = ./3rdparty/gl3w/include/
 
 MKDIR = mkdir -p
 
-CFLAGS += -I$(HEADER_DIR) -I$(SDL2_INCLUDE_DIR) -I$(GL3W_INCLUDE_DIR)
+CXXFLAGS += -I$(HEADER_DIR) -I$(SDL2_INCLUDE_DIR)
 
-$(BUILD_DIR)/%.o: %.cpp
+$(BUILD_DIR_RELEASE)%.o: %.cpp
 	$(MKDIR) $(dir $@)
-	$(CC) $(CFLAGS) $(LDFLAGS) -I$(dir $<) -c $< -o $@
+	$(CC) $(CXXFLAGS) -I$(dir $<) -c $< -o $@ $(LDFLAGS)
 
-all: $(OBJECT_FILES)
-	$(MKDIR) $(BUILD_DIR)
-	$(info find $(SOURCE_DIR) -type d -exec mkdir -p $(BUILD_DIR){} \;)
-	$(shell find $(SOURCE_DIR) -type d -exec mkdir -p $(BUILD_DIR){} \;)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECT_FILES) -o $(BINARY)
+$(BUILD_DIR_DEBUG)%.o: %.cpp
+	$(MKDIR) $(dir $@)
+	$(CC) $(CXXFLAGS) -I$(dir $<) -c $< -o $@ $(LDFLAGS)
 
+.PHONY: debug
+debug: CXXFLAGS += -DDEBUG -g
+debug: build-debug
+build-debug: $(OBJECT_FILES_DEBUG)
+	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_DEBUG) -o $(BUILD_DIR_DEBUG)$(SAUCE_LIB) $(LDFLAGS)
+
+.PHONY: release
+release: CXXFLAGS += -O2
+release: build-release
+build-release: $(OBJECT_FILES_RELEASE)
+	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_RELEASE) -o $(BUILD_DIR_RELEASE)$(SAUCE_LIB) $(LDFLAGS)
+
+all: debug
+all: release
+
+.PHONY: clean
+clean:
+	rm -r -f $(BUILD_DIR_DEBUG)
+	rm -r -f $(BUILD_DIR_RELEASE)
+
+.PHONY: install-dependencies
 install-dependencies:
 	ifeq ("$(wildcard $(SDL2_CONFIG))","")
 		$(info Installing SLD2...)

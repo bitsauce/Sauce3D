@@ -1,11 +1,12 @@
-#include <Sauce/graphics.h>
+#include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 
 class FontLoader
 {
 public:
-	FontLoader(FileReader*, Font *font, const string &);
+	FontLoader(ifstream*, Font *font, const string &);
+	virtual ~FontLoader() {}
 
 	virtual int Load() = 0; // Must be implemented by derived class
 
@@ -16,7 +17,7 @@ protected:
 	void addChar(int id, short x, short y, short w, short h, short xoffset, short yoffset, short xadvance, short page, int chnl);
 	void AddKerningPair(int first, int second, int amount);
 
-	FileReader *m_file;
+	ifstream *m_file;
 	Font *m_font;
 	string m_fontFile;
 
@@ -26,7 +27,7 @@ protected:
 class FontLoaderTextFormat : public FontLoader
 {
 public:
-	FontLoaderTextFormat(FileReader*, Font *font, const string &fontFile);
+	FontLoaderTextFormat(ifstream*, Font *font, const string &fontFile);
 
 	int Load();
 
@@ -44,7 +45,7 @@ public:
 class FontLoaderBinaryFormat : public FontLoader
 {
 public:
-	FontLoaderBinaryFormat(FileReader*, Font *font, const string &fontFile);
+	FontLoaderBinaryFormat(ifstream*, Font *font, const string &fontFile);
 
 	int Load();
 
@@ -74,21 +75,21 @@ Font::Font(const string &filepath)
 	m_depth = 0.0f;
 
 	// Load the font
-	FileReader *file = new FileReader(filepath);
-	if(file->isOpen())
+	ifstream file(filepath, ifstream::binary);
+	if(file.is_open())
 	{
 		// Determine format by reading the first bytes of the file
 		char fmt[3];
-		file->readBytes(fmt, 3);
+		file.read(fmt, 3);
 
 		FontLoader *loader = 0;
 		if(strcmp(fmt, "BMF") == 0)
 		{
-			loader = new FontLoaderBinaryFormat(file, this, filepath);
+			loader = new FontLoaderBinaryFormat(&file, this, filepath);
 		}
 		else
 		{
-			loader = new FontLoaderTextFormat(file, this, filepath);
+			loader = new FontLoaderTextFormat(&file, this, filepath);
 		}
 
 		loader->Load();
@@ -125,7 +126,7 @@ float Font::adjustForKerningPairs(int first, int second)
 {
 	CharDescr *ch = getChar(first);
 	if (ch == 0) return 0;
-	for (UINT n = 0; n < ch->kerningPairs.size(); n += 2)
+	for (uint n = 0; n < ch->kerningPairs.size(); n += 2)
 	{
 		if (ch->kerningPairs[n] == second)
 			return ch->kerningPairs[n + 1] * m_scale;
@@ -515,7 +516,7 @@ list<Font::BoxLine> Font::getBoxLines(float width, const string &text, int count
 // that has access to and knows how to set the Font members.
 //=============================================================================
 
-FontLoader::FontLoader(FileReader *f, Font *font, const string &fontFile)
+FontLoader::FontLoader(ifstream *f, Font *font, const string &fontFile)
 {
 	this->m_file = f;
 	this->m_font = font;
@@ -616,7 +617,7 @@ void FontLoader::AddKerningPair(int first, int second, int amount)
 // This class implements the logic for loading a BMFont file in text format
 //=============================================================================
 
-FontLoaderTextFormat::FontLoaderTextFormat(FileReader *f, Font *font, const string &fontFile) : FontLoader(f, font, fontFile)
+FontLoaderTextFormat::FontLoaderTextFormat(ifstream *f, Font *font, const string &fontFile) : FontLoader(f, font, fontFile)
 {
 }
 
@@ -624,15 +625,15 @@ int FontLoaderTextFormat::Load()
 {
 	string line;
 
-	while (!m_file->isEOF())
+	while (!m_file->eof())
 	{
 		// Read until line feed (or EOF)
 		line = "";
 		line.reserve(256);
-		while (!m_file->isEOF())
+		while (!m_file->eof())
 		{
 			char ch;
-			if (m_file->readBytes(&ch, 1))
+			if (m_file->read(&ch, 1))
 			{
 				if (ch != '\n')
 					line += ch;
@@ -671,7 +672,7 @@ int FontLoaderTextFormat::Load()
 
 int FontLoaderTextFormat::SkipWhiteSpace(string &str, int start)
 {
-	UINT n = start;
+	uint n = start;
 	while (n < str.size())
 	{
 		char ch = str[n];
@@ -689,7 +690,7 @@ int FontLoaderTextFormat::SkipWhiteSpace(string &str, int start)
 
 int FontLoaderTextFormat::FindEndOfToken(string &str, int start)
 {
-	UINT n = start;
+	uint n = start;
 	if (str[n] == '"')
 	{
 		n++;
@@ -933,7 +934,7 @@ void FontLoaderTextFormat::InterpretPage(string &str, int start, const string &f
 // This class implements the logic for loading a BMFont file in binary format
 //=============================================================================
 
-FontLoaderBinaryFormat::FontLoaderBinaryFormat(FileReader *f, Font *font, const string &fontFile) : FontLoader(f, font, fontFile)
+FontLoaderBinaryFormat::FontLoaderBinaryFormat(ifstream *f, Font *font, const string &fontFile) : FontLoader(f, font, fontFile)
 {
 }
 
@@ -942,7 +943,7 @@ int FontLoaderBinaryFormat::Load()
 	// Read and validate the tag. It should be 66, 77, 70, 2, 
 	// or 'BMF' and 2 where the number is the file version.
 	char magicString[4];
-	m_file->readBytes(magicString, 4);
+	m_file->read(magicString, 4);
 	if (strcmp(magicString, "BMF\003") != 0)
 	{
 		LOG("Unrecognized format for '%s'", m_fontFile);
@@ -957,10 +958,10 @@ int FontLoaderBinaryFormat::Load()
 	// Read each block
 	char blockType;
 	int blockSize;
-	while (m_file->readBytes(&blockType, 1))
+	while (m_file->read(&blockType, 1))
 	{
 		// Read the blockSize
-		m_file->readBytes((char*)&blockSize, 4);
+		m_file->read((char*)&blockSize, 4);
 
 		switch (blockType)
 		{
@@ -998,6 +999,9 @@ int FontLoaderBinaryFormat::Load()
 	return 0;
 }
 
+typedef int WORD;
+typedef unsigned char BYTE;
+
 void FontLoaderBinaryFormat::ReadInfoBlock(int size)
 {
 #pragma pack(push)
@@ -1025,7 +1029,7 @@ void FontLoaderBinaryFormat::ReadInfoBlock(int size)
 #pragma pack(pop)
 
 	infoBlock blk;
-	m_file->readBytes((char*)&blk, size);
+	m_file->read((char*)&blk, size);
 
 	// We're only interested in the outline thickness
 	SetFontInfo(blk.outline);
@@ -1052,7 +1056,7 @@ void FontLoaderBinaryFormat::ReadCommonBlock(int size)
 #pragma pack(pop)
 
 	commonBlock blk;
-	m_file->readBytes((char*)&blk, size);
+	m_file->read((char*)&blk, size);
 
 	setCommonInfo(blk.lineHeight, blk.base, blk.scaleW, blk.scaleH, blk.pages, blk.packed ? true : false);
 }
@@ -1068,7 +1072,7 @@ void FontLoaderBinaryFormat::ReadPagesBlock(int size)
 #pragma pack(pop)
 
 	pagesBlock blk;
-	m_file->readBytes((char*)&blk, size);
+	m_file->read((char*)&blk, size);
 
 	for (int id = 0, pos = 0; pos < size; id++)
 	{
@@ -1100,7 +1104,7 @@ void FontLoaderBinaryFormat::ReadCharsBlock(int size)
 #pragma pack(pop)
 
 	charsBlock blk;
-	m_file->readBytes((char*)&blk, size);
+	m_file->read((char*)&blk, size);
 
 	for (int n = 0; int(n*sizeof(charsBlock::charInfo)) < size; n++)
 	{
@@ -1133,7 +1137,7 @@ void FontLoaderBinaryFormat::ReadKerningPairsBlock(int size)
 #pragma pack(pop)
 
 	kerningPairsBlock blk;
-	m_file->readBytes((char*)&blk, size);
+	m_file->read((char*)&blk, size);
 
 	for (int n = 0; int(n*sizeof(kerningPairsBlock::kerningPair)) < size; n++)
 	{

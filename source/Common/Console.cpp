@@ -33,17 +33,6 @@ Console::~Console()
 	s_this = 0;
 }
 
-#ifdef __LINUX__
- int _vscprintf (const char * format, va_list pargs) { 
-      int retval; 
-      va_list argcopy; 
-      va_copy(argcopy, pargs); 
-      retval = vsnprintf(NULL, 0, format, argcopy); 
-      va_end(argcopy); 
-      return retval; 
-   }
-#endif
-
 void Console::call_log(const char *msg, va_list args)
 {
 	#ifdef __WINDOWS__
@@ -120,11 +109,6 @@ string Console::getLog() const
 void Console::clear()
 {
 	m_log.clear();
-}
-
-void Console::exportFile() const
-{
-	FileSystem::WriteFile(":/Console.log", m_log);
 }
 
 string Console::readBuffer()

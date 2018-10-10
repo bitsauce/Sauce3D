@@ -135,10 +135,11 @@ int Game::run()
 		m_prefPath = SDL_GetPrefPath(m_organization.c_str(), m_name.c_str());
 
 		m_console = new Console();
-		m_fileSystem = new FileSystem();
+		//m_fileSystem = new FileSystem();
 		if(isEnabled(SAUCE_EXPORT_LOG))
 		{
-			m_console->m_output = new FileWriter(util::getAbsoluteFilePath("bin:/Console.log"));
+			m_console->m_output = new ofstream();
+			m_console->m_output->open("console.log");
 		}
 
 		m_timer = new Timer();

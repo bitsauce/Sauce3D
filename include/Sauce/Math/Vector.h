@@ -5,8 +5,8 @@
 
 /** \brief A class which holds a 2 dimensional vector
  *
- * The Vector2F class is a 2 dimensional (hence the 2) vector.
- * It stores the x and y value as Ting-point values.
+ * The Vector2F class is a 2 dimensional vector.
+ * It stores the x and y value as single-presicion floating-point values.
  *
  */
 

@@ -11,7 +11,7 @@
 //
 // Derived from: http://en.wikipedia.org/wiki/Xorshift
 
-#include <Sauce/math.h>
+#include <Sauce/Math.h>
 
 BEGIN_SAUCE_NAMESPACE
 

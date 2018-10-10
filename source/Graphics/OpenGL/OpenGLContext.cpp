@@ -218,20 +218,24 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	// Create GL context
 	m_context = SDL_GL_CreateContext(m_window->getSDLHandle());
 
+#ifdef __WINDOWS__
 	// Initialize GL3W
 	if(gl3wInit() != 0)
 	{
 		THROW("GL3W did not initialize!");
 	}
+#endif
 
 	// Print GPU info
 	LOG("** Using GPU: %s (OpenGL %s) **", glGetString(GL_VENDOR), glGetString(GL_VERSION));
 
+#ifdef __WINDOWS__
 	// Check OpenGL support
 	if(!gl3wIsSupported(m_majorVersion, m_minorVersion))
 	{
 		THROW("OpenGL %i.%i not supported\n", m_majorVersion, m_minorVersion);
 	}
+#endif
 
 	// Setup graphics context
 	Vector2I size;

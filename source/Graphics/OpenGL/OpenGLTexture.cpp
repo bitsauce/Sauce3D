@@ -13,8 +13,6 @@
 #include <Sauce/Graphics.h>
 #include <Sauce/Graphics/OpenGL/OpenGLTexture.h>
 
-#include "..\3rdparty\SDL_image\SDL_image.h"
-
 BEGIN_SAUCE_NAMESPACE
 
 GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)

@@ -8,6 +8,7 @@
 //									2011-2014 (C)
 // Inspired by: http://nehe.gamedev.net/tutorial/freetype_fonts_in_opengl/24001/
 
+#ifdef DEPRECATED
 #include <x2d/engine.h>
 #include <x2d/graphics.h>
 
@@ -310,3 +311,5 @@ xd::Texture2DPtr Font::renderToTexture(GraphicsContext &graphicsContext, const s
 }
 
 END_XD_NAMESPACE
+
+#endif

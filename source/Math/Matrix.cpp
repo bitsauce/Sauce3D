@@ -11,7 +11,7 @@
 //
 // Derived from: http://www.songho.ca/opengl/gl_matrix.html
 
-#include <Sauce/math.h>
+#include <Sauce/Math.h>
 
 const float DEG2RAD = 3.141593f / 180;
 

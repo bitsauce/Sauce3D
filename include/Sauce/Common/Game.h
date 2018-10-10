@@ -17,6 +17,10 @@ class FileWriter;
 class AudioManager;
 class Graphics;
 
+#ifdef __LINUX__
+extern int _vscprintf (const char * format, va_list pargs);
+#endif
+
 /**
  * \class	FileReader
  *
@@ -77,14 +81,6 @@ public:
 	void clear();
 
 	/**
-	 * \fn	void Console::exportFile() const;
-	 *
-	 * \brief	Export file.
-	 */
-
-	void exportFile() const;
-
-	/**
 	 * \fn	string Console::readBuffer();
 	 *
 	 * \brief	Reads the buffer.
@@ -120,7 +116,7 @@ private:
 	Game *m_engine;
 	
 	/** \brief	The output. */
-	FileWriter *m_output;
+	ofstream *m_output;
 
 	static Console *s_this;
 ///< .
@@ -298,6 +294,7 @@ public:
 ///< .
 };
 
+#ifdef DEPRECATED
 /*********************************************************************
 **	File reader class												**
 **********************************************************************/
@@ -568,6 +565,7 @@ private:
 	/** \brief	this. */
 	static FileSystem *s_this;
 };
+#endif
 
 /*********************************************************************
 **	Window class													**

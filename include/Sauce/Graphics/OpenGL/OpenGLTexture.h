@@ -28,6 +28,4 @@ protected:
 	GLuint m_id;
 };
 
-template class SAUCE_API shared_ptr<Texture2D>;
-
 END_SAUCE_NAMESPACE

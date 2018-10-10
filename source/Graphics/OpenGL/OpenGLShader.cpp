@@ -779,7 +779,9 @@ void OpenGLShader::exportAssembly(const string & fileName)
 	memcpy(&content[0], binary, length);
 
 	// Write to file
-	FileSystem::WriteFile(fileName, content);
+	ofstream file(fileName);
+	file << content;
+	file.close();
 
 	// Clean up
 	delete[] binary;

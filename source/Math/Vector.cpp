@@ -1,11 +1,6 @@
 #include <Sauce/Math/Vector.h>
 
-const Vector2F Vector2F::Zero;
-const Vector2B Vector2B::Zero;
-const Vector2D Vector2D::Zero;
-const Vector2I Vector2I::Zero;
-const Vector2U Vector2U::Zero;
-const Vector2UB Vector2UB::Zero;
+template<typename T> const Vector2<T> Vector2<T>::Zero = Vector2<T>(T(0));
 
 const Color Color::White = Color(255, 255, 255);
 const Color Color::Black = Color(0, 0, 0);
