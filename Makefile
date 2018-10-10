@@ -1,10 +1,12 @@
-CC      = g++
-CXXFLAGS  = -Wall -fsigned-char -std=c++11 -D__LINUX__ -D_REENTRANT -fPIC
-LDFLAGS = -lGLEW -lGLU -lGL -L/usr/lib/x86_64-linux-gnu -lSDL2 -lSDL2_image
+CC       = g++
+CXXFLAGS = -Wall -fsigned-char -std=c++11 -D__LINUX__ -D_REENTRANT -fPIC
+LDFLAGS  = -lGLEW -lGLU -lGL -L/usr/lib/x86_64-linux-gnu -lSDL2 -lSDL2_image
 
 BUILD_DIR_RELEASE = ./build/linux/release/
 BUILD_DIR_DEBUG   = ./build/linux/debug/
-SAUCE_LIB         = Sauce3D.so
+LIBRARY_DIR       = ./lib/
+SAUCE_LIB_RELEASE = libsauce3d.so
+SAUCE_LIB_DEBUG   = libsauce3d_d.so
 
 SOURCE_DIR    = ./source/
 SOURCE_FILES := $(shell find $(SOURCE_DIR) -name '*.cpp')
@@ -34,13 +36,15 @@ $(BUILD_DIR_DEBUG)%.o: %.cpp
 debug: CXXFLAGS += -DDEBUG -g
 debug: build-debug
 build-debug: $(OBJECT_FILES_DEBUG)
-	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_DEBUG) -o $(BUILD_DIR_DEBUG)$(SAUCE_LIB) $(LDFLAGS)
+	$(MKDIR) $(LIBRARY_DIR)
+	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_DEBUG) -o $(LIBRARY_DIR)$(SAUCE_LIB_DEBUG) $(LDFLAGS)
 
 .PHONY: release
 release: CXXFLAGS += -O2
 release: build-release
 build-release: $(OBJECT_FILES_RELEASE)
-	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_RELEASE) -o $(BUILD_DIR_RELEASE)$(SAUCE_LIB) $(LDFLAGS)
+	$(MKDIR) $(LIBRARY_DIR)
+	$(CC) $(CXXFLAGS) -shared $(OBJECT_FILES_RELEASE) -o $(LIBRARY_DIR)$(SAUCE_LIB_RELEASE) $(LDFLAGS)
 
 all: debug
 all: release
@@ -49,6 +53,7 @@ all: release
 clean:
 	rm -r -f $(BUILD_DIR_DEBUG)
 	rm -r -f $(BUILD_DIR_RELEASE)
+	rm -r -f $(LIBRARY_DIR)
 
 .PHONY: install-dependencies
 install-dependencies:

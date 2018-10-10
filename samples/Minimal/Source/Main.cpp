@@ -57,6 +57,7 @@ public:
 	}
 };
 
+#ifdef __WINDOWS__
 /* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
@@ -67,3 +68,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	MinimalGame game;
 	return game.run();
 }
+#else
+int main()
+{
+	MinimalGame game;
+	return game.run();
+}
+#endif
