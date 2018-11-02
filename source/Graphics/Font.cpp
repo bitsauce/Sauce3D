@@ -81,6 +81,7 @@ Font::Font(const string &filepath)
 		// Determine format by reading the first bytes of the file
 		char fmt[3];
 		file.read(fmt, 3);
+		file.seekg(0);
 
 		FontLoader *loader = 0;
 		if(strcmp(fmt, "BMF") == 0)
@@ -662,10 +663,6 @@ int FontLoaderTextFormat::Load()
 			InterpretPage(line, pos2, m_fontFile);
 	}
 
-	m_file->close();
-	delete m_file;
-	m_file = 0;
-
 	// Success
 	return 0;
 }
@@ -947,11 +944,6 @@ int FontLoaderBinaryFormat::Load()
 	if (strcmp(magicString, "BMF\003") != 0)
 	{
 		LOG("Unrecognized format for '%s'", m_fontFile);
-		
-		m_file->close();
-		delete m_file;
-		m_file = 0;
-
 		return -1;
 	}
 
@@ -982,18 +974,9 @@ int FontLoaderBinaryFormat::Load()
 			break;
 		default:
 			LOG("Unexpected block type (%d)", blockType);
-
-			m_file->close();
-			delete m_file;
-			m_file = 0;
-
 			return -1;
 		}
 	}
-
-	m_file->close();
-	delete m_file;
-	m_file = 0;
 
 	// Success
 	return 0;

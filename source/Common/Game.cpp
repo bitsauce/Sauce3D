@@ -29,9 +29,8 @@ BEGIN_SAUCE_NAMESPACE
 
 Exception::Exception(RetCode code, const char * msg, ...) :
 	m_errorCode(code)
-#ifdef __WINDOWS__
-	,
-	m_callstack()
+#ifdef SAUCE_COMPILE_WINDOWS
+	, m_callstack()
 #endif
 {
 	va_list args;
@@ -60,34 +59,19 @@ Keycode KeyEvent::getKeycode() const
 
 Game *Game::s_this = 0;
 
-// TODO: Might want to do some file path validation check on the name
-// and org name so that the pref path won't bug out
-Game::Game(const string &name, const string &organization, const GraphicsBackend &graphicsBackend, const uint flags) :
-	m_name(name),
-	m_organization(organization),
-	m_graphicsBackend(graphicsBackend),
-	m_flags(flags),
+Game::Game() :
 	m_initialized(false),
 	m_paused(false),
 	m_running(false)
 {
-	if(s_this)
-	{
-		THROW("A game already exists!");
-	}
+	THROW_IF(s_this != nullptr, "Game instance already exists!");
 	s_this = this;
-}
-
-Game::Game(const string &name, const uint flags) :
-	Game(name, SAUCE_DEFAULT_ORGANIZATION, GraphicsBackend(), flags)
-{
 }
 
 Game::~Game()
 {
 	// Release managers
 	delete m_fileSystem;
-	//delete m_audio;
 	delete m_timer;
 	delete m_console;
 	delete m_resourceManager;
@@ -97,10 +81,15 @@ Game::~Game()
 //------------------------------------------------------------------------
 // Run
 //------------------------------------------------------------------------
-int Game::run()
+int Game::run(const GameDesc &desc)
 {
 	try
 	{
+		m_desc = desc;
+
+		// Set cwd
+		SetCurrentDirectory(desc.workingDirectory.c_str());
+
 		// Make sure we're not running already
 		if(m_running)
 		{
@@ -116,7 +105,7 @@ int Game::run()
 		// default.getValue("Window/ResolutionX");
 		// etc...
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 		for(int i = 0; i < __argc; i++)
 		{
 			string argType = __argv[i];
@@ -132,7 +121,7 @@ int Game::run()
 		m_binaryPath = SDL_GetBasePath();
 
 		// Set save directory
-		m_prefPath = SDL_GetPrefPath(m_organization.c_str(), m_name.c_str());
+		m_prefPath = SDL_GetPrefPath(desc.organization.c_str(), desc.name.c_str());
 
 		m_console = new Console();
 		//m_fileSystem = new FileSystem();
@@ -170,11 +159,11 @@ int Game::run()
 
 		// Initialize graphics context and window
 		GraphicsContext *graphicsContext = 0;
-		switch(m_graphicsBackend.type)
+		switch(desc.graphicsBackend)
 		{
-			default: graphicsContext = new OpenGLContext(m_graphicsBackend.major, m_graphicsBackend.minor); break;
+			default: graphicsContext = new OpenGLContext(4, 5); break;
 		}
-		Window *mainWindow = graphicsContext->createWindow(m_name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
+		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
 		m_windows.push_back(mainWindow);
 
 		// Setup default vertex format
@@ -516,12 +505,12 @@ void Game::setPaused(const bool paused)
 
 uint Game::getFlags() const
 {
-	return m_flags;
+	return m_desc.flags;
 }
 
 bool Game::isEnabled(const EngineFlag flag)
 {
-	return (m_flags & flag) != 0;
+	return (m_desc.flags & flag) != 0;
 }
 
 Window *Game::getWindow(const Sint32 id) const

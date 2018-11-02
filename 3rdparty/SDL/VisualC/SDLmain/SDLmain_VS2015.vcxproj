@@ -100,7 +100,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)"</Command>
+      <Command>mkdir "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\"
+copy "$(TargetPath)" "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,7 +146,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)"</Command>
+      <Command>mkdir "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\"
+copy "$(TargetPath)" "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

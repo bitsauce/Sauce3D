@@ -218,7 +218,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	// Create GL context
 	m_context = SDL_GL_CreateContext(m_window->getSDLHandle());
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 	// Initialize GL3W
 	if(gl3wInit() != 0)
 	{
@@ -229,7 +229,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	// Print GPU info
 	LOG("** Using GPU: %s (OpenGL %s) **", glGetString(GL_VENDOR), glGetString(GL_VERSION));
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 	// Check OpenGL support
 	if(!gl3wIsSupported(m_majorVersion, m_minorVersion))
 	{

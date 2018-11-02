@@ -1,5 +1,6 @@
 #include <Sauce/Sauce.h>
 #include "Camera.h"
+#include "Mesh.h"
 
 using namespace sauce;
 
@@ -129,6 +130,12 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 	delete[] vertices;
 }
 
+void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
+{
+	//m_defaultShader->setUniformMatrix4f();
+	graphicsContext->drawPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, mesh->getVertices(), mesh->getVertexCount());
+}
+
 class Simple3DGame : public Game
 {
 	Camera camera;
@@ -136,13 +143,9 @@ class Simple3DGame : public Game
 	Resource<Font> m_font;
 	Resource<Shader> m_defaultShader;
 	Resource<Texture2D> m_texture;
+	Mesh *m_mesh;
 
 public:
-	Simple3DGame() :
-		Game("Simple3D", "Sauce3D", GraphicsBackend(GraphicsBackend::SAUCE_OPEN_GL, 4, 5))
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		m_spriteBatch = new SpriteBatch;
@@ -154,6 +157,8 @@ public:
 		addChildLast(&camera);
 		camera.setPosition(Vector3F(0.0f, 0.0f, 2.0f));
 		camera.setYaw(-math::degToRad(90));
+
+		m_mesh = loadMesh("bunny.obj");
 
 		Game::onStart(e);
 	}
@@ -188,7 +193,8 @@ public:
 			graphicsContext->setProjectionMatrix(graphicsContext->createPerspectiveMatrix(45.0f, aspectRatio, 0.1f, 100.0f));
 
 			// Draw cube at origo
-			drawCube(graphicsContext, 0, 0, 0, 1, 1, 1);
+			//drawCube(graphicsContext, 0, 0, 0, 1, 1, 1);
+			drawMesh(graphicsContext, 0, 0, 0, 1, 1, 1, m_mesh);
 		}
 		graphicsContext->popState();
 
@@ -210,6 +216,12 @@ public:
 /* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "Simple3DSample";
+	desc.workingDirectory = "../Data";
+	//desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_4;
+
 	Simple3DGame game;
-	return game.run();
+	return game.run(desc);
 }

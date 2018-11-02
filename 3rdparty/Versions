@@ -2,3 +2,4 @@ SDL2 2.0.3
 SDL2_image 2.0.0
 GL3W (gl3w_gen.py @ 2015-09-11)
 tinyxml2 (HEAD @ 2015-09-21)
+imgui 1.65

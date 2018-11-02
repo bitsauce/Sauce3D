@@ -7,7 +7,13 @@
 /*********************************************************************
 **	Compiler preprocessor											**
 **********************************************************************/
-#if __WINDOWS__ && _MSC_VER >= 1500
+#if defined(__GNUC__) || defined(__GNUG__)
+	#define SAUCE_COMPILE_LINUX
+#elif defined(_MSC_VER)
+	#define SAUCE_COMPILE_WINDOWS
+#endif
+
+#if defined(SAUCE_COMPILE_WINDOWS) && _MSC_VER >= 1500
 	#define USE_CTR_SECURE
 #endif
 #if defined(_DEBUG) && !defined(SAUCE_DEBUG) 
@@ -17,9 +23,9 @@
 /*********************************************************************
 **	Library export preprocessor										**
 **********************************************************************/
-#if defined(__WINDOWS__) && defined(SAUCE_EXPORT)
+#if defined(SAUCE_COMPILE_WINDOWS) && defined(SAUCE_EXPORT)
 	#define SAUCE_API __declspec(dllexport)
-#elif defined(__WINDOWS__) && defined(SAUCE_IMPORT)
+#elif defined(SAUCE_COMPILE_WINDOWS) && defined(SAUCE_IMPORT)
 	#define SAUCE_API __declspec(dllimport)
 #else
 	#define SAUCE_API 
@@ -28,7 +34,7 @@
 /*********************************************************************
 **	Include	STL														**
 **********************************************************************/
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 	#include <string>
 	#include <vector>
 	#include <list>
@@ -105,8 +111,6 @@ typedef double SFloat;
 #define BEGIN_SAUCE_NAMESPACE namespace sauce {
 #define END_SAUCE_NAMESPACE }
 
-#define SAUCE_DEFAULT_ORGANIZATION "Sauce3D"
-
 BEGIN_SAUCE_NAMESPACE
 
 /*********************************************************************
@@ -140,29 +144,6 @@ enum MessageType
 	SAUCE_INFO_MSG,
 	SAUCE_WARN_MSG,
 	SAUCE_ERR_MSG
-};
-
-/*********************************************************************
-**	Graphics backends												**
-**********************************************************************/
-struct GraphicsBackend
-{
-	enum Type
-	{
-		SAUCE_OPEN_GL,
-		SAUCE_DIRECT_X,
-		SAUCE_VULKAN
-	};
-
-	GraphicsBackend(const Type type = SAUCE_OPEN_GL, const int major = 3, const int minor = 1) :
-		type(type),
-		major(major),
-		minor(minor)
-	{
-	}
-
-	Type type;
-	int major, minor;
 };
 
 /*********************************************************************

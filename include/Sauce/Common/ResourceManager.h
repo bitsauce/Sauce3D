@@ -10,9 +10,6 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-//template<typename T>
-//using Resource = shared_ptr<T>;
-
 class ResourceManager;
 
 template<typename T>

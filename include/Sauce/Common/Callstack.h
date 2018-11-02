@@ -9,9 +9,12 @@
 *
 **********************************************************************/
 
-#pragma once
+#ifndef _SAUCE_CALLSTACK_H_
+#define _SAUCE_CALLSTACK_H_
 
-#ifdef __WINDOWS__
+#include <Sauce/Config.h>
+
+#ifdef SAUCE_COMPILE_WINDOWS
 
 #include <windows.h>
 #include <string>
@@ -135,4 +138,6 @@ protected:
 
 #else
 
-#endif
+#endif // SAUCE_COMPILE_WINDOWS
+
+#endif // _SAUCE_CALLSTACK_H_

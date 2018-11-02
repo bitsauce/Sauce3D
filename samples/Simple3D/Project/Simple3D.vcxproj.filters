@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\Source\Main.cpp" />
     <ClCompile Include="..\Source\Camera.cpp" />
+    <ClCompile Include="..\Source\Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Data">
@@ -24,5 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Camera.h" />
+    <ClInclude Include="..\Source\Mesh.h" />
+    <ClInclude Include="..\Source\tiny_obj_loader.h" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,6 @@
     <ClCompile Include="$(SolutionDir)source\Common\Console.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Game.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\FileSystem.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Common\IniParser.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Math.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\ResourceManager.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Timer.cpp" />
@@ -160,7 +159,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalDependencies>$(SolutionDir)3rdparty\SDL\VisualC\SDL\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)3rdparty\SDL_image\VisualC\$(Platform)\$(Configuration)\SDL2_image.lib;$(SolutionDir)3rdparty\SDL_mixer\VisualC\$(Platform)\$(Configuration)\SDL2_mixer.lib;$(SolutionDir)3rdparty\gl3w\lib\$(Platform)\$(Configuration)\gl3w.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)3rdparty\SDL\VisualC\SDL\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)3rdparty\SDL_image\VisualC\$(Platform)\$(Configuration)\SDL2_image.lib;$(SolutionDir)3rdparty\gl3w\lib\$(Platform)\$(Configuration)\gl3w.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalDependencies>glew32_d.lib;ws2_32.lib;IPHlpAPI.lib;freetype248_d.lib;OpenAL32.lib;libpng15_d.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -187,7 +186,7 @@
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)3rdparty\SDL\VisualC\SDL\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)3rdparty\SDL_image\VisualC\$(Platform)\$(Configuration)\SDL2_image.lib;$(SolutionDir)3rdparty\SDL_mixer\VisualC\$(Platform)\$(Configuration)\SDL2_mixer.lib;$(SolutionDir)3rdparty\gl3w\lib\$(Platform)\$(Configuration)\gl3w.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)3rdparty\SDL\VisualC\SDL\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)3rdparty\SDL_image\VisualC\$(Platform)\$(Configuration)\SDL2_image.lib;$(SolutionDir)3rdparty\gl3w\lib\$(Platform)\$(Configuration)\gl3w.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>

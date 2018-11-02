@@ -5,8 +5,8 @@ Camera::Camera() :
 	m_previousPosition(0.f, 0.f, 0.f),
 	m_yaw(0.f),
 	m_pitch(0.f),
-	m_rotationSpeed(0.01f),
-	m_moveSpeed(3.0f),
+	m_rotationSpeed(0.0025f),
+	m_moveSpeed(1.0f),
 	m_dragging(false)
 {
 }

@@ -130,7 +130,8 @@
       <OutputFile>.\Debug/SDL2_image.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetDir)*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"
+      <Command>mkdir "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\"
+copy "$(TargetDir)*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"
 copy "$(ProjectDir)lib\*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -204,7 +205,8 @@ copy "$(ProjectDir)lib\*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configu
       <OutputFile>.\Release/SDL2_image.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetDir)*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"
+      <Command>mkdir "$(ProjectDir)..\..\..\..\build\$(Platform)\$(Configuration)\"
+copy "$(TargetDir)*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"
 copy "$(ProjectDir)lib\*.dll" "$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

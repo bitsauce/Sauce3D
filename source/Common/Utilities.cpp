@@ -138,7 +138,7 @@ void util::toDirectoryPath(string &path)
 }
 
 // TODO: This will only work on windows i think
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 #include <direct.h>
 #else
 #include <unistd.h>

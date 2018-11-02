@@ -13,7 +13,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 Timer::Timer() :
 	m_running(false)
 {

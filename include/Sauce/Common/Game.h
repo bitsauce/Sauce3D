@@ -92,7 +92,7 @@ public:
 	bool hasBuffer() const;
 	void clearBuffer();
 
-	static void Log(const char *function, const int line, const char *msg, ...);
+	static void Log(const char *function, const char *file, const int line, const char *msg, ...);
 
 private:
 
@@ -123,28 +123,26 @@ private:
 };
 
 /**
- * \def	LOG(str, ...) Console::Log(str, __VA_ARGS__);
- *
- * \brief	A macro that defines log.
+ * \brief	A macro for logging formatted messages
  *
  * \todo TODO: Add timestap to all console messages
  *
- * \param	str	The string.
- * \param	...	Variable arguments providing additional information.
+ * \param	str	The message to log
+ * \param	...	Variable argument list to format \p message with
  */
 
-#define LOG(str, ...) Console::Log(__FUNCTION__, __LINE__, str, ## __VA_ARGS__)
+#define LOG(str, ...)                   Console::Log(__FUNCTION__, __FILE__, __LINE__, str, __VA_ARGS__)
+#define LOG_IF(cond, str, ...) if(cond) Console::Log(__FUNCTION__, __FILE__, __LINE__, str, __VA_ARGS__)
 
 /**
- * \def	THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__);
+ * \brief	A macro for throwing an exception with a formatted string
  *
- * \brief	A macro that defines throw.
- *
- * \param	str	The string.
- * \param	...	Variable arguments providing additional information.
+ * \param	str	The message to throw
+ * \param	...	Variable argument list to format \p message with
  */
 
-#define THROW(str, ...) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, ## __VA_ARGS__)
+#define THROW(str, ...)                   throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
+#define THROW_IF(cond, str, ...) if(cond) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
 
 END_SAUCE_NAMESPACE
 
@@ -180,7 +178,7 @@ typedef union _LARGE_INTEGER {
 } LARGE_INTEGER, *PLARGE_INTEGER;
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 class SAUCE_API Timer
 {
 public:
@@ -251,7 +249,7 @@ private:
     std::chrono::time_point<clock_> m_start, m_end;
 };
 
-#endif
+#endif // SAUCE_COMPILE_WINDOWS
 
 class SAUCE_API SimpleTimer
 {
@@ -823,11 +821,11 @@ public:
 
 	string callstack() const
 	{
-		#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 		return m_callstack.toString();
-		#else
+#else
 		return "Missing";
-		#endif
+#endif
 	}
 
 private:
@@ -837,7 +835,7 @@ private:
 	/** \brief	The error code. */
 	RetCode m_errorCode;
 
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 	/** \brief Callstack of point of error */
 	Callstack m_callstack;
 #endif
@@ -864,18 +862,31 @@ private:
 class SpriteBatch;
 class ResourceManager;
 
+enum GraphicsBackend
+{
+	SAUCE_OPENGL_3,
+	SAUCE_OPENGL_4,
+	SAUCE_DIRECTX,
+	SAUCE_VULKAN
+};
+
+struct SAUCE_API GameDesc
+{
+	string name                     = "DefaultGame";
+	string workingDirectory         = ".";
+	string organization             = "Sauce3D";
+	uint32_t flags                  = 0;
+	GraphicsBackend graphicsBackend = SAUCE_OPENGL_3;
+};
+
 class SAUCE_API Game : public SceneObject
 {
 public:
-	Game(const string &name,
-		 const string &organization = SAUCE_DEFAULT_ORGANIZATION,
-		 const GraphicsBackend &graphicsBackend = GraphicsBackend(),
-		 const uint flags = 0);
-	Game(const string &name, const uint flags);
+	Game();
 	~Game();
 
 	// Run game
-	int run();
+	int run(const GameDesc &desc);
 	
 	// End game
 	void end();
@@ -940,16 +951,7 @@ public:
 
 private:
 
-	/**
-	 * \property	const string m_name, m_organization
-	 *
-	 * \brief	Game name and organization.
-	 *
-	 * \return	The m organization.
-	 */
-
-	const string m_name, m_organization;
-	const GraphicsBackend m_graphicsBackend;
+	GameDesc m_desc;
 	
 	/** \brief	Initialized? */
 	bool m_initialized;
@@ -984,9 +986,6 @@ private:
 	
 	/** \brief	The console. */
 	Console			*m_console;
-
-	/** \brief	Engine running flags. */
-	const uint m_flags;
 
 	/**
 	 * \property	string m_binaryPath, m_prefPath
