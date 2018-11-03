@@ -6,17 +6,6 @@ class MinimalGame : public Game
 {
 public:
 	/** 
-	 * Game constructor.
-	 * This method is generally empty since
-	 * initialization of resources need to happen in onStart()
-	 */
-	MinimalGame() :
-		/* Title of the game. Used as window title and name of folder containing save files */
-		Game("Minimal")
-	{
-	}
-
-	/** 
 	 * onStart() event.
 	 * This event called once the framework has initialized, but before the first tick.
 	 * Load resources and setup the window here.
@@ -65,8 +54,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	 * To start the game we simply create a game object and call run().
 	 * This function should typically not require modification.
 	 */
+	GameDesc desc;
+	desc.name = "Minimal Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	MinimalGame game;
-	return game.run();
+	return game.run(desc);
 }
 #else
 int main()

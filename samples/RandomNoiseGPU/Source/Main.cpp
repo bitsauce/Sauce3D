@@ -6,22 +6,18 @@ class RandomNoiseGPU : public Game
 {
 	Resource<Shader> m_noiseShader;
 	Resource<Texture2D> m_gradientTexture;
-	shared_ptr<RenderTarget2D> m_renderTarget;
+	RenderTarget2D *m_renderTarget;
 	float m_time;
 
 public:
-	RandomNoiseGPU() :
-		Game("RandomNoiseGPU", SAUCE_EXPORT_LOG)
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		m_noiseShader = Resource<Shader>("Fractal2D");
 		//m_noiseShader = Resource<Shader>("Fractal2D_Gradient");
 		//m_noiseShader = Resource<Shader>("Voronoise");
 		m_gradientTexture = Resource<Texture2D>("Gradient");
-		m_renderTarget = shared_ptr<RenderTarget2D>(new RenderTarget2D(getWindow()->getWidth(), getWindow()->getHeight()));
+		
+		m_renderTarget = getWindow()->getGraphicsContext()->createRenderTarget(getWindow()->getWidth(), getWindow()->getHeight());
 
 		m_noiseShader->setUniform1f("u_Frequency", 0.5f);
 		m_noiseShader->setUniform1f("u_Gain", 0.5f);
@@ -49,11 +45,11 @@ public:
 
 		m_noiseShader->setUniform1f("u_Time", m_time + e->getAlpha() * 1.0f / 30.0f);
 
-		context->setRenderTarget(m_renderTarget.get());
+		context->pushRenderTarget(m_renderTarget);
 		context->setShader(m_noiseShader);
 		context->drawRectangle(Vector2F(0, 0), getWindow()->getSize());
 		context->setShader(0);
-		context->setRenderTarget(0);
+		context->popRenderTarget();
 
 		context->setTexture(m_renderTarget->getTexture());
 		context->drawRectangle(Vector2F(0, 0), getWindow()->getSize());
@@ -96,6 +92,12 @@ public:
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "RandomNoiseGPU Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	RandomNoiseGPU game;
-	return game.run();
+	return game.run(desc);
 }

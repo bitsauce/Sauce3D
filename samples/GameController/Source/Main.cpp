@@ -16,11 +16,6 @@ public:
 	SpriteBatch *m_spriteBatch;
 	string m_btn;
 
-	GameControllerGame() :
-		Game("GameController", SAUCE_WINDOW_RESIZABLE)
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		m_spriteBatch = new SpriteBatch;
@@ -130,11 +125,14 @@ public:
 	}
 };
 
-/* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
-	/* To start our game we simply create our game object
-	   and call run() */
+	GameDesc desc;
+	desc.name = "GameController Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	GameControllerGame game;
-	return game.run();
+	return game.run(desc);
 }

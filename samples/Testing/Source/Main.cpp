@@ -14,11 +14,6 @@ class DrawTexturedQuad : public Game
 	RenderTarget2D *renderTarget;
 	shared_ptr<Texture2D> testTexture;
 public:
-	DrawTexturedQuad() :
-		Game("DrawTexturedQuad")
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		texture = Resource<Texture2D>("Koala");

@@ -31,7 +31,7 @@ public:
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
 	GameDesc desc;
-	desc.name = "DrawTextSample";
+	desc.name = "DrawText Sample";
 	desc.workingDirectory = "../Data";
 	desc.flags = SAUCE_WINDOW_RESIZABLE;
 	desc.graphicsBackend = SAUCE_OPENGL_3;

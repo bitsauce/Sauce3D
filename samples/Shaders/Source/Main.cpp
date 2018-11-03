@@ -4,15 +4,9 @@ using namespace sauce;
 
 class ShadersGame : public Game
 {
-private:
 	Resource<Shader> shader;
 
 public:
-	ShadersGame() :
-		Game("Shaders")
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		shader = Resource<Shader>("Shader");
@@ -39,11 +33,13 @@ public:
 	}
 };
 
-/* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
-	/* To start our game we simply create our game object
-	   and call run() */
+	GameDesc desc;
+	desc.name = "Shader Sample";
+	desc.workingDirectory = "../Data";
+	desc.graphicsBackend = SAUCE_OPENGL_4;
+
 	ShadersGame game;
-	return game.run();
+	return game.run(desc);
 }

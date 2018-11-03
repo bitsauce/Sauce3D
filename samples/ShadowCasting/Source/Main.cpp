@@ -57,14 +57,6 @@ private:
 	DebugState m_debugState;
 
 public:
-	ShadowCastingGame() :
-		Game("ShadowCasting"),
-		m_spriteBatch(0),
-		m_occludersRenderTarget(0),
-		m_debugState(DEBUG_STATE_NONE)
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		// Create sprite batch
@@ -89,6 +81,9 @@ public:
 
 		// Set light map resolution
 		setLightMapResolution(256);
+
+		m_occludersRenderTarget = 0;
+		m_debugState = DEBUG_STATE_NONE;
 
 		Game::onStart(e);
 	}
@@ -286,11 +281,14 @@ public:
 	}
 };
 
-/* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
-	/* To start our game we simply create our game object
-	   and call run() */
+	GameDesc desc;
+	desc.name = "RandomNoiseGPU Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	ShadowCastingGame game;
-	return game.run();
+	return game.run(desc);
 }

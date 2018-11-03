@@ -127,6 +127,7 @@ Pixmap::Pixmap(const string &imageFile, const bool premultiplyAlpha) :
 		// Convert bitmap to BGRA
 		bitmap = FreeImage_ConvertTo32Bits(bitmap);
 		FreeImage_FlipVertical(bitmap);
+		if(premultiplyAlpha) FreeImage_PreMultiplyWithAlpha(bitmap);
 
 		// Create pixmap data
 		m_width = FreeImage_GetWidth(bitmap), m_height = FreeImage_GetHeight(bitmap);

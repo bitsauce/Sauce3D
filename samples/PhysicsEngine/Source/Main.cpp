@@ -11,11 +11,6 @@ class PhysicsEngineGame : public Game
 	Vector2F m_lastMousePosition;
 
 public:
-	PhysicsEngineGame() :
-		Game("PhysicsEngine")
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		Circle *circle1 = new Circle;
@@ -297,6 +292,12 @@ public:
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "PhysicsEngine Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	PhysicsEngineGame game;
-	return game.run();
+	return game.run(desc);
 }
