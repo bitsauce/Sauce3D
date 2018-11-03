@@ -2,7 +2,6 @@
 #define SAUCE_CONFIG_H
 
 #include <SDL.h>
-#include <SDL_image.h>
 
 /*********************************************************************
 **	Compiler preprocessor											**
@@ -87,7 +86,6 @@
 	#undef major
 	#undef minor
 #endif
-
 
 /*********************************************************************
 **	Enable STL namespace											**

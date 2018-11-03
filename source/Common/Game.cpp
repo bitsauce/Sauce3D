@@ -13,6 +13,7 @@
 #include <Sauce/Graphics.h>
 #include <Sauce/Input.h>
 #include <Sauce/Audio.h>
+#include <FreeImage.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -57,6 +58,20 @@ Keycode KeyEvent::getKeycode() const
 	return (Keycode) SDL_GetKeyFromScancode((SDL_Scancode) m_inputButton.getCode());
 }
 
+/**
+FreeImage error handler
+@param fif Format / Plugin responsible for the error
+@param message Error message
+*/
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+	LOG("\n*** ");
+	if(fif != FIF_UNKNOWN) {
+		LOG("%s Format\n", FreeImage_GetFormatFromFIF(fif));
+	}
+	LOG(message);
+	LOG(" ***\n");
+}
+
 Game *Game::s_this = 0;
 
 Game::Game() :
@@ -91,10 +106,7 @@ int Game::run(const GameDesc &desc)
 		SetCurrentDirectory(desc.workingDirectory.c_str());
 
 		// Make sure we're not running already
-		if(m_running)
-		{
-			THROW("Game already running");
-		}
+		THROW_IF(m_running, "Game is already running");
 		m_running = true;
 
 		// TODO: Implement an engine config file
@@ -139,10 +151,10 @@ int Game::run(const GameDesc &desc)
 		LOG("** Initializing Engine **");
 
 		// Initialize SDL
-		if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
-		{
-			THROW("Unable to initialize SDL");
-		}
+		THROW_IF(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Unable to initialize SDL");
+
+		// In your main program …
+		FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
 		SDL_version sdlver;
 		SDL_GetVersion(&sdlver);
@@ -161,7 +173,7 @@ int Game::run(const GameDesc &desc)
 		GraphicsContext *graphicsContext = 0;
 		switch(desc.graphicsBackend)
 		{
-			default: graphicsContext = new OpenGLContext(4, 5); break;
+			default: graphicsContext = new OpenGLContext(4, 2); break;
 		}
 		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
 		m_windows.push_back(mainWindow);
