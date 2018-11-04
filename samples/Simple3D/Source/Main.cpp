@@ -1,6 +1,7 @@
 #include <Sauce/Sauce.h>
 #include "Camera.h"
 #include "Mesh.h"
+#include "Lights.h"
 
 using namespace sauce;
 
@@ -143,7 +144,9 @@ class Simple3DGame : public Game
 	Resource<Font> m_font;
 	Resource<Shader> m_defaultShader;
 	Resource<Texture2D> m_texture;
+	
 	Mesh *m_mesh;
+	DirectionalLight m_directionalLight;
 
 public:
 	void onStart(GameEvent *e)
@@ -185,6 +188,9 @@ public:
 
 			// Set shader
 			m_defaultShader->setSampler2D("u_Texture", m_texture);
+			m_defaultShader->setUniform3f("u_DirLight.direction", 0,0,0);
+			m_defaultShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
+			// m_defaultShader->setUniform3f("u_PointLight[0].color", 1.0, 0.5, 0.5);
 			graphicsContext->setShader(m_defaultShader);
 
 			// Set camera and perspective matricies

@@ -88,7 +88,7 @@
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;$(ProjectDir)..\..\..\3rdparty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SAUCE_DEBUG;SAUCE_IMPORT;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -177,6 +177,7 @@
     <ClCompile Include="..\Source\Camera.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
     <ClCompile Include="..\Source\Mesh.cpp" />
+    <ClCompile Include="..\Source\Lights.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Data\Default.frag" />
@@ -190,6 +191,7 @@
   <ItemGroup>
     <ClInclude Include="..\Source\Camera.h" />
     <ClInclude Include="..\Source\Mesh.h" />
+    <ClInclude Include="..\Source\Lights.h" />
     <ClInclude Include="..\Source\tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
