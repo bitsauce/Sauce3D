@@ -131,6 +131,7 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	glBindAttribLocation(m_id, 0, "in_Position");
 	glBindAttribLocation(m_id, 1, "in_VertexColor");
 	glBindAttribLocation(m_id, 2, "in_TexCoord");
+	glBindAttribLocation(m_id, 3, "in_Normal");
 	glBindFragDataLocation(m_id, 0, "out_FragColor");
 
 	link();

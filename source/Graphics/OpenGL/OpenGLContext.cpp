@@ -437,6 +437,18 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
+
+			case VERTEX_NORMAL:
+				if(fmt.isAttributeEnabled(attrib))
+				{
+					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
+				}
+				else
+				{
+					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
+				}
+				break;
 		}
 	}
 
@@ -464,7 +476,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 
 	// Set array pointers
 	VertexFormat fmt = vbo->getVertexFormat();
-	int stride = fmt.getVertexSizeInBytes();
+	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
 	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
@@ -473,36 +485,48 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 			case VERTEX_POSITION:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(0);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(0);
+					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_COLOR:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(1);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(1);
+					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_TEX_COORD:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(2);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(2);
+					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
+				}
+				break;
+
+			case VERTEX_NORMAL:
+				if(fmt.isAttributeEnabled(attrib))
+				{
+					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
+				}
+				else
+				{
+					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 		}
@@ -547,36 +571,48 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const Vertex *verti
 			case VERTEX_POSITION:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(0);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(0);
+					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_COLOR:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(1);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(1);
+					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_TEX_COORD:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(2);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(2);
+					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
+				}
+				break;
+
+			case VERTEX_NORMAL:
+				if(fmt.isAttributeEnabled(attrib))
+				{
+					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
+				}
+				else
+				{
+					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 		}
@@ -606,7 +642,7 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const VertexBuffer 
 
 	// Set array pointers
 	VertexFormat fmt = vbo->getVertexFormat();
-	int stride = fmt.getVertexSizeInBytes();
+	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
 	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
@@ -615,36 +651,48 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const VertexBuffer 
 			case VERTEX_POSITION:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(0);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(0);
+					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_COLOR:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(1);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(1);
+					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 
 			case VERTEX_TEX_COORD:
 				if(fmt.isAttributeEnabled(attrib))
 				{
-					glEnableVertexAttribArray(2);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, stride, (void*) fmt.getAttributeOffset(attrib));
+					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
 				}
 				else
 				{
-					glDisableVertexAttribArray(2);
+					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
+				}
+				break;
+
+			case VERTEX_NORMAL:
+				if(fmt.isAttributeEnabled(attrib))
+				{
+					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
+					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
+				}
+				else
+				{
+					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
 				}
 				break;
 		}

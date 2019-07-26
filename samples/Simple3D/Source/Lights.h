@@ -16,10 +16,12 @@ struct DirectionalLight
 
 struct PointLight
 {
-	PointLight() :
-		position(0.f, 0.f, 0.f),
-		color(1.f, 1.f, 1.f),
-		radius(0.f)
+	PointLight(Vector3F position = Vector3F(0.f, 0.f, 0.f),
+			   Vector3F color = Vector3F(1.f, 1.f, 1.f),
+			   float radius =  0.f) :
+		position(position),
+		color(color),
+		radius(radius)
 	{
 	}
 

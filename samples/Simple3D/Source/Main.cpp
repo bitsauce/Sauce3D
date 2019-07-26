@@ -147,6 +147,7 @@ class Simple3DGame : public Game
 	
 	Mesh *m_mesh;
 	DirectionalLight m_directionalLight;
+	vector<PointLight> m_pointLights;
 
 public:
 	void onStart(GameEvent *e)
@@ -162,6 +163,8 @@ public:
 		camera.setYaw(-math::degToRad(90));
 
 		m_mesh = loadMesh("bunny.obj");
+
+		m_pointLights.push_back(PointLight(Vector3F(0.f, 0.f, 2.f), Vector3F(1.f, 1.f, 1.f), 10.f));
 
 		Game::onStart(e);
 	}
@@ -188,9 +191,18 @@ public:
 
 			// Set shader
 			m_defaultShader->setSampler2D("u_Texture", m_texture);
-			m_defaultShader->setUniform3f("u_DirLight.direction", 0,0,0);
-			m_defaultShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
-			// m_defaultShader->setUniform3f("u_PointLight[0].color", 1.0, 0.5, 0.5);
+			//m_defaultShader->setUniform3f("u_DirLight.direction", 0,0,0);
+			//m_defaultShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
+			for(int i = 0; i < m_pointLights.size(); i++)
+			{
+				const PointLight &light = m_pointLights[i];
+				const string uniformPrefix = "u_PointLight[" + std::to_string(i) + "]";
+				m_defaultShader->setUniform3f(uniformPrefix + ".position", light.position.x, light.position.y, light.position.z);
+				m_defaultShader->setUniform3f(uniformPrefix + ".color", light.color.x, light.color.y, light.color.z);
+				m_defaultShader->setUniform1f(uniformPrefix + ".radius", light.radius);
+			}
+			m_defaultShader->setUniform1i("u_NumPointLights", m_pointLights.size());
+			m_defaultShader->setUniformMatrix4f("u_ModelMatrix", Matrix4().get());
 			graphicsContext->setShader(m_defaultShader);
 
 			// Set camera and perspective matricies
