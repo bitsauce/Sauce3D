@@ -35,6 +35,7 @@ Console::~Console()
 
 void Console::call_log(const char *msg, va_list args)
 {
+#ifdef SAUCE_COMPILE_WINDOWS
 	// Get string length
 	int size = _vscprintf(msg, args);
 
@@ -46,11 +47,11 @@ void Console::call_log(const char *msg, va_list args)
 #ifdef USE_CTR_SECURE
 	vsprintf_s(&out[0], size + 1, msg, args);
 #else
-	vsprintf(out, msg, args);
+	vsprintf(&out[0], msg, args);
 #endif
 
 	// System log
-#ifdef __WINDOWS__
+#ifdef SAUCE_COMPILE_WINDOWS
 	OutputDebugString(out.c_str());
 	OutputDebugString("\n");
 #endif
@@ -58,16 +59,17 @@ void Console::call_log(const char *msg, va_list args)
 	// Append message to log file
 	if(m_engine->isEnabled(SAUCE_EXPORT_LOG))
 	{
-		m_output->append(out);
-		m_output->append("\n");
+		*m_output << out << endl;
 		m_output->flush();
 	}
 
 	// Append to console buffer
 	m_log.append(out);
 	m_buffer.append(out);
+#endif
 }
 
+#ifdef SAUCE_COMPILE_WINDOWS
 #ifndef USE_CTR_SECURE
 #define CALL_LOG(format, ...)						\
 	int size = _scprintf(format, __VA_ARGS__) + 1;	\
@@ -83,14 +85,24 @@ void Console::call_log(const char *msg, va_list args)
 	s_this->call_log(newMsg, args);					\
 	delete newMsg;
 #endif
+#endif
 
-void Console::Log(const char *function, const int line, const char *msg, ...)
+void Console::Log(const char *function, const char *file, const int line, const char *msg, ...)
 {
 	// Get argument lists
 	va_list args;
 	va_start(args, msg);
 
-	CALL_LOG("[%s (%i)] %s", function, line, msg);
+	// Get timestamp
+	time_t rawtime;
+	time(&rawtime);
+	tm *timeinfo = localtime(&rawtime);
+	char timestamp[9];
+	strftime(timestamp, sizeof(timestamp), "%H:%M:%S", timeinfo);
+
+#ifdef SAUCE_COMPILE_WINDOWS
+	CALL_LOG("[%s] [INFO] [%s:%i in function %s]\n%s", timestamp, file, line, function, msg);
+#endif
 
 	va_end(args);
 }
@@ -103,11 +115,6 @@ string Console::getLog() const
 void Console::clear()
 {
 	m_log.clear();
-}
-
-void Console::exportFile() const
-{
-	FileSystem::WriteFile(":/Console.log", m_log);
 }
 
 string Console::readBuffer()

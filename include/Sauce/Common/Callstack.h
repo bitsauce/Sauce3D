@@ -9,7 +9,12 @@
 *
 **********************************************************************/
 
-#pragma once
+#ifndef _SAUCE_CALLSTACK_H_
+#define _SAUCE_CALLSTACK_H_
+
+#include <Sauce/Config.h>
+
+#ifdef SAUCE_COMPILE_WINDOWS
 
 #include <windows.h>
 #include <string>
@@ -130,3 +135,9 @@ protected:
     c.ContextFlags = contextFlags; \
     RtlCaptureContext(&c); \
 } while(0);
+
+#else
+
+#endif // SAUCE_COMPILE_WINDOWS
+
+#endif // _SAUCE_CALLSTACK_H_

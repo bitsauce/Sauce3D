@@ -79,6 +79,4 @@ private:
 	static string s_glslVersion;
 };
 
-template SAUCE_API class shared_ptr<Shader>;
-
 END_SAUCE_NAMESPACE

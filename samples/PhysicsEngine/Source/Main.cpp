@@ -4,39 +4,59 @@
 
 using namespace sauce;
 
+// TODO:
+// [x] Add static objects
+// [ ] Fix sinking
+// [ ] Verify that integration is implemented correctly (hint: delta time?)
+// [x] Add gravity
+// [ ] Add a gravity scale variable
+// [ ] Consider adding ImGui
+// [ ] Add friction
+// [ ] Add rotated boxes
+// [ ] Add rotated circles
+// [ ] Add rotated polygons
+
 class PhysicsEngineGame : public Game
 {
 	vector<Shape*> shapes;
-	Shape *selectedShape = 0;
+	Shape *selectedShape;
 	Vector2F m_lastMousePosition;
 
 public:
-	PhysicsEngineGame() :
-		Game("PhysicsEngine")
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
-		Circle *circle1 = new Circle;
-		circle1->position.set(100.f, 100.f);
-		circle1->radius = 25.0f;
-		shapes.push_back(circle1);
+		selectedShape = nullptr;
 
-		Circle *circle2 = new Circle;
-		circle2->position.set(350.f, 200.f);
-		circle2->radius = 15.0f;
-		shapes.push_back(circle2);
+		// Create test scene
+		{
+			Circle *circle1 = new Circle;
+			circle1->position.set(100.f, 100.f);
+			circle1->radius = 25.0f;
+			shapes.push_back(circle1);
 
-		Box *box1 = new Box;
-		box1->min.set(200.0f, 200.0f);
-		box1->max.set(300.0f, 250.0f);
-		shapes.push_back(box1);
+			Circle *circle2 = new Circle;
+			circle2->position.set(350.f, 200.f);
+			circle2->radius = 15.0f;
+			shapes.push_back(circle2);
 
-		Box *box2 = new Box;
-		box2->min.set(400.0f, 400.0f);
-		box2->max.set(550.0f, 500.0f);
-		shapes.push_back(box2);
+			Box *box1 = new Box;
+			box1->min.set(200.0f, 200.0f);
+			box1->max.set(300.0f, 250.0f);
+			shapes.push_back(box1);
+
+			Box *box2 = new Box;
+			box2->min.set(400.0f, 400.0f);
+			box2->max.set(550.0f, 500.0f);
+			shapes.push_back(box2);
+
+			Vector2I size = getWindow()->getSize();
+
+			Box *ground = new Box;
+			ground->min.set(0.0f, size.y - 20);
+			ground->max.set(size.x, size.y);
+			ground->mass = 0.0f;
+			shapes.push_back(ground);
+		}
 
 		Game::onStart(e);
 	}
@@ -55,7 +75,7 @@ public:
 			{
 				case Shape::BOX:
 				{
-					Box *aabb = static_cast<Box*>(shape);
+					Box *aabb = dynamic_cast<Box*>(shape);
 					if(inputPos.x >= aabb->min.x && inputPos.x <= aabb->max.x && inputPos.y >= aabb->min.y && inputPos.y <= aabb->max.y)
 					{
 						selectedShape = shape;
@@ -65,7 +85,7 @@ public:
 
 				case Shape::CIRCLE:
 				{
-					Circle *circle = static_cast<Circle*>(shape);
+					Circle *circle = dynamic_cast<Circle*>(shape);
 					if((circle->position - inputPos).lengthSquared() < circle->radius * circle->radius)
 					{
 						selectedShape = shape;
@@ -95,18 +115,25 @@ public:
 			{
 			case Shape::BOX:
 			{
-				Box *aabb = static_cast<Box*>(selectedShape);
+				Box *aabb = dynamic_cast<Box*>(selectedShape);
 				aabb->velocity = (getInputManager()->getPosition() - aabb->getCentroid()) * 0.25f;
 			}
 			break;
 
 			case Shape::CIRCLE:
 			{
-				Circle *circle = static_cast<Circle*>(selectedShape);
+				Circle *circle = dynamic_cast<Circle*>(selectedShape);
 				circle->velocity = (getInputManager()->getPosition() - circle->position) * 0.25f;
 			}
 			break;
 			}
+		}
+
+		const float gravity = 1.0f;
+		for(Shape *shape : shapes)
+		{
+			if (shape->mass > 0)
+				shape->velocity.y += gravity;
 		}
 
 		for(Shape *shape : shapes)
@@ -134,6 +161,7 @@ public:
 					Manifold manifold(shape, otherShape);
 					if(AABBToCircle(&manifold))
 					{
+						ResolveCollision(&manifold, shape, otherShape);
 						colliding = true;
 						break;
 					}
@@ -144,6 +172,7 @@ public:
 					Manifold manifold(otherShape, shape);
 					if(AABBToCircle(&manifold))
 					{
+						ResolveCollision(&manifold, otherShape, shape);
 						colliding = true;
 						break;
 					}
@@ -167,7 +196,7 @@ public:
 			{
 			case Shape::BOX:
 			{
-				Box *aabb = static_cast<Box*>(shape);
+				Box *aabb = dynamic_cast<Box*>(shape);
 				aabb->min += aabb->velocity;
 				aabb->max += aabb->velocity;
 			}
@@ -175,7 +204,7 @@ public:
 
 			case Shape::CIRCLE:
 			{
-				Circle *circle = static_cast<Circle*>(shape);
+				Circle *circle = dynamic_cast<Circle*>(shape);
 				circle->position += circle->velocity;
 			}
 			break;
@@ -188,19 +217,20 @@ public:
 	{
 		for(Shape *shape : shapes)
 		{
-			Color c = shape->colliding ? Color::Blue : Color::White;
+			//Color c = shape->colliding ? Color::Blue : Color::White;
+			Color c = Color::White;
 			switch(shape->getType())
 			{
 				case Shape::BOX:
 				{
-					Box *aabb = static_cast<Box*>(shape);
+					Box *aabb = dynamic_cast<Box*>(shape);
 					e->getGraphicsContext()->drawRectangle(aabb->min, aabb->max - aabb->min, c);
 				}
 				break;
 
 				case Shape::CIRCLE:
 				{
-					Circle *circle = static_cast<Circle*>(shape);
+					Circle *circle = dynamic_cast<Circle*>(shape);
 					e->getGraphicsContext()->drawCircle(circle->position, circle->radius, 32, c);
 				}
 				break;
@@ -227,18 +257,22 @@ public:
 
 		// Calculate impulse scalar
 		float j = -(1 + e) * velAlongNormal;
-		j /= 1 / a->mass + 1 / b->mass;
+
+		float massAInv = a->mass > 0.0f ? 1 / a->mass : 0.0f;
+		float massBInv = b->mass > 0.0f ? 1 / b->mass : 0.0f;
+
+		j /= massAInv + massBInv;
 
 		// Apply impulse
 		Vector2F impulse = m->normal * j;
-		a->velocity -= impulse * (1 / a->mass);
-		b->velocity += impulse * (1 / b->mass);
+		a->velocity -= impulse * massAInv;
+		b->velocity += impulse * massBInv;
 	}
 
 	void CircleToCircle(Manifold *m)
 	{
-		Circle *a = static_cast<Circle*>(m->a);
-		Circle *b = static_cast<Circle*>(m->b);
+		Circle *a = dynamic_cast<Circle*>(m->a);
+		Circle *b = dynamic_cast<Circle*>(m->b);
 
 		// Calculate vector from a to b
 		Vector2F normal = b->position - a->position;
@@ -267,36 +301,129 @@ public:
 		{
 			// Calculate the penetation and normal vector
 			m->penetration = radius - distance;
-			m->normal = normal / distance; // Normalize the vector forom a to b
+			m->normal = normal / distance; // Normalize the vector from a to b
 			                               // (will be the collision normal)
 		}
 	}
 
 	bool AABBToCircle(Manifold *m)
 	{
-		Box *a = static_cast<Box*>(m->a);
-		Circle *b = static_cast<Circle*>(m->b);
+		Box *a = dynamic_cast<Box*>(m->a);
+		Circle *b = dynamic_cast<Circle*>(m->b);
 
-		Vector2F pointOnCircle = b->position + ((a->getCentroid() - b->position).normalized() * b->radius);
-		return RectF(a->min, a->max - a->min).contains(pointOnCircle);
+		// Vector from a to b
+		Vector2F delta = b->getCentroid() - a->getCentroid();
+
+		// Calculate half extents of box
+		float halfExtentX = (a->max.x - a->min.x) * 0.5f;
+		float halfExtentY = (a->max.y - a->min.y) * 0.5f;
+
+		// Closes point on a to the center of b
+		Vector2F closest;
+		closest.x = math::clamp(delta.x, -halfExtentX, halfExtentX);
+		closest.y = math::clamp(delta.y, -halfExtentY, halfExtentY);
+
+		// Delta did not change, meaning that the center of
+		// the circle is inside the box
+		bool inside = delta == closest;
+		if(inside)
+		{
+			// TODO
+		}
+
+		Vector2F normal = delta - closest;
+		float lengthSquared = normal.lengthSquared();
+		float radius = b->radius;
+
+		// Check if distance to the closest point is less than
+		// the circle radius
+		m->contactCount = 0;
+		if(lengthSquared > radius * radius && !inside)
+			return false;
+
+		float length = sqrt(lengthSquared);
+
+		if(inside)
+		{
+			// TODO
+		}
+		else
+		{
+			m->normal = normal / length;
+			m->penetration = radius - length;
+		}
+		m->contactCount = 1;
+		return true;
 	}
 
 	bool AABBToAABB(Manifold *m)
 	{
-		Box *a = static_cast<Box*>(m->a);
-		Box *b = static_cast<Box*>(m->b);
+		Box *a = dynamic_cast<Box*>(m->a);
+		Box *b = dynamic_cast<Box*>(m->b);
+
+		// Calculate vector from a to b
+		Vector2F d = b->getCentroid() - a->getCentroid();
+
+		// Calculate half extents along x-axis for each object
+		float widthOfA = a->max.x - a->min.x;
+		float widthOfB = b->max.x - b->min.x;
+
+		// Calculate overlap on x-axis
+		float overlapX = (widthOfA + widthOfB) * 0.5f - abs(d.x);
+
+		// SAT test on x-axis
+		if(overlapX > 0)
+		{
+			// Calculate half extents along y-axis for each object
+			float heightOfA = a->max.y - a->min.y;
+			float heightOfB = b->max.y - b->min.y;
+
+			// Calculate overlap on y-axis
+			float overlapY = (heightOfA + heightOfB) * 0.5f - abs(d.y);
+
+			// SAT test on y-axis
+			if(overlapY > 0)
+			{
+				// Find out which axis is axis of least penetration
+				if(overlapX < overlapY)
+				{
+					// Create collision normal in the direction of B
+					if(d.x < 0)
+						m->normal = Vector2F(-1, 0);
+					else
+						m->normal = Vector2F(1, 0);
+					m->penetration = overlapX;
+					m->contactCount = 1;
+					return true;
+				}
+				else
+				{
+					// Create collision normal in the direction of B
+					if(d.y < 0)
+						m->normal = Vector2F(0, -1);
+					else
+						m->normal = Vector2F(0, 1);
+					m->penetration = overlapY;
+					m->contactCount = 1;
+					return true;
+				}
+			}
+		}
 
 		// Exit with no intersection if found separated along an axis
-		if(a->max.x < b->min.x || a->min.x > b->max.x) return false;
-		if(a->max.y < b->min.y || a->min.y > b->max.y) return false;
-
-		// No separating axis found, therefor there is at least one overlapping axis
-		return true;
+		m->contactCount = 0;
+		return false;
 	}
 };
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "PhysicsEngine Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	PhysicsEngineGame game;
-	return game.run();
+	return game.run(desc);
 }

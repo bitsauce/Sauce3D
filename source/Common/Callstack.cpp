@@ -23,14 +23,17 @@
 *  2005-08-05   v5    - Removed most Lint (http://www.gimpel.com/) errors... thanks to Okko Willeboordse!
 *
 **********************************************************************/
-#include <windows.h>
+
+
+#include <Sauce/Common/Callstack.h>
+
+#ifdef SAUCE_COMPILE_WINDOWS
+
 #include <tchar.h>
 #include <stdio.h>
 #include <dbghelp.h>
 
 #pragma comment(lib, "version.lib")  // for "VerQueryValue"
-
-#include <Sauce/Common/Callstack.h>
 
 // Normally it should be enough to use 'CONTEXT_FULL' (better would be 'CONTEXT_ALL')
 #define USED_CONTEXT_FLAGS CONTEXT_FULL
@@ -358,7 +361,7 @@ private:
 		pGMI = (tGMI)GetProcAddress(hPsapi, "GetModuleInformation");
 		if ((pEPM == NULL) || (pGMFNE == NULL) || (pGMBN == NULL) || (pGMI == NULL))
 		{
-			// we couldn´t find all functions
+			// we couldnï¿½t find all functions
 			FreeLibrary(hPsapi);
 			return FALSE;
 		}
@@ -990,3 +993,5 @@ void Callstack::OnOutput(LPCSTR buffer)
 {
 	OutputDebugString(buffer);
 }
+
+#endif // SAUCE_COMPILE_WINDOWS

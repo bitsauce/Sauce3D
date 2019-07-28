@@ -1,4 +1,4 @@
-#include <Sauce/graphics.h>
+#include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 

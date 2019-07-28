@@ -290,3 +290,5 @@ __pycache__/
 # Custom
 !3rdparty/SDL_image/VisualC/Win32/Debug/lib*.dll
 !3rdparty/SDL_image/VisualC/Win32/Debug/zlib*.dll
+
+build/

@@ -6,7 +6,7 @@
 #include <Sauce/Graphics/OpenGL/OpenGLContext.h>
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/Animation.h>
-#include <Sauce/Graphics/Spritebatch.h>
+#include <Sauce/Graphics/SpriteBatch.h>
 #include <Sauce/Graphics/Font.h>
 #include <Sauce/Graphics/RenderTarget.h>
 #include <Sauce/Graphics/Pixmap.h>
@@ -14,9 +14,9 @@
 #include <Sauce/Graphics/Sprite.h>
 #include <Sauce/Graphics/Texture.h>
 #include <Sauce/Graphics/TextureAtlas.h>
-#include <Sauce/Graphics/Textureregion.h>
+#include <Sauce/Graphics/TextureRegion.h>
 #include <Sauce/Graphics/Vertex.h>
-#include <Sauce/Graphics/Vertexbuffer.h>
+#include <Sauce/Graphics/VertexBuffer.h>
 #include <Sauce/Graphics/Viewport.h>
 
 BEGIN_SAUCE_NAMESPACE

@@ -1,6 +1,6 @@
 // Inspired by: http://www.codeproject.com/Articles/210979/Fast-optimizing-rectangle-packing-algorithm-for-bu (i think)
 
-#include <Sauce/math.h>
+#include <Sauce/Math.h>
 
 BEGIN_SAUCE_NAMESPACE
 

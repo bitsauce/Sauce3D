@@ -1,5 +1,7 @@
 #include <Sauce/Sauce.h>
 #include "Camera.h"
+#include "Mesh.h"
+#include "Lights.h"
 
 using namespace sauce;
 
@@ -129,6 +131,12 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 	delete[] vertices;
 }
 
+void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
+{
+	//m_defaultShader->setUniformMatrix4f();
+	graphicsContext->drawPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, mesh->getVertices(), mesh->getVertexCount());
+}
+
 class Simple3DGame : public Game
 {
 	Camera camera;
@@ -136,13 +144,12 @@ class Simple3DGame : public Game
 	Resource<Font> m_font;
 	Resource<Shader> m_defaultShader;
 	Resource<Texture2D> m_texture;
+	
+	Mesh *m_mesh;
+	DirectionalLight m_directionalLight;
+	vector<PointLight> m_pointLights;
 
 public:
-	Simple3DGame() :
-		Game("Simple3D", "Sauce3D", GraphicsBackend(GraphicsBackend::SAUCE_OPEN_GL, 4, 5))
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		m_spriteBatch = new SpriteBatch;
@@ -154,6 +161,10 @@ public:
 		addChildLast(&camera);
 		camera.setPosition(Vector3F(0.0f, 0.0f, 2.0f));
 		camera.setYaw(-math::degToRad(90));
+
+		m_mesh = loadMesh("bunny.obj");
+
+		m_pointLights.push_back(PointLight(Vector3F(0.f, 0.f, 2.f), Vector3F(1.f, 1.f, 1.f), 10.f));
 
 		Game::onStart(e);
 	}
@@ -180,6 +191,18 @@ public:
 
 			// Set shader
 			m_defaultShader->setSampler2D("u_Texture", m_texture);
+			//m_defaultShader->setUniform3f("u_DirLight.direction", 0,0,0);
+			//m_defaultShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
+			for(int i = 0; i < m_pointLights.size(); i++)
+			{
+				const PointLight &light = m_pointLights[i];
+				const string uniformPrefix = "u_PointLight[" + std::to_string(i) + "]";
+				m_defaultShader->setUniform3f(uniformPrefix + ".position", light.position.x, light.position.y, light.position.z);
+				m_defaultShader->setUniform3f(uniformPrefix + ".color", light.color.x, light.color.y, light.color.z);
+				m_defaultShader->setUniform1f(uniformPrefix + ".radius", light.radius);
+			}
+			m_defaultShader->setUniform1i("u_NumPointLights", m_pointLights.size());
+			m_defaultShader->setUniformMatrix4f("u_ModelMatrix", Matrix4().get());
 			graphicsContext->setShader(m_defaultShader);
 
 			// Set camera and perspective matricies
@@ -188,7 +211,8 @@ public:
 			graphicsContext->setProjectionMatrix(graphicsContext->createPerspectiveMatrix(45.0f, aspectRatio, 0.1f, 100.0f));
 
 			// Draw cube at origo
-			drawCube(graphicsContext, 0, 0, 0, 1, 1, 1);
+			//drawCube(graphicsContext, 0, 0, 0, 1, 1, 1);
+			drawMesh(graphicsContext, 0, 0, 0, 1, 1, 1, m_mesh);
 		}
 		graphicsContext->popState();
 
@@ -210,6 +234,11 @@ public:
 /* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "Simple3D Sample";
+	desc.workingDirectory = "../Data";
+	desc.graphicsBackend = SAUCE_OPENGL_4;
+
 	Simple3DGame game;
-	return game.run();
+	return game.run(desc);
 }

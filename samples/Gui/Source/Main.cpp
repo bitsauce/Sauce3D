@@ -37,11 +37,6 @@ class GuiGame : public Game
 	bool showDebugInfo = false;
 
 public:
-	GuiGame() :
-		Game("Gui", SAUCE_WINDOW_RESIZABLE)
-	{
-	}
-
 	void onKeyDown(KeyEvent *e)
 	{
 		if(e->getKeycode() == SAUCE_KEY_F1)
@@ -171,6 +166,12 @@ public:
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "Gui Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	GuiGame game;
-	return game.run();
+	return game.run(desc);
 }

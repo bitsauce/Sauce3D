@@ -131,6 +131,7 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	glBindAttribLocation(m_id, 0, "in_Position");
 	glBindAttribLocation(m_id, 1, "in_VertexColor");
 	glBindAttribLocation(m_id, 2, "in_TexCoord");
+	glBindAttribLocation(m_id, 3, "in_Normal");
 	glBindFragDataLocation(m_id, 0, "out_FragColor");
 
 	link();
@@ -779,7 +780,9 @@ void OpenGLShader::exportAssembly(const string & fileName)
 	memcpy(&content[0], binary, length);
 
 	// Write to file
-	FileSystem::WriteFile(fileName, content);
+	ofstream file(fileName);
+	file << content;
+	file.close();
 
 	// Clean up
 	delete[] binary;

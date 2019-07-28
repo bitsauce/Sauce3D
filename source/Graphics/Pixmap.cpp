@@ -10,7 +10,8 @@
 // 2011-2018 (C)
 
 #include <Sauce/Common.h>
-#include <Sauce/graphics.h>
+#include <Sauce/Graphics.h>
+#include <FreeImage.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -100,68 +101,52 @@ Pixmap::Pixmap(const Pixmap &other)
 }
 
 Pixmap::Pixmap(const string &imageFile, const bool premultiplyAlpha) :
-	m_format()
+	m_format(PixelFormat::RGBA, PixelFormat::UNSIGNED_BYTE),
+	m_data(nullptr),
+	m_width(0),
+	m_height(0)
 {
-	// Load pixmap from image file
-	SDL_Surface *surface = IMG_Load(imageFile.c_str());
-	if(surface)
+	// Check the file signature and deduce its format
+	FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(imageFile.c_str(), 0);
+	if(fif == FIF_UNKNOWN)
 	{
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-		if(surface->format->format != SDL_PIXELFORMAT_ABGR8888)
-		{
-			SDL_Surface *oldSurface = surface;
-			surface = SDL_ConvertSurfaceFormat(oldSurface, SDL_PIXELFORMAT_ABGR8888, 0);
-			SDL_FreeSurface(oldSurface);
-		}
-#else
-		if(surface->format->format != SDL_PIXELFORMAT_RGBA8888)
-		{
-			SDL_Surface *oldSurface = surface;
-			surface = SDL_ConvertSurfaceFormat(oldSurface, SDL_PIXELFORMAT_RGBA8888, 0);
-			SDL_FreeSurface(oldSurface);
-		}
-#endif
-		// Create pixmap data
-		if(surface->w >= 0 && surface->h >= 0)
-		{
-			m_data = new uchar[surface->w * surface->h * m_format.getPixelSizeInBytes()];
-		}
-		else
-		{
-			m_data = 0;
-		}
-
-		// Fill pixmap data
-		if(premultiplyAlpha)
-		{
-			for(uint i = 0; i < surface->w * surface->h; i++)
-			{
-				uchar alpha = m_data[i * 4 + 3] = ((uchar*) surface->pixels)[i * 4 + 3];
-				m_data[i * 4 + 0] = ((uchar*) surface->pixels)[i * 4 + 0] * alpha / 255.0f;
-				m_data[i * 4 + 1] = ((uchar*) surface->pixels)[i * 4 + 1] * alpha / 255.0f;
-				m_data[i * 4 + 2] = ((uchar*) surface->pixels)[i * 4 + 2] * alpha / 255.0f;
-			}
-		}
-		else
-		{
-			memcpy(m_data, surface->pixels, surface->w * surface->h * m_format.getPixelSizeInBytes());
-		}
-
-		// Set width and height
-		m_width = surface->w;
-		m_height = surface->h;
-
-		// Free surface
-		SDL_FreeSurface(surface);
+		// Guess the file format from the file extension
+		fif = FreeImage_GetFIFFromFilename(imageFile.c_str());
 	}
-	else
-	{
-		// Set data, width and height to 0
-		m_data = 0;
-		m_width = m_height = 0;
 
-		// Unable to read file
-		LOG("Unable to load image '%s'\n%s", imageFile.c_str(), IMG_GetError());
+	// Check that the plugin has reading capabilities...
+	FIBITMAP *bitmap = nullptr;
+	if(fif != FIF_UNKNOWN && FreeImage_FIFSupportsReading(fif))
+	{
+		// Let's load the file
+		bitmap = FreeImage_Load(fif, imageFile.c_str(), 0);
+	}
+
+	if(bitmap)
+	{
+		// Convert bitmap to BGRA
+		bitmap = FreeImage_ConvertTo32Bits(bitmap);
+		FreeImage_FlipVertical(bitmap);
+		if(premultiplyAlpha) FreeImage_PreMultiplyWithAlpha(bitmap);
+
+		// Create pixmap data
+		m_width = FreeImage_GetWidth(bitmap), m_height = FreeImage_GetHeight(bitmap);
+		if(m_width >= 0 && m_height >= 0)
+		{
+			m_data = new uchar[m_width * m_height * m_format.getPixelSizeInBytes()];
+		}
+
+		// Copy pixels from bitmap
+		uchar *pixels = (uchar*)FreeImage_GetBits(bitmap);
+		for(int i = 0; i < m_width * m_height; i++)
+		{
+			m_data[i * 4 + 0] = pixels[i * 4 + 2];
+			m_data[i * 4 + 1] = pixels[i * 4 + 1];
+			m_data[i * 4 + 2] = pixels[i * 4 + 0];
+			m_data[i * 4 + 3] = pixels[i * 4 + 3];
+		}
+
+		FreeImage_Unload(bitmap);
 	}
 }
 
@@ -277,10 +262,14 @@ void Pixmap::exportToFile(string path) const
 	}
 
 	// Convert pixmap to surface and export as a PNG image
-	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(m_data, m_width, m_height, 32, m_width * 4, R_MASK, G_MASK, B_MASK, A_MASK);
+	/*SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(m_data, m_width, m_height, 32, m_width * 4, R_MASK, G_MASK, B_MASK, A_MASK);
 	util::toAbsoluteFilePath(path);
 	IMG_SavePNG(surface, path.c_str());
-	SDL_FreeSurface(surface);
+	SDL_FreeSurface(surface);*/
+
+	FIBITMAP *image = FreeImage_ConvertFromRawBits(m_data, m_width, m_height, m_width * 4, 32, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);
+	FreeImage_Save(FIF_PNG, image, path.c_str(), PNG_DEFAULT);
+	FreeImage_Unload(image);
 }
 
 END_SAUCE_NAMESPACE

@@ -10,7 +10,7 @@
 // 2011-2018 (C)
 
 #include <Sauce/Common.h>
-#include <Sauce/graphics.h>
+#include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 

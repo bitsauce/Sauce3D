@@ -6,11 +6,6 @@ class TextureAtlasGame : public Game
 {
 	TextureAtlas *textureAtlas;
 public:
-	TextureAtlasGame() :
-		Game("TextureAtlas", SAUCE_WINDOW_RESIZABLE)
-	{
-	}
-
 	void onStart(GameEvent*)
 	{
 		// Setup texture atlas
@@ -54,6 +49,11 @@ public:
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "TextureAtlasSample";
+	desc.workingDirectory = "../Data";
+	desc.graphicsBackend = SAUCE_OPENGL_4;
+
 	TextureAtlasGame game;
-	return game.run();
+	return game.run(desc);
 }

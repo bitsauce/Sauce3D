@@ -13,6 +13,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+#ifdef DEPRECATED
 FileSystem *FileSystem::s_this = nullptr;
 
 FileReader::FileReader(const string &path) :
@@ -226,5 +227,7 @@ bool FileSystem::makeDir(const string &path)
 	}
 	return true;
 }
+
+#endif
 
 END_SAUCE_NAMESPACE

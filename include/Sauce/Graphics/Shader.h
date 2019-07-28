@@ -46,8 +46,6 @@ public:
 	virtual void setUniformColorRGB(const string &name, const ColorRGB &color) = 0;
 };
 
-template SAUCE_API class shared_ptr<Shader>;
-
 class ShaderResourceDesc : public ResourceDesc
 {
 public:
@@ -83,5 +81,7 @@ private:
 };
 
 END_SAUCE_NAMESPACE
+
+template SAUCE_API class std::shared_ptr<sauce::Shader>;
 
 #endif // SAUCE_SHADER_H

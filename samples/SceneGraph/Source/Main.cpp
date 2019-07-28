@@ -16,11 +16,6 @@ int depth = 0;
 class SceneGraphGame : public Game
 {
 public:
-	SceneGraphGame() :
-		Game("SceneGraph")
-	{
-	}
-
 	void exportToGraphviz(string outpath)
 	{
 		// Nodes and edges
@@ -182,6 +177,12 @@ public:
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
+	GameDesc desc;
+	desc.name = "SceneGraph Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	SceneGraphGame game;
-	return game.run();
+	return game.run(desc);
 }

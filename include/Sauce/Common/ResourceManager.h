@@ -10,9 +10,6 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-//template<typename T>
-//using Resource = shared_ptr<T>;
-
 class ResourceManager;
 
 template<typename T>
@@ -20,7 +17,7 @@ class Resource : public shared_ptr<T>
 {
 	friend class Game;
 public:
-	Resource() : shared_ptr(0) {}
+	Resource() : shared_ptr<T>(0) {}
 	Resource(const string &name);
 };
 
@@ -137,7 +134,7 @@ private:
 
 template<typename T>
 Resource<T>::Resource(const string &name) :
-	shared_ptr(ResourceManager::s_this->get<T>(name.c_str()))
+	shared_ptr<T>(ResourceManager::s_this->get<T>(name.c_str()))
 {
 }
 

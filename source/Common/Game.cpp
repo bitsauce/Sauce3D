@@ -13,12 +13,26 @@
 #include <Sauce/Graphics.h>
 #include <Sauce/Input.h>
 #include <Sauce/Audio.h>
+#include <FreeImage.h>
 
 BEGIN_SAUCE_NAMESPACE
 
+#ifdef __LINUX__
+ int _vscprintf (const char * format, va_list pargs) { 
+      int retval; 
+      va_list argcopy; 
+      va_copy(argcopy, pargs); 
+      retval = vsnprintf(NULL, 0, format, argcopy); 
+      va_end(argcopy); 
+      return retval; 
+   }
+#endif
+
 Exception::Exception(RetCode code, const char * msg, ...) :
-	m_errorCode(code),
-	m_callstack()
+	m_errorCode(code)
+#ifdef SAUCE_COMPILE_WINDOWS
+	, m_callstack()
+#endif
 {
 	va_list args;
 	va_start(args, msg);
@@ -33,7 +47,7 @@ Exception::Exception(RetCode code, const char * msg, ...) :
 #ifdef USE_CTR_SECURE
 	vsprintf_s(&m_message[0], size + 1, msg, args);
 #else
-	vsprintf(out, msg, args);
+	vsprintf(&m_message[0], msg, args);
 #endif
 
 	va_end(args);
@@ -44,36 +58,35 @@ Keycode KeyEvent::getKeycode() const
 	return (Keycode) SDL_GetKeyFromScancode((SDL_Scancode) m_inputButton.getCode());
 }
 
+/**
+FreeImage error handler
+@param fif Format / Plugin responsible for the error
+@param message Error message
+*/
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+	LOG("\n*** ");
+	if(fif != FIF_UNKNOWN) {
+		LOG("%s Format\n", FreeImage_GetFormatFromFIF(fif));
+	}
+	LOG(message);
+	LOG(" ***\n");
+}
+
 Game *Game::s_this = 0;
 
-// TODO: Might want to do some file path validation check on the name
-// and org name so that the pref path won't bug out
-Game::Game(const string &name, const string &organization, const GraphicsBackend &graphicsBackend, const uint flags) :
-	m_name(name),
-	m_organization(organization),
-	m_graphicsBackend(graphicsBackend),
-	m_flags(flags),
+Game::Game() :
 	m_initialized(false),
 	m_paused(false),
 	m_running(false)
 {
-	if(s_this)
-	{
-		THROW("A game already exists!");
-	}
+	THROW_IF(s_this != nullptr, "Game instance already exists!");
 	s_this = this;
-}
-
-Game::Game(const string &name, const uint flags) :
-	Game(name, SAUCE_DEFAULT_ORGANIZATION, GraphicsBackend(), flags)
-{
 }
 
 Game::~Game()
 {
 	// Release managers
 	delete m_fileSystem;
-	//delete m_audio;
 	delete m_timer;
 	delete m_console;
 	delete m_resourceManager;
@@ -83,15 +96,17 @@ Game::~Game()
 //------------------------------------------------------------------------
 // Run
 //------------------------------------------------------------------------
-int Game::run()
+int Game::run(const GameDesc &desc)
 {
 	try
 	{
+		m_desc = desc;
+
+		// Set cwd
+		SetCurrentDirectory(desc.workingDirectory.c_str());
+
 		// Make sure we're not running already
-		if(m_running)
-		{
-			THROW("Game already running");
-		}
+		THROW_IF(m_running, "Game is already running");
 		m_running = true;
 
 		// TODO: Implement an engine config file
@@ -102,6 +117,7 @@ int Game::run()
 		// default.getValue("Window/ResolutionX");
 		// etc...
 
+#ifdef SAUCE_COMPILE_WINDOWS
 		for(int i = 0; i < __argc; i++)
 		{
 			string argType = __argv[i];
@@ -111,18 +127,20 @@ int Game::run()
 				SetCurrentDirectory(arg.c_str());
 			}
 		}
+#endif
 
 		// Set game root directory
 		m_binaryPath = SDL_GetBasePath();
 
 		// Set save directory
-		m_prefPath = SDL_GetPrefPath(m_organization.c_str(), m_name.c_str());
+		m_prefPath = SDL_GetPrefPath(desc.organization.c_str(), desc.name.c_str());
 
 		m_console = new Console();
-		m_fileSystem = new FileSystem();
+		//m_fileSystem = new FileSystem();
 		if(isEnabled(SAUCE_EXPORT_LOG))
 		{
-			m_console->m_output = new FileWriter(util::getAbsoluteFilePath("bin:/Console.log"));
+			m_console->m_output = new ofstream();
+			m_console->m_output->open("console.log");
 		}
 
 		m_timer = new Timer();
@@ -133,10 +151,10 @@ int Game::run()
 		LOG("** Initializing Engine **");
 
 		// Initialize SDL
-		if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
-		{
-			THROW("Unable to initialize SDL");
-		}
+		THROW_IF(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Unable to initialize SDL");
+
+		// In your main program …
+		FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
 		SDL_version sdlver;
 		SDL_GetVersion(&sdlver);
@@ -153,11 +171,11 @@ int Game::run()
 
 		// Initialize graphics context and window
 		GraphicsContext *graphicsContext = 0;
-		switch(m_graphicsBackend.type)
+		switch(desc.graphicsBackend)
 		{
-			default: graphicsContext = new OpenGLContext(m_graphicsBackend.major, m_graphicsBackend.minor); break;
+			default: graphicsContext = new OpenGLContext(4, 2); break;
 		}
-		Window *mainWindow = graphicsContext->createWindow(m_name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
+		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
 		m_windows.push_back(mainWindow);
 
 		// Setup default vertex format
@@ -499,12 +517,12 @@ void Game::setPaused(const bool paused)
 
 uint Game::getFlags() const
 {
-	return m_flags;
+	return m_desc.flags;
 }
 
 bool Game::isEnabled(const EngineFlag flag)
 {
-	return (m_flags & flag) != 0;
+	return (m_desc.flags & flag) != 0;
 }
 
 Window *Game::getWindow(const Sint32 id) const

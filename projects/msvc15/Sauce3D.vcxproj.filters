@@ -10,9 +10,6 @@
     <Filter Include="Source\Graphics">
       <UniqueIdentifier>{5c4936cb-dcd3-4d2b-9f82-1e78436a3a73}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Audio">
-      <UniqueIdentifier>{bc0f0669-f0f8-488b-afea-6e4d771f1cd1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Input">
       <UniqueIdentifier>{07f942eb-4d73-46bd-b1e5-54b67ca87cb5}</UniqueIdentifier>
     </Filter>
@@ -52,9 +49,6 @@
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Common\FileSystem.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Common\IniParser.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Common\Math.cpp">

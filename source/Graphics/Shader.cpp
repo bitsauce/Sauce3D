@@ -25,31 +25,31 @@ Shader::~Shader()
 void *ShaderResourceDesc::create() const
 {
 	GraphicsContext *graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
-	string vertexSource, fragmentSource, geometrySource;
+	stringstream vertexSource, fragmentSource, geometrySource;
 
-	FileReader *fileReader;
+	ifstream *fileReader;
 
-	fileReader = new FileReader(util::getAbsoluteFilePath(m_vertexFilePath));
-	vertexSource = fileReader->readAll();
+	fileReader = new ifstream(util::getAbsoluteFilePath(m_vertexFilePath));
+	vertexSource << fileReader->rdbuf();
 	fileReader->close();
 	delete fileReader;
 
-	fileReader = new FileReader(util::getAbsoluteFilePath(m_fragmentFilePath));
-	fragmentSource = fileReader->readAll();
+	fileReader = new ifstream(util::getAbsoluteFilePath(m_fragmentFilePath));
+	fragmentSource << fileReader->rdbuf();
 	fileReader->close();
 	delete fileReader;
 
 	if(util::fileExists(m_geometryFilePath))
 	{
-		fileReader = new FileReader(util::getAbsoluteFilePath(m_geometryFilePath));
-		geometrySource = fileReader->readAll();
+		fileReader = new ifstream(util::getAbsoluteFilePath(m_geometryFilePath));
+		geometrySource << fileReader->rdbuf();
 		fileReader->close();
 		delete fileReader;
 	}
 
 	LOG("Compiling shader program: %s", getName().c_str());
 
-	return graphicsContext->createShader(vertexSource, fragmentSource, geometrySource);
+	return graphicsContext->createShader(vertexSource.str(), fragmentSource.str(), geometrySource.str());
 }
 
 END_SAUCE_NAMESPACE

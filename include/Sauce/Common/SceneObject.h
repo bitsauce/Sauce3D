@@ -450,4 +450,4 @@ private:
 
 END_SAUCE_NAMESPACE
 
-#endif // SAUCE_EVENT_H
+#endif // SAUCE_SCENE_OBJECT_H

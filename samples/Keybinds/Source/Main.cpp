@@ -9,11 +9,6 @@ class Keybinds : public Game
 	Keybind m_runKeybind;
 	Keybind m_shootKeybind;
 public:
-	Keybinds() :
-		Game("KeyBinding")
-	{
-	}
-
 	void onStart(GameEvent *e)
 	{
 		// Get input manager
@@ -132,11 +127,14 @@ public:
 	}
 };
 
-/* Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
-	/* To start our game we simply create our game object
-	   and call run() */
+	GameDesc desc;
+	desc.name = "KeyBinding Sample";
+	desc.workingDirectory = "../Data";
+	desc.flags = SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = SAUCE_OPENGL_3;
+
 	Keybinds game;
 	return game.run();
 }

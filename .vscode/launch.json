@@ -1,0 +1,7 @@
+{
+    "name": "Launch",
+    "type": "lldb",
+    "request": "launch",
+    "program": "${workspaceFolder}/samples/Minimal/build/linux/debug/minimal",
+    "args": [],
+}
