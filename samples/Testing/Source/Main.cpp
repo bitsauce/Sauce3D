@@ -9,18 +9,19 @@ using namespace sauce;
 class DrawTexturedQuad : public Game
 {
 	Resource<Texture2D> texture;
-	shared_ptr<Texture2D> textureSaved;
+	Texture2D *textureSaved;
+	Texture2D *testTexture;
 	StaticVertexBuffer *vbo;
 	RenderTarget2D *renderTarget;
-	shared_ptr<Texture2D> testTexture;
 public:
 	void onStart(GameEvent *e)
 	{
+		GraphicsContext *gfx = getWindow()->getGraphicsContext();
 		texture = Resource<Texture2D>("Koala");
 		texture->exportToFile(":/Content/Texture_Saved.png");
-		textureSaved = shared_ptr<Texture2D>(new Texture2D(Pixmap("Texture_Saved.png")));
-		renderTarget = new RenderTarget2D(0, 1);
-		testTexture = shared_ptr<Texture2D>(new Texture2D(0, 0));
+		textureSaved = gfx->createTexture(Pixmap("Texture_Saved.png"));
+		renderTarget = gfx->createRenderTarget(0, 1);
+		testTexture = gfx->createTexture(0, 0);
 	}
 
 	void onEnd(GameEvent *e)
