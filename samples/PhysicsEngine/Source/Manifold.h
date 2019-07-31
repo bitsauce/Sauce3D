@@ -14,6 +14,13 @@ public:
 	{
 	}
 
+	void swapShapes()
+	{
+		Shape *tmp = a;
+		const_cast<Shape*>(a) = b;
+		const_cast<Shape*>(b) = tmp;
+	}
+
 	Shape * const a;
 	Shape * const b;
 	float penetration;

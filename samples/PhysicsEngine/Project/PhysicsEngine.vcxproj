@@ -177,6 +177,7 @@
     <ClCompile Include="..\Source\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Body.h" />
     <ClInclude Include="..\Source\Manifold.h" />
     <ClInclude Include="..\Source\Shapes.h" />
   </ItemGroup>
