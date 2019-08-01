@@ -88,9 +88,10 @@ class SpriteBatch;
 class SAUCE_API DrawEvent : public Event
 {
 public:
-	DrawEvent(const float alpha, GraphicsContext *graphicsContext) :
+	DrawEvent(const float alpha, const float delta, GraphicsContext *graphicsContext) :
 		Event(EVENT_DRAW),
 		m_alpha(alpha),
+		m_delta(delta),
 		m_graphicsContext(graphicsContext)
 	{
 	}
@@ -100,13 +101,18 @@ public:
 		return m_alpha;
 	}
 
+	float getDelta() const
+	{
+		return m_delta;
+	}
+
 	GraphicsContext *getGraphicsContext() const
 	{
 		return m_graphicsContext;
 	}
 
 private:
-	const float m_alpha;
+	const float m_alpha, m_delta;
 	GraphicsContext *m_graphicsContext;
 };
 

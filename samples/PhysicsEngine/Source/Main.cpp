@@ -168,7 +168,7 @@ public:
 	{
 		// Create test scene
 		{
-			Circle *circle1 = new Circle;
+			/*Circle *circle1 = new Circle;
 			circle1->setCenter(Vector2F(100.f, 100.f));
 			circle1->setRadius(25.0f);
 			shapes.push_back(circle1);
@@ -187,7 +187,7 @@ public:
 			box2->setCenter(Vector2F(400.0f, 400.0f));
 			box2->setSize(Vector2F(150.0f, 100.0f));
 			shapes.push_back(box2);
-
+			*/
 			Vector2I size = getWindow()->getSize();
 
 			Box *ground = new Box;
@@ -239,7 +239,7 @@ public:
 		Vector2F gravity(0.0f, 150.0f * e->getDelta());
 		for(Shape *shape : shapes)
 		{
-			if(shape->getMass() > 0)
+			if(!shape->isStatic())
 			{
 				shape->setVelocity(shape->getVelocity() + gravity);
 			}
@@ -254,18 +254,27 @@ public:
 			{
 				Shape *otherShape = shapes[j];
 
+				// Skip collision between static objects
+				if(shape->isStatic() && otherShape->isStatic())
+					continue;
+
 				Manifold manifold(shape, otherShape);
 				m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
 				if(manifold.contactCount > 0)
 				{
 					ResolveCollision(&manifold);
+					CorrectPositions(&manifold);
 					colliding = true;
 				}
 			}
 			shape->m_isColliding = colliding;
-			
+		}
+
+		for(Shape *shape : shapes)
+		{
 			shape->move(shape->getVelocity() * e->getDelta());
 		}
+
 		Game::onTick(e);
 	}
 
@@ -313,6 +322,20 @@ public:
 		b->setVelocity(b->getVelocity() + impulse * b->getMassInv());
 	}
 
+	void CorrectPositions(Manifold *m)
+	{
+		// Get manifold shapes
+		Shape *a = m->a;
+		Shape *b = m->b;
+
+		// Correct the positions
+		const float slop = 0.01;    // Usually 0.01 to 0.1
+		const float percent = 0.5f; // Usually 20% to 80%
+		Vector2F correction = m->normal * percent * max(m->penetration - slop, 0.0f) / (a->getMassInv() + b->getMassInv());
+		a->setCenter(a->getCenter() - correction * a->getMassInv());
+		b->setCenter(b->getCenter() + correction * b->getMassInv());
+	}
+
 	void onMouseDown(MouseEvent *e)
 	{
 		Vector2F inputPos = e->getPosition();
@@ -334,6 +357,45 @@ public:
 	void onMouseMove(MouseEvent *e)
 	{
 		m_lastMousePosition = e->getPosition();
+	}
+
+	void onKeyDown(KeyEvent *e)
+	{
+		switch(e->getKeycode())
+		{
+			case Keycode::SAUCE_KEY_1:
+			{
+				Circle *circle = new Circle;
+				circle->setCenter(e->getInputManager()->getPosition());
+				circle->setRadius(25.0f);
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					circle->setMass(0.0f);
+				}
+				shapes.push_back(circle);
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_2:
+			{
+				Box *box = new Box;
+				box->setCenter(e->getInputManager()->getPosition());
+				box->setSize(Vector2F(50.0f, 50.0f));
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					box->setMass(0.0f);
+				}
+				shapes.push_back(box);
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_R:
+			{
+				cleanScene();
+				setupScene();
+			}
+			break;
+		}
 	}
 };
 

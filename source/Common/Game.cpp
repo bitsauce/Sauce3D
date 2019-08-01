@@ -454,7 +454,7 @@ int Game::run(const GameDesc &desc)
 			// Draw the game
 			const double alpha = accumulator / dt;
 			{
-				DrawEvent e(alpha, graphicsContext);
+				DrawEvent e(alpha, dt, graphicsContext);
 				onEvent(&e);
 			}
 			SDL_GL_SwapWindow(mainWindow->getSDLHandle());

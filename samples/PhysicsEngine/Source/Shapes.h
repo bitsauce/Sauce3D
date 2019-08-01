@@ -35,6 +35,7 @@ public:
 	float getMass() const { return m_mass; }
 	float getMassInv() const { return m_massInv; }
 	void setMass(const float mass) { m_mass = mass; m_massInv = mass > 0.0f ? 1.0f / mass : 0.0f; }
+	bool isStatic() const { return m_mass <= 0.0f; }
 
 	float getRestitution() const { return m_restitution; }
 	float setRestitution(const float restitution) { m_restitution = restitution; }

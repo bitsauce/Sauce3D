@@ -34,6 +34,7 @@
 **	Include	STL														**
 **********************************************************************/
 #ifdef SAUCE_COMPILE_WINDOWS
+	#define NOMINMAX
 	#include <string>
 	#include <vector>
 	#include <list>
