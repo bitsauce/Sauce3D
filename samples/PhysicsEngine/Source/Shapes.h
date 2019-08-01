@@ -43,6 +43,9 @@ public:
 	Vector2F getVelocity() const { return m_velocity; }
 	void setVelocity(const Vector2F velocity) { m_velocity = velocity; }
 
+	float staticFriction = 0.2f;
+	float dynamicFriction = 0.1f;
+
 private:
 	const Type m_type;
 	float m_mass, m_massInv;

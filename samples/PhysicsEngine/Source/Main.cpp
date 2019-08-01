@@ -16,6 +16,16 @@ using namespace sauce;
 // [ ] Add rotated circles
 // [ ] Add rotated polygons
 
+/*
+	Rock       Density : 0.6  Restitution : 0.1
+	Wood       Density : 0.3  Restitution : 0.2
+	Metal      Density : 1.2  Restitution : 0.05
+	BouncyBall Density : 0.3  Restitution : 0.8
+	SuperBall  Density : 0.3  Restitution : 0.95
+	Pillow     Density : 0.1  Restitution : 0.2
+	Static     Density : 0.0  Restitution : 0.4
+*/
+
 namespace manifolds
 {
 	void CircleToCircle(Manifold *m)
@@ -301,25 +311,57 @@ public:
 		Shape *b = m->b;
 
 		// Calculate relative velocity
-		Vector2F relativeVel = b->getVelocity() - a->getVelocity();
+		Vector2F relativeVelocity = b->getVelocity() - a->getVelocity();
 
 		// Calculate relative velocity in terms of the normal direction
-		float velAlongNormal = relativeVel.dot(m->normal);
+		float velocityAlongNormal = relativeVelocity.dot(m->normal);
 
 		// Do not resolve if velocities are separating
-		if(velAlongNormal >= 0.0f)
+		if(velocityAlongNormal >= 0.0f)
 			return;
 
 		// Calculate restitution
 		float e = min(a->getRestitution(), b->getRestitution());
 
 		// Calculate impulse scalar
-		float j = (-(1 + e) * velAlongNormal) / (a->getMassInv() + b->getMassInv());
+		float j = (-(1 + e) * velocityAlongNormal) / (a->getMassInv() + b->getMassInv());
 
 		// Apply impulse
 		Vector2F impulse = m->normal * j;
 		a->setVelocity(a->getVelocity() - impulse * a->getMassInv());
 		b->setVelocity(b->getVelocity() + impulse * b->getMassInv());
+
+		// Calculate relative velocity
+		relativeVelocity = b->getVelocity() - a->getVelocity();
+
+		// Find a tangent in the direction of the relative velocity
+		Vector2F tangent = relativeVelocity - m->normal * relativeVelocity.dot(m->normal);
+		tangent.normalize();
+
+		// Solve for magnitude to apply along the friction vector
+		float jt = -relativeVelocity.dot(tangent);
+		jt /= a->getMassInv() + b->getMassInv();
+
+		// Approximate mu given friction coefficients of each body
+		float mu = std::sqrt(a->staticFriction * a->staticFriction +
+							 b->staticFriction * b->staticFriction);
+
+		// Clamp magnitude of friction and calculate impulse vector
+		Vector2F frictionImpulse;
+		if(abs(jt) < j * mu)
+		{
+			frictionImpulse = tangent * jt;
+		}
+		else
+		{
+			mu = std::sqrt(a->dynamicFriction * a->dynamicFriction +
+						   b->dynamicFriction * b->dynamicFriction);
+			frictionImpulse = tangent * -j * mu;
+		}
+
+		// Apply impulse
+		a->setVelocity(a->getVelocity() - frictionImpulse * a->getMassInv());
+		b->setVelocity(b->getVelocity() + frictionImpulse * b->getMassInv());
 	}
 
 	void CorrectPositions(Manifold *m)
