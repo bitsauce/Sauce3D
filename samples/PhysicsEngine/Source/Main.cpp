@@ -4,14 +4,16 @@
 
 using namespace sauce;
 
+//#define DISABLE_RESOLUTION
+
 // TODO:
 // [x] Add static objects
 // [ ] Fix sinking
-// [ ] Verify that integration is implemented correctly (hint: delta time?)
+// [x] Verify that integration is implemented correctly (hint: delta time?)
 // [x] Add gravity
-// [ ] Add a gravity scale variable
+// [x] Add a gravity scale variable
 // [ ] Consider adding ImGui
-// [ ] Add friction
+// [x] Add friction
 // [ ] Add rotated boxes
 // [ ] Add rotated circles
 // [ ] Add rotated polygons
@@ -164,6 +166,282 @@ namespace manifolds
 			}
 		}
 	}
+
+	//void AABBToOBB(Manifold *m)
+	//{
+	//	/*
+	//	SAT:
+	//	In order to confirm a collision, overlapping on all axes has to be true -- if there's any axis without an overlap, we can conclude that there's no collision.
+	//	4 normals/directions/axes to check, 2 per box
+	//	*/
+	//	Box *a = dynamic_cast<Box*>(m->a);
+	//	Box *b = dynamic_cast<Box*>(m->b);
+
+	//	a->debugPoints.clear();
+	//	b->debugPoints.clear();
+
+	//	// Calculate vector from a to b
+	//	Vector2F deltaPositions = b->getCenter() - a->getCenter();
+
+	//	Vector2F axes[4];
+	//	Vector2F normalsOfA[4], normalsOfB[4];
+	//	a->getTransformedNormals(normalsOfA);
+	//	b->getTransformedNormals(normalsOfB);
+	//	axes[0] = normalsOfA[0].dot(deltaPositions) > 0.0f ? normalsOfA[0] : normalsOfA[2];
+	//	axes[1] = normalsOfA[1].dot(deltaPositions) > 0.0f ? normalsOfA[1] : normalsOfA[3];
+	//	axes[2] = normalsOfB[0].dot(deltaPositions) > 0.0f ? normalsOfB[0] : normalsOfB[2];
+	//	axes[3] = normalsOfB[1].dot(deltaPositions) > 0.0f ? normalsOfB[1] : normalsOfB[3];
+	//	
+	//	Vector2F cornersOfA[4], cornersOfB[4];
+	//	a->getCornerVectors(cornersOfA);
+	//	b->getCornerVectors(cornersOfB);
+
+	//	// For each axis
+	//	float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
+	//	int minPCornerA = -1; int minPCornerB = -1;
+	//	for(int i = 0; i < 4; i++)
+	//	{
+	//		Vector2F axis = axes[i];
+
+	//		// Find min and max extents when projected onto the axis
+	//		float halfWidthOfA;
+	//		int minCornerA = -1;
+	//		{
+	//			float dotMin = FLT_MAX;
+	//			float dotMax = -FLT_MAX;
+	//			for(int j = 0; j < 4; j++)
+	//			{
+	//				float dot = axis.dot(cornersOfA[j]);
+	//				if(dot > dotMax)
+	//				{
+	//					dotMax = dot;
+	//					minCornerA = j;
+	//				}
+	//				if(dot < dotMin)
+	//				{
+	//					dotMin = dot;
+	//				}
+	//			}
+	//			halfWidthOfA = (dotMax - dotMin) * 0.5f;
+	//		}
+	//		float halfWidthOfB;
+	//		{
+	//			float dotMin = FLT_MAX;
+	//			float dotMax = -FLT_MAX;
+	//			for(int j = 0; j < 4; j++)
+	//			{
+	//				float dot = axis.dot(cornersOfB[j]);
+	//				if(dot > dotMax)
+	//				{
+	//					dotMax = dot;
+	//				}
+	//				if(dot < dotMin)
+	//				{
+	//					dotMin = dot;
+	//				}
+	//			}
+	//			halfWidthOfB = (dotMax - dotMin) * 0.5f;
+	//		}
+
+	//		float projectedDistance = abs(axis.dot(deltaPositions)); // Find distance between A and B along the axis
+	//		float penetration = halfWidthOfA + halfWidthOfB - projectedDistance;
+
+	//		// SAT: Return if no overlap along this axis
+	//		if(penetration < 0.0f)
+	//			return;
+
+	//		if(penetration < minPenetration)
+	//		{
+	//			minPenetration = penetration;
+	//			minPenetrationAxis = i;
+	//			minPCornerA = minCornerA;
+	//		}
+	//	}
+
+	//	a->debugPoints.push_back(a->getCenter() + cornersOfA[minPCornerA]);
+
+	//	m->normal = axes[minPenetrationAxis];
+	//	m->contactPoint = a->getCenter() + axes[minPenetrationAxis];
+	//	m->penetration = minPenetration;
+	//	m->contactCount += 1;
+	//}
+
+	float GetFarthestPoint(Vector2F *corners, Vector2F dir, int *index)
+	{
+		float maxDist = -FLT_MAX;
+		for(int i = 0; i < 4; i++)
+		{
+			float dist = corners[i].dot(dir);
+			if(dist > maxDist)
+			{
+				maxDist = dist;
+				*index = i;
+			}
+		}
+		return maxDist;
+	}
+
+	void AABBToOBB(Manifold *m)
+	{
+		/*
+		SAT:
+		In order to confirm a collision, overlapping on all axes has to be true -- if there's any axis without an overlap, we can conclude that there's no collision.
+		4 normals/directions/axes to check, 2 per box
+		*/
+		Box *a = dynamic_cast<Box*>(m->a);
+		Box *b = dynamic_cast<Box*>(m->b);
+
+		a->debugPoints.clear();
+		b->debugPoints.clear();
+
+		// Calculate vector from a to b
+		Vector2F deltaPositions = b->getCenter() - a->getCenter();
+
+		Vector2F axes[4];
+		Vector2F normalsOfA[4], normalsOfB[4];
+		a->getTransformedNormals(normalsOfA);
+		b->getTransformedNormals(normalsOfB);
+		axes[0] = normalsOfA[0].dot(deltaPositions) > 0.0f ? normalsOfA[0] : normalsOfA[2];
+		axes[1] = normalsOfA[1].dot(deltaPositions) > 0.0f ? normalsOfA[1] : normalsOfA[3];
+		axes[2] = normalsOfB[0].dot(deltaPositions) > 0.0f ? normalsOfB[0] : normalsOfB[2];
+		axes[3] = normalsOfB[1].dot(deltaPositions) > 0.0f ? normalsOfB[1] : normalsOfB[3];
+
+		Vector2F cornersOfA[4], cornersOfB[4];
+		a->getCornerVectors(cornersOfA);
+		b->getCornerVectors(cornersOfB);
+
+		// For each axis
+		float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
+		for(int i = 0; i < 4; i++)
+		{
+			Vector2F axis = axes[i];
+
+			// Find min and max extents when projected onto the axis
+			float halfWidthOfA;
+			{
+				float dotMin = FLT_MAX;
+				float dotMax = -FLT_MAX;
+				for(int j = 0; j < 4; j++)
+				{
+					float dot = axis.dot(cornersOfA[j]);
+					if(dot > dotMax)
+					{
+						dotMax = dot;
+					}
+					if(dot < dotMin)
+					{
+						dotMin = dot;
+					}
+				}
+				halfWidthOfA = (dotMax - dotMin) * 0.5f;
+			}
+
+			float halfWidthOfB;
+			{
+				float dotMin = FLT_MAX;
+				float dotMax = -FLT_MAX;
+				for(int j = 0; j < 4; j++)
+				{
+					float dot = axis.dot(cornersOfB[j]);
+					if(dot > dotMax)
+					{
+						dotMax = dot;
+					}
+					if(dot < dotMin)
+					{
+						dotMin = dot;
+					}
+				}
+				halfWidthOfB = (dotMax - dotMin) * 0.5f;
+			}
+
+			float projectedDistance = abs(axis.dot(deltaPositions)); // Find distance between A and B along the axis
+			float penetration = halfWidthOfA + halfWidthOfB - projectedDistance;
+
+			// SAT: Return if no overlap along this axis
+			if(penetration < 0.0f)
+				return;
+
+			if(penetration < minPenetration)
+			{
+				minPenetration = penetration;
+				minPenetrationAxis = i;
+			}
+		}
+
+		m->normal = axes[minPenetrationAxis];
+
+		// Find the vertex farthest along -n for object b
+		int farthestCornerOfB = -1;
+		GetFarthestPoint(cornersOfB, -m->normal, &farthestCornerOfB);
+
+		// Find the vertex farthest along +n for object a
+		int farthestCornerOfA = -1;
+		GetFarthestPoint(cornersOfA, m->normal, &farthestCornerOfA);
+
+		// Determine best edge of a and b by considering the edges
+		// neighbouring the fartest vertices, and picking the ones
+		// that most aligns with the collision normal
+		Box::Edge edges[2];
+		
+		a->getAdjacentEdges(farthestCornerOfA, normalsOfA, edges);
+		int referenceEdgeIdxA = m->normal.dot(edges[0].n) > m->normal.dot(edges[1].n) ? 0 : 1;
+		Box::Edge referenceEdgeA = edges[referenceEdgeIdxA];
+
+		b->getAdjacentEdges(farthestCornerOfB, normalsOfB, edges);
+		int referenceEdgeIdxB = m->normal.dot(edges[0].n) < m->normal.dot(edges[1].n) ? 0 : 1;
+		Box::Edge referenceEdgeB = edges[referenceEdgeIdxB];
+
+		// Determine reference and incident edge
+		// The reference edge is the edge most
+		// perpendicular to the separation normal
+		Box::Edge ref, inc;
+		bool flip = false;
+		Vector2F *cornersOfRef, *cornersOfInc;
+		if(abs(referenceEdgeA.n.dot(m->normal)) <= abs(referenceEdgeB.n.dot(m->normal)))
+		{
+			ref = referenceEdgeA; cornersOfRef = cornersOfA;
+			inc = referenceEdgeB; cornersOfInc = cornersOfB;
+		}
+		else
+		{
+			ref = referenceEdgeB; cornersOfRef = cornersOfB;
+			inc = referenceEdgeA; cornersOfInc = cornersOfA;
+			flip = true;
+		}
+
+		//Vector2F refv = Vector2F(-ref.n.y, ref.n.x);
+		//double o1 = refv.dot(cornersOfRef[ref.v0]);
+		//clip(inc.v0, inc.v1, refv, o1);
+
+
+		if(flip)
+		{
+		}
+
+		for(int i = 0; i < 4; i++)
+		{
+			normalsOfA[i];
+		}
+
+		a->getAdjacentEdges(referenceEdgeA.v0, normalsOfA, edges);
+		Box::Edge incidentEdge1 = edges[0]; // Counter-clockwise incident edge
+		a->getAdjacentEdges(referenceEdgeA.v1, normalsOfA, edges);
+		Box::Edge incidentEdge2 = edges[1]; // Clockwise incident edge
+
+		Vector2F contactPoint =
+			a->getCenter() + cornersOfA[referenceEdgeA.v0] + a->getCenter() + cornersOfA[referenceEdgeA.v1] +
+			b->getCenter() + cornersOfB[referenceEdgeB.v0] + b->getCenter() + cornersOfB[referenceEdgeB.v1];
+		contactPoint /= 4;
+		m->contactPoints.push_back(contactPoint);
+
+		//m->contactPoints.push_back(a->getCenter() + cornersOfA[edgesA[bestEdgeA].v0]);
+		//m->contactPoints.push_back(a->getCenter() + cornersOfA[edgesA[bestEdgeA].v1]);
+		//m->contactPoints.push_back(b->getCenter() + cornersOfB[edgesB[bestEdgeB].v0]);
+		//m->contactPoints.push_back(b->getCenter() + cornersOfB[edgesB[bestEdgeB].v1]);
+		m->penetration = minPenetration;
+		m->contactCount += 1;
+	}
 }
 
 class PhysicsEngineGame : public Game
@@ -172,6 +450,11 @@ class PhysicsEngineGame : public Game
 	Shape *selectedShape;
 	Vector2F m_lastMousePosition;
 	function<void(Manifold*)> m_manifoldGenerationFunctionTable[Shape::NUM_SHAPES][Shape::NUM_SHAPES];
+
+	list<Manifold> m_manifolds;
+
+	//Vector2F gravity = Vector2F(0.0f, 0.0f);
+	Vector2F gravity = Vector2F(0.0f, 150.0f);
 
 public:
 	void setupScene()
@@ -204,6 +487,7 @@ public:
 			ground->setCenter(Vector2F(size.x * 0.5f, size.y - 10.0f));
 			ground->setSize(Vector2F(size.x, 20.0f));
 			ground->setMass(0.0f);
+			ground->setInertia(0.0f);
 			shapes.push_back(ground);
 		}
 
@@ -223,8 +507,10 @@ public:
 	void onStart(GameEvent *e)
 	{
 		setupScene();
+		
+		getWindow()->getGraphicsContext()->setPointSize(5.0f);
 
-		m_manifoldGenerationFunctionTable[Shape::BOX][Shape::BOX] = manifolds::AABBToAABB;
+		m_manifoldGenerationFunctionTable[Shape::BOX][Shape::BOX] = manifolds::AABBToOBB;//manifolds::AABBToAABB;
 		m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::BOX] = manifolds::CircleToAABB;
 		m_manifoldGenerationFunctionTable[Shape::BOX][Shape::CIRCLE] = manifolds::AABBToCircle;
 		m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::CIRCLE] = manifolds::CircleToCircle;
@@ -246,19 +532,20 @@ public:
 		}
 
 		// Apply gravity to all shapes
-		Vector2F gravity(0.0f, 150.0f * e->getDelta());
 		for(Shape *shape : shapes)
 		{
 			if(!shape->isStatic())
 			{
-				shape->setVelocity(shape->getVelocity() + gravity);
+				shape->setVelocity(shape->getVelocity() + gravity * e->getDelta());
 			}
+			shape->m_isColliding = false;
 		}
+
+		m_manifolds.clear();
 
 		// Broadphase - Find and resolve all colliding shapes
 		for(int i = 0; i < shapes.size(); i++)
 		{
-			bool colliding = false;
 			Shape *shape = shapes[i];
 			for(int j = i + 1; j < shapes.size(); j++)
 			{
@@ -272,17 +559,20 @@ public:
 				m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
 				if(manifold.contactCount > 0)
 				{
+#ifndef DISABLE_RESOLUTION
 					ResolveCollision(&manifold);
 					CorrectPositions(&manifold);
-					colliding = true;
+#endif // DISABLE_RESOLUTION
+					m_manifolds.push_back(manifold);
+					shape->m_isColliding = otherShape->m_isColliding = true;
 				}
 			}
-			shape->m_isColliding = colliding;
 		}
 
 		for(Shape *shape : shapes)
 		{
 			shape->move(shape->getVelocity() * e->getDelta());
+			shape->rotate(shape->getAngularVelocity() * e->getDelta());
 		}
 
 		Game::onTick(e);
@@ -292,76 +582,121 @@ public:
 	{
 		for(Shape *shape : shapes)
 		{
-			//Color c = shape->colliding ? Color::Blue : Color::White;
+			Color color = shape->m_isColliding ? Color::Blue : Color::White;
 			
 			// Render shape
-			Color color = Color::White;
+			//Color color = Color::White;
 			shape->draw(e->getGraphicsContext(), color);
 
 			// Draw velocity arrow
 			e->getGraphicsContext()->drawArrow(shape->getCenter(), shape->getCenter() + shape->getVelocity() * 0.1f, Color::Red);
 		}
+
+		for(Manifold &m : m_manifolds)
+		{
+			for(Vector2F contactPoint : m.contactPoints)
+			{
+				Vertex v;
+				v.set2f(VERTEX_POSITION, contactPoint.x, contactPoint.y);
+				v.set4ub(VERTEX_COLOR, 255, 255, 0, 255);
+				e->getGraphicsContext()->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
+				e->getGraphicsContext()->drawArrow(contactPoint, contactPoint + m.normal * 15.0f, Color::Red);
+			}
+		}
+
 		Game::onDraw(e);
+	}
+
+	Vector2F perp(const Vector2F &v)
+	{
+		return Vector2F(-v.y, v.x);
 	}
 
 	void ResolveCollision(Manifold *m)
 	{
-		// Get manifold shapes
-		Shape *a = m->a;
-		Shape *b = m->b;
-
-		// Calculate relative velocity
-		Vector2F relativeVelocity = b->getVelocity() - a->getVelocity();
-
-		// Calculate relative velocity in terms of the normal direction
-		float velocityAlongNormal = relativeVelocity.dot(m->normal);
-
-		// Do not resolve if velocities are separating
-		if(velocityAlongNormal >= 0.0f)
-			return;
-
-		// Calculate restitution
-		float e = min(a->getRestitution(), b->getRestitution());
-
-		// Calculate impulse scalar
-		float j = (-(1 + e) * velocityAlongNormal) / (a->getMassInv() + b->getMassInv());
-
-		// Apply impulse
-		Vector2F impulse = m->normal * j;
-		a->setVelocity(a->getVelocity() - impulse * a->getMassInv());
-		b->setVelocity(b->getVelocity() + impulse * b->getMassInv());
-
-		// Calculate relative velocity
-		relativeVelocity = b->getVelocity() - a->getVelocity();
-
-		// Find a tangent in the direction of the relative velocity
-		Vector2F tangent = relativeVelocity - m->normal * relativeVelocity.dot(m->normal);
-		tangent.normalize();
-
-		// Solve for magnitude to apply along the friction vector
-		float jt = -relativeVelocity.dot(tangent);
-		jt /= a->getMassInv() + b->getMassInv();
-
-		// Approximate mu given friction coefficients of each body
-		float mu = std::sqrt(a->staticFriction * a->staticFriction +
-							 b->staticFriction * b->staticFriction);
-
-		// Clamp magnitude of friction and calculate impulse vector
-		Vector2F frictionImpulse;
-		if(abs(jt) < j * mu)
+		float numContacts = m->contactPoints.size();
+		for(Vector2F contactPoint : m->contactPoints)
 		{
-			frictionImpulse = tangent * jt;
-		}
-		else
-		{
-			mu = std::sqrt(a->dynamicFriction * a->dynamicFriction +
-						   b->dynamicFriction * b->dynamicFriction);
-			frictionImpulse = tangent * -j * mu;
-		}
+			// Get manifold shapes
+			Shape *a = m->a;
+			Shape *b = m->b;
 
-		// Apply impulse
-		a->setVelocity(a->getVelocity() - frictionImpulse * a->getMassInv());
-		b->setVelocity(b->getVelocity() + frictionImpulse * b->getMassInv());
+			Vector2F rAP = contactPoint - a->getCenter();
+			Vector2F rBP = contactPoint - b->getCenter();
+
+			// Calculate relative velocity
+			Vector2F relativeVelocity =
+				b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
+				a->getVelocity() - perp(rAP) * a->getAngularVelocity();
+
+			// Calculate relative velocity in terms of the normal direction
+			float velocityAlongNormal = relativeVelocity.dot(m->normal);
+
+			// Do not resolve if velocities are separating
+			if(velocityAlongNormal >= 0.0f)
+				return;
+
+			// Calculate restitution
+			float e = min(a->getRestitution(), b->getRestitution());
+
+			// Calculate impulse scalar
+			float j = -(1.0f + e) * velocityAlongNormal;
+
+			float rAPcrossN = rAP.cross(m->normal);
+			float rBPcrossN = rBP.cross(m->normal);
+			float sumInvMass = a->getMassInv() + b->getMassInv() + (rAPcrossN * rAPcrossN * a->getInertiaInv()) + (rBPcrossN * rBPcrossN * b->getInertiaInv());
+
+			j /= sumInvMass;
+			j /= numContacts;
+
+			// Apply impulse
+			Vector2F impulse = m->normal * j;
+			a->setVelocity(a->getVelocity() - impulse * a->getMassInv());
+			b->setVelocity(b->getVelocity() + impulse * b->getMassInv());
+
+			// Apply angular impulse
+			a->setAngularVelocity(a->getAngularVelocity() - rAP.cross(impulse) * a->getInertiaInv());
+			b->setAngularVelocity(b->getAngularVelocity() + rBP.cross(impulse) * b->getInertiaInv());
+
+			// Calculate relative velocity
+			relativeVelocity =
+				b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
+				a->getVelocity() - perp(rAP) * a->getAngularVelocity();
+
+			// Find a tangent in the direction of the relative velocity
+			Vector2F tangent = relativeVelocity - m->normal * relativeVelocity.dot(m->normal);
+			tangent.normalize();
+
+			// Solve for magnitude to apply along the friction vector
+			float jt = -relativeVelocity.dot(tangent);
+			jt /= sumInvMass;
+			jt /= numContacts;
+
+			// Approximate mu given friction coefficients of each body
+			float mu = std::sqrt(a->staticFriction * a->staticFriction +
+								 b->staticFriction * b->staticFriction);
+
+			// Clamp magnitude of friction and calculate impulse vector
+			Vector2F frictionImpulse;
+			if(abs(jt) < j * mu)
+			{
+				frictionImpulse = tangent * jt;
+			}
+			else
+			{
+				mu = std::sqrt(a->dynamicFriction * a->dynamicFriction +
+							   b->dynamicFriction * b->dynamicFriction);
+				frictionImpulse = tangent * -j * mu;
+			}
+
+			// Apply impulse
+			a->setVelocity(a->getVelocity() - frictionImpulse * a->getMassInv());
+			b->setVelocity(b->getVelocity() + frictionImpulse * b->getMassInv());
+
+			// Apply angular impulse
+			a->setAngularVelocity(a->getAngularVelocity() - rAP.cross(frictionImpulse) * a->getInertiaInv());
+			b->setAngularVelocity(b->getAngularVelocity() + rBP.cross(frictionImpulse) * b->getInertiaInv());
+		}
 	}
 
 	void CorrectPositions(Manifold *m)
@@ -399,6 +734,15 @@ public:
 	void onMouseMove(MouseEvent *e)
 	{
 		m_lastMousePosition = e->getPosition();
+	}
+
+	void onMouseWheel(MouseEvent *e)
+	{
+		if(selectedShape)
+		{
+			const float rotationalSpeed = 5.0f;
+			selectedShape->m_angle += e->getWheelY() * rotationalSpeed;
+		}		
 	}
 
 	void onKeyDown(KeyEvent *e)

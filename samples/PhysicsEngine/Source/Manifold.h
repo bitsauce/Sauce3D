@@ -25,5 +25,6 @@ public:
 	Shape * const b;
 	float penetration;
 	Vector2F normal;
+	list<Vector2F> contactPoints;
 	int contactCount;
 };
