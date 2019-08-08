@@ -4,17 +4,16 @@
 
 using namespace sauce;
 
-//#define DISABLE_RESOLUTION
-
 // TODO:
 // [x] Add static objects
-// [ ] Fix sinking
+// [-] Fix sinking
 // [x] Verify that integration is implemented correctly (hint: delta time?)
+// [ ] Should impulses be multiplied with delta (maybe not as an impulse is technically not the same as acceleration?)
 // [x] Add gravity
 // [x] Add a gravity scale variable
 // [ ] Consider adding ImGui
 // [x] Add friction
-// [ ] Add rotated boxes
+// [x] Add rotated boxes
 // [ ] Add rotated circles
 // [ ] Add rotated polygons
 
@@ -167,118 +166,41 @@ namespace manifolds
 		}
 	}
 
-	//void AABBToOBB(Manifold *m)
-	//{
-	//	/*
-	//	SAT:
-	//	In order to confirm a collision, overlapping on all axes has to be true -- if there's any axis without an overlap, we can conclude that there's no collision.
-	//	4 normals/directions/axes to check, 2 per box
-	//	*/
-	//	Box *a = dynamic_cast<Box*>(m->a);
-	//	Box *b = dynamic_cast<Box*>(m->b);
-
-	//	a->debugPoints.clear();
-	//	b->debugPoints.clear();
-
-	//	// Calculate vector from a to b
-	//	Vector2F deltaPositions = b->getCenter() - a->getCenter();
-
-	//	Vector2F axes[4];
-	//	Vector2F normalsOfA[4], normalsOfB[4];
-	//	a->getTransformedNormals(normalsOfA);
-	//	b->getTransformedNormals(normalsOfB);
-	//	axes[0] = normalsOfA[0].dot(deltaPositions) > 0.0f ? normalsOfA[0] : normalsOfA[2];
-	//	axes[1] = normalsOfA[1].dot(deltaPositions) > 0.0f ? normalsOfA[1] : normalsOfA[3];
-	//	axes[2] = normalsOfB[0].dot(deltaPositions) > 0.0f ? normalsOfB[0] : normalsOfB[2];
-	//	axes[3] = normalsOfB[1].dot(deltaPositions) > 0.0f ? normalsOfB[1] : normalsOfB[3];
-	//	
-	//	Vector2F cornersOfA[4], cornersOfB[4];
-	//	a->getCornerVectors(cornersOfA);
-	//	b->getCornerVectors(cornersOfB);
-
-	//	// For each axis
-	//	float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
-	//	int minPCornerA = -1; int minPCornerB = -1;
-	//	for(int i = 0; i < 4; i++)
-	//	{
-	//		Vector2F axis = axes[i];
-
-	//		// Find min and max extents when projected onto the axis
-	//		float halfWidthOfA;
-	//		int minCornerA = -1;
-	//		{
-	//			float dotMin = FLT_MAX;
-	//			float dotMax = -FLT_MAX;
-	//			for(int j = 0; j < 4; j++)
-	//			{
-	//				float dot = axis.dot(cornersOfA[j]);
-	//				if(dot > dotMax)
-	//				{
-	//					dotMax = dot;
-	//					minCornerA = j;
-	//				}
-	//				if(dot < dotMin)
-	//				{
-	//					dotMin = dot;
-	//				}
-	//			}
-	//			halfWidthOfA = (dotMax - dotMin) * 0.5f;
-	//		}
-	//		float halfWidthOfB;
-	//		{
-	//			float dotMin = FLT_MAX;
-	//			float dotMax = -FLT_MAX;
-	//			for(int j = 0; j < 4; j++)
-	//			{
-	//				float dot = axis.dot(cornersOfB[j]);
-	//				if(dot > dotMax)
-	//				{
-	//					dotMax = dot;
-	//				}
-	//				if(dot < dotMin)
-	//				{
-	//					dotMin = dot;
-	//				}
-	//			}
-	//			halfWidthOfB = (dotMax - dotMin) * 0.5f;
-	//		}
-
-	//		float projectedDistance = abs(axis.dot(deltaPositions)); // Find distance between A and B along the axis
-	//		float penetration = halfWidthOfA + halfWidthOfB - projectedDistance;
-
-	//		// SAT: Return if no overlap along this axis
-	//		if(penetration < 0.0f)
-	//			return;
-
-	//		if(penetration < minPenetration)
-	//		{
-	//			minPenetration = penetration;
-	//			minPenetrationAxis = i;
-	//			minPCornerA = minCornerA;
-	//		}
-	//	}
-
-	//	a->debugPoints.push_back(a->getCenter() + cornersOfA[minPCornerA]);
-
-	//	m->normal = axes[minPenetrationAxis];
-	//	m->contactPoint = a->getCenter() + axes[minPenetrationAxis];
-	//	m->penetration = minPenetration;
-	//	m->contactCount += 1;
-	//}
-
-	float GetFarthestPoint(Vector2F *corners, Vector2F dir, int *index)
+	PhysicsPolygon::Vertex *GetFarthestPoint(PhysicsPolygon *polygon, Vector2F dir)
 	{
 		float maxDist = -FLT_MAX;
+		int index = 0;
 		for(int i = 0; i < 4; i++)
 		{
-			float dist = corners[i].dot(dir);
+			float dist = polygon->vertices[i]->position.dot(dir);
 			if(dist > maxDist)
 			{
 				maxDist = dist;
-				*index = i;
+				index = i;
 			}
 		}
-		return maxDist;
+		return polygon->vertices[index];
+	}
+
+	vector<Vector2F> ClipEdge(Vector2F v0, Vector2F v1, Vector2F n, float o)
+	{
+		vector<Vector2F> clipEdges;
+		clipEdges.reserve(2);
+
+		float d0 = n.dot(v0) - o;
+		float d1 = n.dot(v1) - o;
+
+		if(d0 >= 0.0f) clipEdges.push_back(v0);
+		if(d1 >= 0.0f) clipEdges.push_back(v1);
+
+		if(d0 * d1 < 0.0f)
+		{
+			float u = d0 / (d0 - d1);
+			Vector2F e = (v1 - v0) * u + v0;
+			clipEdges.push_back(e);
+		}
+
+		return clipEdges;
 	}
 
 	void AABBToOBB(Manifold *m)
@@ -297,18 +219,17 @@ namespace manifolds
 		// Calculate vector from a to b
 		Vector2F deltaPositions = b->getCenter() - a->getCenter();
 
-		Vector2F axes[4];
-		Vector2F normalsOfA[4], normalsOfB[4];
-		a->getTransformedNormals(normalsOfA);
-		b->getTransformedNormals(normalsOfB);
-		axes[0] = normalsOfA[0].dot(deltaPositions) > 0.0f ? normalsOfA[0] : normalsOfA[2];
-		axes[1] = normalsOfA[1].dot(deltaPositions) > 0.0f ? normalsOfA[1] : normalsOfA[3];
-		axes[2] = normalsOfB[0].dot(deltaPositions) > 0.0f ? normalsOfB[0] : normalsOfB[2];
-		axes[3] = normalsOfB[1].dot(deltaPositions) > 0.0f ? normalsOfB[1] : normalsOfB[3];
+		// TODO: Fix memory leak here
+		PhysicsPolygon polygonA;
+		PhysicsPolygon polygonB;
+		a->getPolygon(&polygonA);
+		b->getPolygon(&polygonB);
 
-		Vector2F cornersOfA[4], cornersOfB[4];
-		a->getCornerVectors(cornersOfA);
-		b->getCornerVectors(cornersOfB);
+		Vector2F axes[4];
+		axes[0] = polygonA.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[0]->normal : polygonA.edges[2]->normal;
+		axes[1] = polygonA.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[1]->normal : polygonA.edges[3]->normal;
+		axes[2] = polygonB.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[0]->normal : polygonB.edges[2]->normal;
+		axes[3] = polygonB.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[1]->normal : polygonB.edges[3]->normal;
 
 		// For each axis
 		float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
@@ -323,7 +244,7 @@ namespace manifolds
 				float dotMax = -FLT_MAX;
 				for(int j = 0; j < 4; j++)
 				{
-					float dot = axis.dot(cornersOfA[j]);
+					float dot = axis.dot(polygonA.vertices[j]->localPosition);
 					if(dot > dotMax)
 					{
 						dotMax = dot;
@@ -342,7 +263,7 @@ namespace manifolds
 				float dotMax = -FLT_MAX;
 				for(int j = 0; j < 4; j++)
 				{
-					float dot = axis.dot(cornersOfB[j]);
+					float dot = axis.dot(polygonB.vertices[j]->localPosition);
 					if(dot > dotMax)
 					{
 						dotMax = dot;
@@ -372,73 +293,69 @@ namespace manifolds
 		m->normal = axes[minPenetrationAxis];
 
 		// Find the vertex farthest along -n for object b
-		int farthestCornerOfB = -1;
-		GetFarthestPoint(cornersOfB, -m->normal, &farthestCornerOfB);
+		PhysicsPolygon::Vertex *farthestCornerOfB = GetFarthestPoint(&polygonB, -m->normal);
 
 		// Find the vertex farthest along +n for object a
-		int farthestCornerOfA = -1;
-		GetFarthestPoint(cornersOfA, m->normal, &farthestCornerOfA);
+		PhysicsPolygon::Vertex *farthestCornerOfA = GetFarthestPoint(&polygonA, m->normal);
 
 		// Determine best edge of a and b by considering the edges
 		// neighbouring the fartest vertices, and picking the ones
-		// that most aligns with the collision normal
-		Box::Edge edges[2];
-		
-		a->getAdjacentEdges(farthestCornerOfA, normalsOfA, edges);
-		int referenceEdgeIdxA = m->normal.dot(edges[0].n) > m->normal.dot(edges[1].n) ? 0 : 1;
-		Box::Edge referenceEdgeA = edges[referenceEdgeIdxA];
+		// that are most perpendicular to the collision normal
 
-		b->getAdjacentEdges(farthestCornerOfB, normalsOfB, edges);
-		int referenceEdgeIdxB = m->normal.dot(edges[0].n) < m->normal.dot(edges[1].n) ? 0 : 1;
-		Box::Edge referenceEdgeB = edges[referenceEdgeIdxB];
+		// Select edge that is most perpendicular to separation normal
+		// out of the two neighbouring edges of the farthest vertex of A
+		PhysicsPolygon::Edge *bestEdgeOfA =
+			abs(farthestCornerOfA->leftEdge->normal.dot(m->normal)) < abs(farthestCornerOfA->rightEdge->normal.dot(m->normal)) ?
+			farthestCornerOfA->leftEdge : farthestCornerOfA->rightEdge;
+
+		// Repeat for B
+		PhysicsPolygon::Edge *bestEdgeOfB =
+			abs(farthestCornerOfB->leftEdge->normal.dot(m->normal)) < abs(farthestCornerOfB->rightEdge->normal.dot(m->normal)) ?
+			farthestCornerOfB->leftEdge : farthestCornerOfB->rightEdge;
 
 		// Determine reference and incident edge
 		// The reference edge is the edge most
 		// perpendicular to the separation normal
-		Box::Edge ref, inc;
+		PhysicsPolygon::Edge *referenceEdge, *incidentEdge;
 		bool flip = false;
-		Vector2F *cornersOfRef, *cornersOfInc;
-		if(abs(referenceEdgeA.n.dot(m->normal)) <= abs(referenceEdgeB.n.dot(m->normal)))
+		if(abs(bestEdgeOfA->normal.dot(m->normal)) < abs(bestEdgeOfB->normal.dot(m->normal)))
 		{
-			ref = referenceEdgeA; cornersOfRef = cornersOfA;
-			inc = referenceEdgeB; cornersOfInc = cornersOfB;
+			referenceEdge = bestEdgeOfA;
+			incidentEdge = bestEdgeOfB;
 		}
 		else
 		{
-			ref = referenceEdgeB; cornersOfRef = cornersOfB;
-			inc = referenceEdgeA; cornersOfInc = cornersOfA;
+			referenceEdge = bestEdgeOfB;
+			incidentEdge = bestEdgeOfA;
 			flip = true;
 		}
 
-		//Vector2F refv = Vector2F(-ref.n.y, ref.n.x);
-		//double o1 = refv.dot(cornersOfRef[ref.v0]);
-		//clip(inc.v0, inc.v1, refv, o1);
+		Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
 
+		float o = referenceEdgeVector.dot(referenceEdge->v0->position);
+		vector<Vector2F> clippedEdge = ClipEdge(incidentEdge->v0->position, incidentEdge->v1->position, referenceEdgeVector, o);
+		if(clippedEdge.size() < 2)
+			return;
 
-		if(flip)
+		o = referenceEdgeVector.dot(referenceEdge->v1->position);
+		clippedEdge = ClipEdge(clippedEdge[0], clippedEdge[1], -referenceEdgeVector, -o);
+		if(clippedEdge.size() < 2)
+			return;
+
+		//a->debugPoints.push_back(make_pair(clippedEdge[0], Color(0, 255, 0)));
+		//a->debugPoints.push_back(make_pair(clippedEdge[1], Color(0, 255, 0)));
+
+		Vector2F referenceEdgeNormal = referenceEdge->normal;//flip ? -referenceEdge->normal : referenceEdge->normal;
+		if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
 		{
+			m->contactPoints.push_back(clippedEdge[0]);
 		}
 
-		for(int i = 0; i < 4; i++)
+		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
 		{
-			normalsOfA[i];
+			m->contactPoints.push_back(clippedEdge[1]);
 		}
 
-		a->getAdjacentEdges(referenceEdgeA.v0, normalsOfA, edges);
-		Box::Edge incidentEdge1 = edges[0]; // Counter-clockwise incident edge
-		a->getAdjacentEdges(referenceEdgeA.v1, normalsOfA, edges);
-		Box::Edge incidentEdge2 = edges[1]; // Clockwise incident edge
-
-		Vector2F contactPoint =
-			a->getCenter() + cornersOfA[referenceEdgeA.v0] + a->getCenter() + cornersOfA[referenceEdgeA.v1] +
-			b->getCenter() + cornersOfB[referenceEdgeB.v0] + b->getCenter() + cornersOfB[referenceEdgeB.v1];
-		contactPoint /= 4;
-		m->contactPoints.push_back(contactPoint);
-
-		//m->contactPoints.push_back(a->getCenter() + cornersOfA[edgesA[bestEdgeA].v0]);
-		//m->contactPoints.push_back(a->getCenter() + cornersOfA[edgesA[bestEdgeA].v1]);
-		//m->contactPoints.push_back(b->getCenter() + cornersOfB[edgesB[bestEdgeB].v0]);
-		//m->contactPoints.push_back(b->getCenter() + cornersOfB[edgesB[bestEdgeB].v1]);
 		m->penetration = minPenetration;
 		m->contactCount += 1;
 	}
@@ -453,7 +370,6 @@ class PhysicsEngineGame : public Game
 
 	list<Manifold> m_manifolds;
 
-	//Vector2F gravity = Vector2F(0.0f, 0.0f);
 	Vector2F gravity = Vector2F(0.0f, 150.0f);
 
 public:
@@ -525,6 +441,9 @@ public:
 
 	void onTick(TickEvent *e)
 	{
+		const float timeScale = 1.0f;
+		const float dt = e->getDelta() * timeScale;
+
 		// Apply velocity to selected shape
 		if(selectedShape)
 		{
@@ -536,7 +455,7 @@ public:
 		{
 			if(!shape->isStatic())
 			{
-				shape->setVelocity(shape->getVelocity() + gravity * e->getDelta());
+				shape->setVelocity(shape->getVelocity() + gravity * dt);
 			}
 			shape->m_isColliding = false;
 		}
@@ -559,10 +478,8 @@ public:
 				m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
 				if(manifold.contactCount > 0)
 				{
-#ifndef DISABLE_RESOLUTION
 					ResolveCollision(&manifold);
 					CorrectPositions(&manifold);
-#endif // DISABLE_RESOLUTION
 					m_manifolds.push_back(manifold);
 					shape->m_isColliding = otherShape->m_isColliding = true;
 				}
@@ -571,8 +488,8 @@ public:
 
 		for(Shape *shape : shapes)
 		{
-			shape->move(shape->getVelocity() * e->getDelta());
-			shape->rotate(shape->getAngularVelocity() * e->getDelta());
+			shape->move(shape->getVelocity() * dt);
+			shape->rotate(shape->getAngularVelocity() * dt);
 		}
 
 		Game::onTick(e);
@@ -612,6 +529,13 @@ public:
 		return Vector2F(-v.y, v.x);
 	}
 
+	Vector2F getRelativeVelocity(Shape *a, Shape *b, Vector2F rAP, Vector2F rBP)
+	{
+		//return b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
+		//	a->getVelocity() - perp(rAP) * a->getAngularVelocity();
+		return b->getVelocity() - a->getVelocity();
+	}
+
 	void ResolveCollision(Manifold *m)
 	{
 		float numContacts = m->contactPoints.size();
@@ -639,25 +563,21 @@ public:
 			// Calculate restitution
 			float e = min(a->getRestitution(), b->getRestitution());
 
-			// Calculate impulse scalar
-			float j = -(1.0f + e) * velocityAlongNormal;
-
+			// Calculate impulse denominator
 			float rAPcrossN = rAP.cross(m->normal);
 			float rBPcrossN = rBP.cross(m->normal);
 			float sumInvMass = a->getMassInv() + b->getMassInv() + (rAPcrossN * rAPcrossN * a->getInertiaInv()) + (rBPcrossN * rBPcrossN * b->getInertiaInv());
 
+			// Calculate impulse scalar
+			float j = -(1.0f + e) * velocityAlongNormal;
 			j /= sumInvMass;
 			j /= numContacts;
 
-			// Apply impulse
+			// Apply normal impulse
 			Vector2F impulse = m->normal * j;
-			a->setVelocity(a->getVelocity() - impulse * a->getMassInv());
-			b->setVelocity(b->getVelocity() + impulse * b->getMassInv());
-
-			// Apply angular impulse
-			a->setAngularVelocity(a->getAngularVelocity() - rAP.cross(impulse) * a->getInertiaInv());
-			b->setAngularVelocity(b->getAngularVelocity() + rBP.cross(impulse) * b->getInertiaInv());
-
+			a->applyImpulse(-impulse, rAP);
+			b->applyImpulse(impulse, rBP);
+			
 			// Calculate relative velocity
 			relativeVelocity =
 				b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
@@ -689,13 +609,9 @@ public:
 				frictionImpulse = tangent * -j * mu;
 			}
 
-			// Apply impulse
-			a->setVelocity(a->getVelocity() - frictionImpulse * a->getMassInv());
-			b->setVelocity(b->getVelocity() + frictionImpulse * b->getMassInv());
-
-			// Apply angular impulse
-			a->setAngularVelocity(a->getAngularVelocity() - rAP.cross(frictionImpulse) * a->getInertiaInv());
-			b->setAngularVelocity(b->getAngularVelocity() + rBP.cross(frictionImpulse) * b->getInertiaInv());
+			// Apply friction
+			a->applyImpulse(-frictionImpulse, rAP);
+			b->applyImpulse(frictionImpulse, rBP);
 		}
 	}
 

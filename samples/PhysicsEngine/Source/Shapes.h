@@ -3,6 +3,8 @@
 #include <Sauce/Sauce.h>
 using namespace sauce;
 
+#include "Geometry.h"
+
 class Shape
 {
 public:
@@ -17,9 +19,11 @@ protected:
 	Shape(Type type) :
 		m_type(type),
 		m_restitution(0.5f),
-		m_angularVelocity(0.0f)
+		m_angularVelocity(0.0f),
+		m_angle((float(rand()) / RAND_MAX) * 0.01)
 	{
-		setMass(1.0f);
+		//setMass(1.0f);
+		setMass(0.001f);
 		setInertia(1.0f);
 	}
 
@@ -56,6 +60,12 @@ public:
 
 	float getAngularVelocity() const { return m_angularVelocity; }
 	void setAngularVelocity(const float angularVelocity) { m_angularVelocity = angularVelocity; }
+
+	void applyImpulse(const Vector2F &impulse, const Vector2F &radius)
+	{
+		m_velocity += impulse * m_massInv;
+		m_angularVelocity += radius.cross(impulse) * m_inertiaInv;
+	}
 
 	float staticFriction = 0.2f;
 	float dynamicFriction = 0.1f;
@@ -127,7 +137,7 @@ public:
 		Matrix4 mat;
 		mat.scale(size.x, size.y, 1.0f);
  		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(m_angle);
+		mat.rotateZ(math::radToDeg(m_angle));
 		mat.translate(position.x, position.y, 0.0f);
 
 		for(int i = 0; i < 4; i++)
@@ -153,11 +163,11 @@ public:
 			graphicsContext->drawArrow(position + transformedNormals[i] * halfSize, position + transformedNormals[i] * (halfSize + Vector2F(15.0f)), Color::Blue);
 		}
 
-		for(Vector2F p : debugPoints)
+		for(pair<Vector2F, Color> p : debugPoints)
 		{
 			Vertex v;
-			v.set2f(VERTEX_POSITION, p.x, p.y);
-			v.set4ub(VERTEX_COLOR, 255, 255, 0, 255);
+			v.set2f(VERTEX_POSITION, p.first.x, p.first.y);
+			v.set4ub(VERTEX_COLOR, p.second.getR(), p.second.getG(), p.second.getB(), p.second.getA());
 			graphicsContext->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
 		}
 	}
@@ -178,6 +188,16 @@ public:
 		setCenter(center);
 	}
 
+	//Polygon *getPolygon() const
+	void getPolygon(PhysicsPolygon *polygon) const
+	{
+		Vector2F normals[4], corners[4];
+		getTransformedNormals(normals);
+		getCornerVectors(corners);
+		swap(corners[2], corners[3]);
+		polygon->init(corners, getCenter(), normals, 4);
+	}
+
 	void getTransformedNormals(Vector2F *transformedNormals) const
 	{
 		Vector2F position = getCenter();
@@ -187,7 +207,7 @@ public:
 		Matrix4 mat;
 		//mat.scale(size.x, size.y, 1.0f);
 		//mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(m_angle);
+		mat.rotateZ(math::radToDeg(m_angle));
 		//mat.translate(position.x, position.y, 0.0f);
 
 		for(int i = 0; i < 4; i++)
@@ -205,7 +225,7 @@ public:
 		Matrix4 mat;
 		mat.scale(size.x, size.y, 1.0f);
 		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(m_angle);
+		mat.rotateZ(math::radToDeg(m_angle));
 
 		for(int i = 0; i < 4; i++)
 		{
@@ -213,52 +233,7 @@ public:
 		}
 	}
 
-	struct Edge
-	{
-		int v0, v1;
-		Vector2F n;
-	};
-
-	void getAdjacentEdges(const int v, Vector2F *normals, Edge *edges) const
-	{
-		switch(v)
-		{
-			case 0:
-				edges[0].v0 = 2;
-				edges[0].v1 = 0;
-				edges[0].n = normals[3];
-				edges[1].v0 = 0;
-				edges[1].v1 = 1;
-				edges[1].n = normals[0];
-				break;
-			case 1:
-				edges[0].v0 = 0;
-				edges[0].v1 = 1;
-				edges[0].n = normals[0];
-				edges[1].v0 = 1;
-				edges[1].v1 = 3;
-				edges[1].n = normals[1];
-				break;
-			case 2:
-				edges[0].v0 = 3;
-				edges[0].v1 = 2;
-				edges[0].n = normals[2];
-				edges[1].v0 = 2;
-				edges[1].v1 = 0;
-				edges[1].n = normals[3];
-				break;
-			case 3:
-				edges[0].v0 = 1;
-				edges[0].v1 = 3;
-				edges[0].n = normals[1];
-				edges[1].v0 = 3;
-				edges[1].v1 = 2;
-				edges[1].n = normals[2];
-				break;
-		}
-	}
-
-	list<Vector2F> debugPoints;
+	list<pair<Vector2F, Color>> debugPoints;
 
 private:
 	Vector2F min, max;

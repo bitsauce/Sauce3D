@@ -205,7 +205,7 @@ public:
 
 	inline const Vector2<T> operator-()
 	{
-		return *this *= -1;
+		return Vector2F(*this) *= -1;
 	}
 
 	template<typename U>
