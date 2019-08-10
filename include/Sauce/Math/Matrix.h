@@ -464,6 +464,7 @@ public:
     Matrix4&    operator-=(const Matrix4& rhs);
     Vector4<float>     operator*(const Vector4<float>& rhs) const;
     Vector3<float>     operator*(const Vector3<float> &rhs) const;
+	Vector2<float>     operator*(const Vector2<float> &rhs) const;
     Matrix4     operator*(const Matrix4& rhs) const;
     Matrix4&    operator*=(const Matrix4& rhs);
     bool        operator==(const Matrix4& rhs) const;
@@ -611,17 +612,23 @@ inline Matrix4& Matrix4::operator-=(const Matrix4& rhs)
 
 inline Vector4<float> Matrix4::operator*(const Vector4<float>& rhs) const
 {
-    return Vector4<float>(m[0]*rhs.x  + m[1]*rhs.y  + m[2]*rhs.z  + m[3]*rhs.w,
-                   m[4]*rhs.x  + m[5]*rhs.y  + m[6]*rhs.z  + m[7]*rhs.w,
-                   m[8]*rhs.x  + m[9]*rhs.y  + m[10]*rhs.z + m[11]*rhs.w,
-                   m[12]*rhs.x + m[13]*rhs.y + m[14]*rhs.z + m[15]*rhs.w);
+	return Vector4<float>(m[0]*rhs.x  + m[1]*rhs.y  + m[2]*rhs.z  + m[3]*rhs.w,
+						  m[4]*rhs.x  + m[5]*rhs.y  + m[6]*rhs.z  + m[7]*rhs.w,
+						  m[8]*rhs.x  + m[9]*rhs.y  + m[10]*rhs.z + m[11]*rhs.w,
+						  m[12]*rhs.x + m[13]*rhs.y + m[14]*rhs.z + m[15]*rhs.w);
 }
 
 inline Vector3<float> Matrix4::operator*(const Vector3<float> &rhs) const
 {
-    return Vector3<float>(m[0]*rhs.x + m[1]*rhs.y + m[2]*rhs.z,
-                   m[4]*rhs.x + m[5]*rhs.y + m[6]*rhs.z,
-                   m[8]*rhs.x + m[9]*rhs.y + m[10]*rhs.z);
+	return Vector3<float>(m[0]*rhs.x + m[1]*rhs.y + m[2]*rhs.z,
+						  m[4]*rhs.x + m[5]*rhs.y + m[6]*rhs.z,
+						  m[8]*rhs.x + m[9]*rhs.y + m[10]*rhs.z);
+}
+
+inline Vector2<float> Matrix4::operator*(const Vector2<float> &rhs) const
+{
+	return Vector2<float>(m[0]*rhs.x + m[1]*rhs.y + m[3],
+						  m[4]*rhs.x + m[5]*rhs.y + m[7]);
 }
 
 inline Matrix4 Matrix4::operator*(const Matrix4& n) const

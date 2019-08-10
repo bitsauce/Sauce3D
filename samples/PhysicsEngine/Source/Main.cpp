@@ -5,20 +5,24 @@
 
 using namespace sauce;
 
-#define DEBUG_DRAW
+//#define DEBUG_DRAW
 
 // TODO:
 // [x] Add static objects
-// [-] Fix sinking
+// [x] Fix sinking
 // [x] Verify that integration is implemented correctly (hint: delta time?)
-// [ ] Should impulses be multiplied with delta (maybe not as an impulse is technically not the same as acceleration?)
+// [x] Should impulses be multiplied with delta (maybe not as an impulse is technically not the same as acceleration?)
 // [x] Add gravity
 // [x] Add a gravity scale variable
-// [ ] Consider adding ImGui
 // [x] Add friction
-// [x] Add rotated boxes
-// [ ] Add rotated circles
-// [ ] Add rotated polygons
+// [x] Add oriented boxes
+// [ ] Fix the memory leak (generalize boxes as polygons)
+// [ ] Add angle to Box class
+// [ ] Add oriented polygons
+// [ ] Add oriented circles
+// [ ] Implement "mass = volume * density" mass initialization
+// [ ] Fix drifting with stacked boxes
+// [ ] Consider adding ImGui
 
 /*
 	Rock       Density : 0.6  Restitution : 0.1
@@ -208,41 +212,46 @@ namespace manifolds
 
 	void AABBToOBB(Manifold *m)
 	{
-		/*
-		SAT:
-		In order to confirm a collision, overlapping on all axes has to be true -- if there's any axis without an overlap, we can conclude that there's no collision.
-		4 normals/directions/axes to check, 2 per box
-		*/
 		Box *a = dynamic_cast<Box*>(m->shapeA);
 		Box *b = dynamic_cast<Box*>(m->shapeB);
 
-		Matrix4 bodyToWorldA = m->bodyA->bodyToWorld();
-		Matrix4 bodyToWorldB = m->bodyB->bodyToWorld();
+		// Rotation only matrices (used later)
+		Matrix4 worldToBodyARotationOnly;
+		Matrix4 bodyAToWorldRotationOnly;
+		Matrix4 bodyBToWorldRotationOnly;
 
-		Matrix4 pointTransform = m->bodyA->worldToBody() * bodyToWorldB; // TODO: more descriptive names
-		Matrix4 normalTransform;
-		normalTransform.rotateZ(math::radToDeg(m->bodyB->getAngle()));
-		normalTransform.rotateZ(-math::radToDeg(m->bodyA->getAngle()));
+		// Get body to world matrices
+		Matrix4 bodyAToWorld = m->bodyA->bodyLocalToWorld(&bodyAToWorldRotationOnly);
+		Matrix4 bodyBToWorld = m->bodyB->bodyLocalToWorld(&bodyBToWorldRotationOnly);
 
-		// Calculate vector from a to b
-		Vector2F deltaPositions =
-			pointTransform * b->getRelativePosition() -
-			a->getRelativePosition();
+		// Get matrices for transforming from bodyB space to bodyA space
+		Matrix4 bodyBToBodyA = m->bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
+		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
+		// Calculate vector from bodyA to bodyB
+		Vector2F deltaPositions = bodyBToBodyA * b->getRelativePosition() - a->getRelativePosition();
 
 		// TODO: Fix memory leak here
 		PhysicsPolygon polygonA;
 		PhysicsPolygon polygonB;
 		a->getPolygon(&polygonA);
-		b->getPolygon(&polygonB, normalTransform, pointTransform);
+		b->getPolygon(&polygonB, bodyBToBodyARotationOnly, bodyBToBodyA);
 
+		// Pick the axes that lie between the two bodies
 		Vector2F axes[4];
 		axes[0] = polygonA.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[0]->normal : polygonA.edges[2]->normal;
 		axes[1] = polygonA.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[1]->normal : polygonA.edges[3]->normal;
 		axes[2] = polygonB.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[0]->normal : polygonB.edges[2]->normal;
 		axes[3] = polygonB.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[1]->normal : polygonB.edges[3]->normal;
 
-		// For each axis
+		// Determine if the shapes are overlapping by iterating every axis of both shapes
+		// and checking the separation along every axis (SAT)
+		//
+		// Separating Axis Teorem (SAT):
+		// In order to confirm a collision, overlapping on all axes has to be true -- 
+		// if there's any axis without an overlap, we can conclude that there's no collision.
+		//
+		// For oriented boxes, there are 4 axes (normals) to check in total, 2 per box
 		float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
 		for(int i = 0; i < 4; i++)
 		{
@@ -289,7 +298,7 @@ namespace manifolds
 				halfWidthOfB = (dotMax - dotMin) * 0.5f;
 			}
 
-			float projectedDistance = abs(axis.dot(deltaPositions)); // Find distance between A and B along the axis
+			float projectedDistance = abs(axis.dot(deltaPositions)); // Distance between A and B along the axis
 			float penetration = halfWidthOfA + halfWidthOfB - projectedDistance;
 
 			// SAT: Return if no overlap along this axis
@@ -303,7 +312,9 @@ namespace manifolds
 			}
 		}
 
+		// Store axis of least penetation
 		m->normal = axes[minPenetrationAxis];
+		m->penetration = minPenetration;
 
 		// Find the vertex farthest along -n for object b
 		PhysicsPolygon::Vertex *farthestCornerOfB = GetFarthestPoint(&polygonB, -m->normal);
@@ -330,7 +341,6 @@ namespace manifolds
 		// The reference edge is the edge most
 		// perpendicular to the separation normal
 		PhysicsPolygon::Edge *referenceEdge, *incidentEdge;
-		bool flip = false;
 		if(abs(bestEdgeOfA->normal.dot(m->normal)) < abs(bestEdgeOfB->normal.dot(m->normal)))
 		{
 			referenceEdge = bestEdgeOfA;
@@ -340,8 +350,34 @@ namespace manifolds
 		{
 			referenceEdge = bestEdgeOfB;
 			incidentEdge = bestEdgeOfA;
-			flip = true;
 		}
+
+		// Perform edge clipping
+		Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
+
+		float o = referenceEdgeVector.dot(referenceEdge->v0->position);
+		vector<Vector2F> clippedEdge = ClipEdge(incidentEdge->v0->position, incidentEdge->v1->position, referenceEdgeVector, o);
+		if(clippedEdge.size() < 2)
+			return;
+
+		o = referenceEdgeVector.dot(referenceEdge->v1->position);
+		clippedEdge = ClipEdge(clippedEdge[0], clippedEdge[1], -referenceEdgeVector, -o);
+		if(clippedEdge.size() < 2)
+			return;
+
+		Vector2F referenceEdgeNormal = referenceEdge->normal;
+		if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
+		{
+			m->contactPoints.push_back(bodyAToWorld * clippedEdge[0]);
+		}
+
+		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
+		{
+			m->contactPoints.push_back(bodyAToWorld *clippedEdge[1]);
+		}
+
+		// Transform collision normal to world space
+		m->normal = bodyAToWorldRotationOnly * m->normal;
 
 #ifdef DEBUG_DRAW
 		Vector2F edge = referenceEdge->v1->position - referenceEdge->v0->position;
@@ -363,39 +399,6 @@ namespace manifolds
 		//else
 		//	a->debugPoints.push_back(make_pair(pointTransform * b->getRelativePosition() + m->normal * 25.0f, Color(255, 255, 0)));
 #endif
-
-		Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
-
-		float o = referenceEdgeVector.dot(referenceEdge->v0->position);
-		vector<Vector2F> clippedEdge = ClipEdge(incidentEdge->v0->position, incidentEdge->v1->position, referenceEdgeVector, o);
-		if(clippedEdge.size() < 2)
-			return;
-
-		o = referenceEdgeVector.dot(referenceEdge->v1->position);
-		clippedEdge = ClipEdge(clippedEdge[0], clippedEdge[1], -referenceEdgeVector, -o);
-		if(clippedEdge.size() < 2)
-			return;
-
-		//a->debugPoints.push_back(make_pair(clippedEdge[0], Color(0, 255, 0)));
-		//a->debugPoints.push_back(make_pair(clippedEdge[1], Color(0, 255, 0)));
-
-		Vector2F referenceEdgeNormal = referenceEdge->normal;//flip ? -referenceEdge->normal : referenceEdge->normal;
-		if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
-		{
-			m->contactPoints.push_back(bodyToWorldA * clippedEdge[0]);
-		}
-
-		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
-		{
-			m->contactPoints.push_back(bodyToWorldA *clippedEdge[1]);
-		}
-
-		m->penetration = minPenetration;
-
-		Matrix4 aToWorldRotation;
-		aToWorldRotation.rotateZ(math::radToDeg(m->bodyA->getAngle()));
-
-		m->normal = aToWorldRotation * m->normal;
 	}
 }
 

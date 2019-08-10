@@ -54,7 +54,7 @@ public:
 
 	bool contains(const Vector2F point) const
 	{
-		const Vector2F transformedPoint = worldToBody() * point;
+		const Vector2F transformedPoint = worldToBodyLocal() * point;
 		for(Shape *shape : m_shapes)
 		{
 			if(shape->contains(transformedPoint))
@@ -67,7 +67,7 @@ public:
 
 	void draw(GraphicsContext *graphicsContext, Color color) const
 	{
-		graphicsContext->pushMatrix(bodyToWorld());
+		graphicsContext->pushMatrix(bodyLocalToWorld());
 		for(Shape *shape : m_shapes)
 		{
 			shape->draw(graphicsContext, color);
@@ -75,23 +75,30 @@ public:
 		graphicsContext->popMatrix();
 	}
 
-	// TODO: body -> bodyLocal?
-	inline Matrix4 bodyToWorld() const
+	inline Matrix4 bodyLocalToWorld(Matrix4 *rotationOnlyMatrix = nullptr) const
 	{
 		// Body relative shape transforms to world transform
-		Matrix4 mat;
-		mat.rotateZ(math::radToDeg(m_angle));
-		mat.translate(m_position.x, m_position.y, 0.0f);
-		return mat;
+		Matrix4 localToWorld;
+		localToWorld.rotateZ(math::radToDeg(m_angle));
+		if(rotationOnlyMatrix) *rotationOnlyMatrix = localToWorld;
+		localToWorld.translate(m_position.x, m_position.y, 0.0f);
+		return localToWorld;
 	}
 
-	inline Matrix4 worldToBody() const
+	inline Matrix4 worldToBodyLocal(Matrix4 *rotationOnlyMatrix = nullptr) const
 	{
 		// World transform to body relative shape transforms
-		Matrix4 mat;
-		mat.translate(-m_position.x, -m_position.y, 0.0f);
-		mat.rotateZ(-math::radToDeg(m_angle));
-		return mat;
+		Matrix4 worldToLocalRotation;
+		worldToLocalRotation.rotateZ(-math::radToDeg(m_angle));
+		if(rotationOnlyMatrix)
+		{
+			*rotationOnlyMatrix = worldToLocalRotation;
+		}
+
+		Matrix4 worldToLocal;
+		worldToLocal.translate(-m_position.x, -m_position.y, 0.0f);
+		worldToLocal = worldToLocalRotation * worldToLocal;
+		return worldToLocal;
 	}
 
 	void addShape(Shape *shape)

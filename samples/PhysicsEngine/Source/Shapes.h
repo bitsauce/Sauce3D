@@ -57,24 +57,6 @@ public:
 		m_normals[3] = Vector2F(-1.0f,  0.0f); // Left
 	}
 
-	//Vector2F getCenter() const override
-	//{
-	//	return (min + max) / 2;
-	//}
-
-	//void setCenter(Vector2F center) override
-	//{
-	//	Vector2F halfSize = getSize() * 0.5f;
-	//	min = center - halfSize;
-	//	max = center + halfSize;
-	//}
-
-	//void move(Vector2F deltaPosition) override
-	//{
-	//	min += deltaPosition;
-	//	max += deltaPosition;
-	//}
-
 	void draw(GraphicsContext *graphicsContext, Color color) const override
 	{
 		static Vertex vertices[4];
