@@ -1,8 +1,11 @@
 #include <Sauce/Sauce.h>
+#include "Body.h"
 #include "Shapes.h"
 #include "Manifold.h"
 
 using namespace sauce;
+
+#define DEBUG_DRAW
 
 // TODO:
 // [x] Add static objects
@@ -31,139 +34,139 @@ namespace manifolds
 {
 	void CircleToCircle(Manifold *m)
 	{
-		Circle *a = dynamic_cast<Circle*>(m->a);
-		Circle *b = dynamic_cast<Circle*>(m->b);
+		//Circle *a = dynamic_cast<Circle*>(m->a);
+		//Circle *b = dynamic_cast<Circle*>(m->b);
 
-		// Calculate vector from a to b
-		Vector2F normal = b->getCenter() - a->getCenter();
-		float lengthSquared = normal.lengthSquared();
-		float totalRadius = a->getRadius() + b->getRadius();
+		//// Calculate vector from a to b
+		//Vector2F normal = b->getCenter() - a->getCenter();
+		//float lengthSquared = normal.lengthSquared();
+		//float totalRadius = a->getRadius() + b->getRadius();
 
-		// If their combined radius is less than the distance between,
-		// there is no contact
-		if(lengthSquared >= totalRadius * totalRadius)
-		{
-			return;
-		}
+		//// If their combined radius is less than the distance between,
+		//// there is no contact
+		//if(lengthSquared >= totalRadius * totalRadius)
+		//{
+		//	return;
+		//}
 
-		// There is contact, calculate the distance using sqrt
-		float distance = std::sqrt(lengthSquared);
-		m->contactCount += 1;
-		if(distance == 0.0f)
-		{
-			m->penetration = a->getRadius();
+		//// There is contact, calculate the distance using sqrt
+		//float distance = std::sqrt(lengthSquared);
+		//m->contactCount += 1;
+		//if(distance == 0.0f)
+		//{
+		//	m->penetration = a->getRadius();
 
-			// If the circles are at the exact same point,
-			// we'll simply use the following normal vector
-			m->normal = Vector2F(1, 0);
-		}
-		else
-		{
-			// Calculate the penetation and normal vector
-			m->penetration = totalRadius - distance;
+		//	// If the circles are at the exact same point,
+		//	// we'll simply use the following normal vector
+		//	m->normal = Vector2F(1, 0);
+		//}
+		//else
+		//{
+		//	// Calculate the penetation and normal vector
+		//	m->penetration = totalRadius - distance;
 
-			// Normalize the vector from a to b (will be the collision normal)
-			m->normal = normal / distance;
-		}
+		//	// Normalize the vector from a to b (will be the collision normal)
+		//	m->normal = normal / distance;
+		//}
 	}
 
 	void AABBToCircle(Manifold *m)
 	{
-		Box *a = dynamic_cast<Box*>(m->a);
-		Circle *b = dynamic_cast<Circle*>(m->b);
+		//Box *a = dynamic_cast<Box*>(m->a);
+		//Circle *b = dynamic_cast<Circle*>(m->b);
 
-		// Vector from a to b
-		Vector2F delta = b->getCenter() - a->getCenter();
+		//// Vector from a to b
+		//Vector2F delta = b->getCenter() - a->getCenter();
 
-		// Calculate half extents of box
-		Vector2F halfExtents = a->getSize() * 0.5f;
+		//// Calculate half extents of box
+		//Vector2F halfExtents = a->getSize() * 0.5f;
 
-		// Closes point on a to the center of b
-		Vector2F closest;
-		closest.x = math::clamp(delta.x, -halfExtents.x, halfExtents.x);
-		closest.y = math::clamp(delta.y, -halfExtents.y, halfExtents.y);
+		//// Closes point on a to the center of b
+		//Vector2F closest;
+		//closest.x = math::clamp(delta.x, -halfExtents.x, halfExtents.x);
+		//closest.y = math::clamp(delta.y, -halfExtents.y, halfExtents.y);
 
-		// Delta did not change, meaning that the center of
-		// the circle is inside the box
-		bool inside = delta == closest;
-		if(inside)
-		{
-			// TODO
-		}
+		//// Delta did not change, meaning that the center of
+		//// the circle is inside the box
+		//bool inside = delta == closest;
+		//if(inside)
+		//{
+		//	// TODO
+		//}
 
-		Vector2F normal = delta - closest;
-		float lengthSquared = normal.lengthSquared();
-		float radius = b->getRadius();
+		//Vector2F normal = delta - closest;
+		//float lengthSquared = normal.lengthSquared();
+		//float radius = b->getRadius();
 
-		// Check if distance to the closest point is less than
-		// the circle radius
-		if(lengthSquared > radius * radius && !inside)
-			return;
+		//// Check if distance to the closest point is less than
+		//// the circle radius
+		//if(lengthSquared > radius * radius && !inside)
+		//	return;
 
-		float length = sqrt(lengthSquared);
+		//float length = sqrt(lengthSquared);
 
-		if(inside)
-		{
-			// TODO
-		}
-		else
-		{
-			m->normal = normal / length;
-			m->penetration = radius - length;
-		}
-		m->contactCount += 1;
+		//if(inside)
+		//{
+		//	// TODO
+		//}
+		//else
+		//{
+		//	m->normal = normal / length;
+		//	m->penetration = radius - length;
+		//}
+		//m->contactCount += 1;
 	}
 
 	void CircleToAABB(Manifold *m)
 	{
-		m->swapShapes();
-		AABBToCircle(m);
+		//m->swapShapes();
+		//AABBToCircle(m);
 	}
 
 	void AABBToAABB(Manifold *m)
 	{
-		Box *a = dynamic_cast<Box*>(m->a);
-		Box *b = dynamic_cast<Box*>(m->b);
+		//Box *a = dynamic_cast<Box*>(m->a);
+		//Box *b = dynamic_cast<Box*>(m->b);
 
-		// Calculate vector from a to b
-		Vector2F d = b->getCenter() - a->getCenter();
+		//// Calculate vector from a to b
+		//Vector2F d = b->getCenter() - a->getCenter();
 
-		// Calculate half extents for each object
-		Vector2F halfExtentsOfA = a->getSize() * 0.5f;
-		Vector2F halfExtentsOfB = b->getSize() * 0.5f;
+		//// Calculate half extents for each object
+		//Vector2F halfExtentsOfA = a->getSize() * 0.5f;
+		//Vector2F halfExtentsOfB = b->getSize() * 0.5f;
 
-		// Calculate overlap on x-axis
-		Vector2F overlaps = halfExtentsOfA + halfExtentsOfB - math::abs(d);
+		//// Calculate overlap on x-axis
+		//Vector2F overlaps = halfExtentsOfA + halfExtentsOfB - math::abs(d);
 
-		// SAT test on x-axis
-		if(overlaps.x > 0)
-		{
-			// SAT test on y-axis
-			if(overlaps.y > 0)
-			{
-				// Find out which axis is axis of least penetration
-				if(overlaps.x < overlaps.y)
-				{
-					// Create collision normal in the direction of B
-					if(d.x < 0)
-						m->normal = Vector2F(-1, 0);
-					else
-						m->normal = Vector2F(1, 0);
-					m->penetration = overlaps.x;
-				}
-				else
-				{
-					// Create collision normal in the direction of B
-					if(d.y < 0)
-						m->normal = Vector2F(0, -1);
-					else
-						m->normal = Vector2F(0, 1);
-					m->penetration = overlaps.y;
-				}
-				m->contactCount += 1;
-				return;
-			}
-		}
+		//// SAT test on x-axis
+		//if(overlaps.x > 0)
+		//{
+		//	// SAT test on y-axis
+		//	if(overlaps.y > 0)
+		//	{
+		//		// Find out which axis is axis of least penetration
+		//		if(overlaps.x < overlaps.y)
+		//		{
+		//			// Create collision normal in the direction of B
+		//			if(d.x < 0)
+		//				m->normal = Vector2F(-1, 0);
+		//			else
+		//				m->normal = Vector2F(1, 0);
+		//			m->penetration = overlaps.x;
+		//		}
+		//		else
+		//		{
+		//			// Create collision normal in the direction of B
+		//			if(d.y < 0)
+		//				m->normal = Vector2F(0, -1);
+		//			else
+		//				m->normal = Vector2F(0, 1);
+		//			m->penetration = overlaps.y;
+		//		}
+		//		m->contactCount += 1;
+		//		return;
+		//	}
+		//}
 	}
 
 	PhysicsPolygon::Vertex *GetFarthestPoint(PhysicsPolygon *polygon, Vector2F dir)
@@ -210,20 +213,28 @@ namespace manifolds
 		In order to confirm a collision, overlapping on all axes has to be true -- if there's any axis without an overlap, we can conclude that there's no collision.
 		4 normals/directions/axes to check, 2 per box
 		*/
-		Box *a = dynamic_cast<Box*>(m->a);
-		Box *b = dynamic_cast<Box*>(m->b);
+		Box *a = dynamic_cast<Box*>(m->shapeA);
+		Box *b = dynamic_cast<Box*>(m->shapeB);
 
-		a->debugPoints.clear();
-		b->debugPoints.clear();
+		Matrix4 bodyToWorldA = m->bodyA->bodyToWorld();
+		Matrix4 bodyToWorldB = m->bodyB->bodyToWorld();
+
+		Matrix4 pointTransform = m->bodyA->worldToBody() * bodyToWorldB; // TODO: more descriptive names
+		Matrix4 normalTransform;
+		normalTransform.rotateZ(math::radToDeg(m->bodyB->getAngle()));
+		normalTransform.rotateZ(-math::radToDeg(m->bodyA->getAngle()));
 
 		// Calculate vector from a to b
-		Vector2F deltaPositions = b->getCenter() - a->getCenter();
+		Vector2F deltaPositions =
+			pointTransform * b->getRelativePosition() -
+			a->getRelativePosition();
+
 
 		// TODO: Fix memory leak here
 		PhysicsPolygon polygonA;
 		PhysicsPolygon polygonB;
 		a->getPolygon(&polygonA);
-		b->getPolygon(&polygonB);
+		b->getPolygon(&polygonB, normalTransform, pointTransform);
 
 		Vector2F axes[4];
 		axes[0] = polygonA.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[0]->normal : polygonA.edges[2]->normal;
@@ -238,6 +249,8 @@ namespace manifolds
 			Vector2F axis = axes[i];
 
 			// Find min and max extents when projected onto the axis
+			// TODO: Optimizations may be done here since we are already using
+			//       body A's space as reference
 			float halfWidthOfA;
 			{
 				float dotMin = FLT_MAX;
@@ -305,12 +318,12 @@ namespace manifolds
 		// Select edge that is most perpendicular to separation normal
 		// out of the two neighbouring edges of the farthest vertex of A
 		PhysicsPolygon::Edge *bestEdgeOfA =
-			abs(farthestCornerOfA->leftEdge->normal.dot(m->normal)) < abs(farthestCornerOfA->rightEdge->normal.dot(m->normal)) ?
+			abs(farthestCornerOfA->leftEdge->normal.dot(m->normal)) > abs(farthestCornerOfA->rightEdge->normal.dot(m->normal)) ?
 			farthestCornerOfA->leftEdge : farthestCornerOfA->rightEdge;
 
 		// Repeat for B
 		PhysicsPolygon::Edge *bestEdgeOfB =
-			abs(farthestCornerOfB->leftEdge->normal.dot(m->normal)) < abs(farthestCornerOfB->rightEdge->normal.dot(m->normal)) ?
+			abs(farthestCornerOfB->leftEdge->normal.dot(m->normal)) > abs(farthestCornerOfB->rightEdge->normal.dot(m->normal)) ?
 			farthestCornerOfB->leftEdge : farthestCornerOfB->rightEdge;
 
 		// Determine reference and incident edge
@@ -330,6 +343,27 @@ namespace manifolds
 			flip = true;
 		}
 
+#ifdef DEBUG_DRAW
+		Vector2F edge = referenceEdge->v1->position - referenceEdge->v0->position;
+		for(float f = 0.0f; f < 1.0f; f += 0.1f)
+		{
+			a->debugPoints.push_back(make_pair(referenceEdge->v0->position + edge * f, Color(0, 255, 0)));
+		}
+
+		edge = incidentEdge->v1->position - incidentEdge->v0->position;
+		for(float f = 0.0f; f < 1.0f; f += 0.1f)
+		{
+			a->debugPoints.push_back(make_pair(incidentEdge->v0->position + edge * f, Color(255, 0, 0)));
+		}
+
+		//a->debugPoints.push_back(make_pair(farthestCornerOfB->position, Color(0, 255, 0)));
+		//a->debugPoints.push_back(make_pair(farthestCornerOfA->position, Color(0, 255, 0)));
+		//if(minPenetrationAxis < 2)
+		//	a->debugPoints.push_back(make_pair(a->getRelativePosition() + m->normal * 25.0f, Color(255, 255, 0)));
+		//else
+		//	a->debugPoints.push_back(make_pair(pointTransform * b->getRelativePosition() + m->normal * 25.0f, Color(255, 255, 0)));
+#endif
+
 		Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
 
 		float o = referenceEdgeVector.dot(referenceEdge->v0->position);
@@ -348,29 +382,34 @@ namespace manifolds
 		Vector2F referenceEdgeNormal = referenceEdge->normal;//flip ? -referenceEdge->normal : referenceEdge->normal;
 		if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
 		{
-			m->contactPoints.push_back(clippedEdge[0]);
+			m->contactPoints.push_back(bodyToWorldA * clippedEdge[0]);
 		}
 
 		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
 		{
-			m->contactPoints.push_back(clippedEdge[1]);
+			m->contactPoints.push_back(bodyToWorldA *clippedEdge[1]);
 		}
 
 		m->penetration = minPenetration;
-		m->contactCount += 1;
+
+		Matrix4 aToWorldRotation;
+		aToWorldRotation.rotateZ(math::radToDeg(m->bodyA->getAngle()));
+
+		m->normal = aToWorldRotation * m->normal;
 	}
 }
 
 class PhysicsEngineGame : public Game
 {
-	vector<Shape*> shapes;
-	Shape *selectedShape;
+	vector<Body*> m_bodies;
+	Body *m_selectedBody;
 	Vector2F m_lastMousePosition;
 	function<void(Manifold*)> m_manifoldGenerationFunctionTable[Shape::NUM_SHAPES][Shape::NUM_SHAPES];
 
 	list<Manifold> m_manifolds;
 
-	Vector2F gravity = Vector2F(0.0f, 150.0f);
+	Vector2F m_gravity = Vector2F(0.0f, 150.0f);
+	//Vector2F m_gravity = Vector2F(0.0f, 0.0f);
 
 public:
 	void setupScene()
@@ -397,27 +436,35 @@ public:
 			box2->setSize(Vector2F(150.0f, 100.0f));
 			shapes.push_back(box2);
 			*/
-			Vector2I size = getWindow()->getSize();
 
-			Box *ground = new Box;
-			ground->setCenter(Vector2F(size.x * 0.5f, size.y - 10.0f));
-			ground->setSize(Vector2F(size.x, 20.0f));
-			ground->setMass(0.0f);
-			ground->setInertia(0.0f);
-			shapes.push_back(ground);
+
+			{
+				Vector2I size = getWindow()->getSize();
+
+				Body *body = new Body();
+				body->setPosition(Vector2F(size.x * 0.5f, size.y - 10.0f));
+				body->setMass(0.0f);
+				body->setInertia(0.0f);
+
+				Box *ground = new Box;
+				ground->setSize(Vector2F(size.x, 20.0f));
+				body->addShape(ground);
+
+				m_bodies.push_back(body);
+			}
 		}
 
-		selectedShape = nullptr;
+		m_selectedBody = nullptr;
 	}
 
 	void cleanScene()
 	{
-		for(Shape *shape : shapes)
+		for(Body *body : m_bodies)
 		{
-			delete shape;
+			delete body;
 		}
-		shapes.clear();
-		selectedShape = nullptr;
+		m_bodies.clear();
+		m_selectedBody = nullptr;
 	}
 
 	void onStart(GameEvent *e)
@@ -445,51 +492,66 @@ public:
 		const float dt = e->getDelta() * timeScale;
 
 		// Apply velocity to selected shape
-		if(selectedShape)
+		if(m_selectedBody)
 		{
-			selectedShape->setVelocity((getInputManager()->getPosition() - selectedShape->getCenter()) * 0.25f / e->getDelta());
+			m_selectedBody->setVelocity((getInputManager()->getPosition() - m_selectedBody->getPosition()) * 0.25f / e->getDelta());
+			m_selectedBody->setAngularVelocity(0.0f);
 		}
 
-		// Apply gravity to all shapes
-		for(Shape *shape : shapes)
+		// Apply gravity to all bodies
+		for(Body *body : m_bodies)
 		{
-			if(!shape->isStatic())
+			if(!body->isStatic())
 			{
-				shape->setVelocity(shape->getVelocity() + gravity * dt);
+				body->setVelocity(body->getVelocity() + m_gravity * dt);
 			}
-			shape->m_isColliding = false;
+
+			body->m_isColliding = false;
+			for(Shape *shape : body->getShapes())
+				shape->debugPoints.clear();
 		}
 
 		m_manifolds.clear();
 
 		// Broadphase - Find and resolve all colliding shapes
-		for(int i = 0; i < shapes.size(); i++)
+		for(int i = 0; i < m_bodies.size(); i++)
 		{
-			Shape *shape = shapes[i];
-			for(int j = i + 1; j < shapes.size(); j++)
+			Body *body = m_bodies[i];
+			for(int j = i + 1; j < m_bodies.size(); j++)
 			{
-				Shape *otherShape = shapes[j];
+				Body *otherBody = m_bodies[j];
 
 				// Skip collision between static objects
-				if(shape->isStatic() && otherShape->isStatic())
+				if(body->isStatic() && otherBody->isStatic())
 					continue;
 
-				Manifold manifold(shape, otherShape);
-				m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
-				if(manifold.contactCount > 0)
+				// Check collision on every shape of each body
+				vector<Shape*> &shapes = body->getShapes();
+				vector<Shape*> &otherShapes = otherBody->getShapes();
+				for(int k = 0; k < shapes.size(); k++)
 				{
-					ResolveCollision(&manifold);
-					CorrectPositions(&manifold);
-					m_manifolds.push_back(manifold);
-					shape->m_isColliding = otherShape->m_isColliding = true;
+					for(int j = 0; j < otherShapes.size(); j++)
+					{
+						Shape *shape = shapes[k];
+						Shape *otherShape = otherShapes[j];
+						Manifold manifold(body, otherBody, shape, otherShape);
+						m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
+						if(manifold.contactPoints.size() > 0)
+						{
+							ResolveCollision(&manifold);
+							CorrectPositions(&manifold);
+							m_manifolds.push_back(manifold);
+							//body->m_isColliding = otherBody->m_isColliding = true;
+						}
+					}
 				}
 			}
 		}
 
-		for(Shape *shape : shapes)
+		for(Body *body : m_bodies)
 		{
-			shape->move(shape->getVelocity() * dt);
-			shape->rotate(shape->getAngularVelocity() * dt);
+			body->move(body->getVelocity() * dt);
+			body->rotate(body->getAngularVelocity() * dt);
 		}
 
 		Game::onTick(e);
@@ -497,16 +559,16 @@ public:
 
 	void onDraw(DrawEvent *e)
 	{
-		for(Shape *shape : shapes)
+		for(Body *body : m_bodies)
 		{
-			Color color = shape->m_isColliding ? Color::Blue : Color::White;
+			Color color = body->m_isColliding ? Color::Blue : Color::White;
 			
 			// Render shape
 			//Color color = Color::White;
-			shape->draw(e->getGraphicsContext(), color);
+			body->draw(e->getGraphicsContext(), color);
 
 			// Draw velocity arrow
-			e->getGraphicsContext()->drawArrow(shape->getCenter(), shape->getCenter() + shape->getVelocity() * 0.1f, Color::Red);
+			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, Color::Red);
 		}
 
 		for(Manifold &m : m_manifolds)
@@ -529,24 +591,17 @@ public:
 		return Vector2F(-v.y, v.x);
 	}
 
-	Vector2F getRelativeVelocity(Shape *a, Shape *b, Vector2F rAP, Vector2F rBP)
-	{
-		//return b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
-		//	a->getVelocity() - perp(rAP) * a->getAngularVelocity();
-		return b->getVelocity() - a->getVelocity();
-	}
-
 	void ResolveCollision(Manifold *m)
 	{
 		float numContacts = m->contactPoints.size();
 		for(Vector2F contactPoint : m->contactPoints)
 		{
 			// Get manifold shapes
-			Shape *a = m->a;
-			Shape *b = m->b;
+			Body *a = m->bodyA;
+			Body *b = m->bodyB;
 
-			Vector2F rAP = contactPoint - a->getCenter();
-			Vector2F rBP = contactPoint - b->getCenter();
+			Vector2F rAP = contactPoint - a->getPosition();
+			Vector2F rBP = contactPoint - b->getPosition();
 
 			// Calculate relative velocity
 			Vector2F relativeVelocity =
@@ -593,8 +648,8 @@ public:
 			jt /= numContacts;
 
 			// Approximate mu given friction coefficients of each body
-			float mu = std::sqrt(a->staticFriction * a->staticFriction +
-								 b->staticFriction * b->staticFriction);
+			float mu = std::sqrt(a->getStaticFriction() * a->getStaticFriction() +
+								 b->getStaticFriction() * b->getStaticFriction());
 
 			// Clamp magnitude of friction and calculate impulse vector
 			Vector2F frictionImpulse;
@@ -604,8 +659,8 @@ public:
 			}
 			else
 			{
-				mu = std::sqrt(a->dynamicFriction * a->dynamicFriction +
-							   b->dynamicFriction * b->dynamicFriction);
+				mu = std::sqrt(a->getDynamicFriction() * a->getDynamicFriction() +
+							   b->getDynamicFriction() * b->getDynamicFriction());
 				frictionImpulse = tangent * -j * mu;
 			}
 
@@ -618,25 +673,25 @@ public:
 	void CorrectPositions(Manifold *m)
 	{
 		// Get manifold shapes
-		Shape *a = m->a;
-		Shape *b = m->b;
+		Body *a = m->bodyA;
+		Body *b = m->bodyB;
 
 		// Correct the positions
 		const float slop = 0.01;    // Usually 0.01 to 0.1
 		const float percent = 0.5f; // Usually 20% to 80%
 		Vector2F correction = m->normal * percent * max(m->penetration - slop, 0.0f) / (a->getMassInv() + b->getMassInv());
-		a->setCenter(a->getCenter() - correction * a->getMassInv());
-		b->setCenter(b->getCenter() + correction * b->getMassInv());
+		a->setPosition(a->getPosition() - correction * a->getMassInv());
+		b->setPosition(b->getPosition() + correction * b->getMassInv());
 	}
 
 	void onMouseDown(MouseEvent *e)
 	{
 		Vector2F inputPos = e->getPosition();
-		for(Shape *shape : shapes)
+		for(Body *body : m_bodies)
 		{
-			if(shape->contains(inputPos))
+			if(body->contains(inputPos))
 			{
-				selectedShape = shape;
+				m_selectedBody = body;
 				break;
 			}
 		}
@@ -644,7 +699,7 @@ public:
 
 	void onMouseUp(MouseEvent *e)
 	{
-		selectedShape = nullptr;
+		m_selectedBody = nullptr;
 	}
 
 	void onMouseMove(MouseEvent *e)
@@ -654,11 +709,11 @@ public:
 
 	void onMouseWheel(MouseEvent *e)
 	{
-		if(selectedShape)
+		if(m_selectedBody)
 		{
-			const float rotationalSpeed = 5.0f;
-			selectedShape->m_angle += e->getWheelY() * rotationalSpeed;
-		}		
+			const float rotationalSpeed = math::degToRad(5.0f);
+			m_selectedBody->rotate(e->getWheelY() * rotationalSpeed);
+		}
 	}
 
 	void onKeyDown(KeyEvent *e)
@@ -667,27 +722,59 @@ public:
 		{
 			case Keycode::SAUCE_KEY_1:
 			{
-				Circle *circle = new Circle;
-				circle->setCenter(e->getInputManager()->getPosition());
-				circle->setRadius(25.0f);
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					circle->setMass(0.0f);
-				}
-				shapes.push_back(circle);
+				//Circle *circle = new Circle;
+				//circle->setCenter(e->getInputManager()->getPosition());
+				//circle->setRadius(25.0f);
+				//if(e->getModifiers() & KeyEvent::SHIFT)
+				//{
+				//	circle->setMass(0.0f);
+				//}
+				//shapes.push_back(circle);
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_2:
 			{
-				Box *box = new Box;
-				box->setCenter(e->getInputManager()->getPosition());
-				box->setSize(Vector2F(50.0f, 50.0f));
+				Body *body = new Body();
+				body->setPosition(e->getInputManager()->getPosition());
+				{
+					Box *box = new Box;
+					box->setRelativePosition(Vector2F(0.0f, 0.0f));
+					box->setSize(Vector2F(50.0f, 50.0f));
+					body->addShape(box);
+				}
+
 				if(e->getModifiers() & KeyEvent::SHIFT)
 				{
-					box->setMass(0.0f);
+					body->setMass(0.0f);
 				}
-				shapes.push_back(box);
+
+				m_bodies.push_back(body);
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_3:
+			{
+				Body *body = new Body();
+				body->setPosition(e->getInputManager()->getPosition());
+				{
+					Box *box = new Box;
+					box->setRelativePosition(Vector2F(0.0f, 0.0f));
+					box->setSize(Vector2F(50.0f, 50.0f));
+					body->addShape(box);
+
+					Box *box2 = new Box;
+					box2->setRelativePosition(Vector2F(200.0f, 0.0f));
+					box2->setSize(Vector2F(50.0f, 50.0f));
+					body->addShape(box2);
+				}
+
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					body->setMass(0.0f);
+				}
+
+				m_bodies.push_back(body);
 			}
 			break;
 

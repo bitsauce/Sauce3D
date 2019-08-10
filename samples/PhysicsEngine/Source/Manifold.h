@@ -5,26 +5,31 @@
 class Manifold
 {
 public:
-	Manifold(Shape *a, Shape *b) :
-		a(a),
-		b(b),
+	Manifold(Body *bodyA, Body *bodyB, Shape *shapeA, Shape *shapeB) :
+		bodyA(bodyA),
+		bodyB(bodyB),
+		shapeA(shapeA),
+		shapeB(shapeB),
 		penetration(0.0f),
-		normal(0.0f),
-		contactCount(0)
+		normal(0.0f)
 	{
 	}
 
-	void swapShapes()
+	void swapAB()
 	{
-		Shape *tmp = a;
-		const_cast<Shape*>(a) = b;
-		const_cast<Shape*>(b) = tmp;
+		Body *tmpBody = bodyA;
+		const_cast<Body*>(bodyA) = bodyB;
+		const_cast<Body*>(bodyB) = tmpBody;
+		Shape *tmpShape = shapeA;
+		const_cast<Shape*>(shapeA) = shapeB;
+		const_cast<Shape*>(shapeB) = tmpShape;
 	}
 
-	Shape * const a;
-	Shape * const b;
+	Body * const bodyA;
+	Body * const bodyB;
+	Shape * const shapeA;
+	Shape * const shapeB;
 	float penetration;
 	Vector2F normal;
 	list<Vector2F> contactPoints;
-	int contactCount;
 };

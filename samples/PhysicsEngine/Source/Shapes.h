@@ -15,70 +15,33 @@ public:
 		NUM_SHAPES
 	};
 
-protected:
 	Shape(Type type) :
 		m_type(type),
-		m_restitution(0.5f),
-		m_angularVelocity(0.0f),
-		m_angle((float(rand()) / RAND_MAX) * 0.01)
+		m_relativePosition(0.0f, 0.0f)
 	{
-		//setMass(1.0f);
-		setMass(0.001f);
-		setInertia(1.0f);
 	}
 
-public:
-	bool m_isColliding = false;
+	// TODO: Rename bodyLocalPosition?
+	void setRelativePosition(Vector2F relativePosition)
+	{
+		m_relativePosition = relativePosition;
+	}
 
-	virtual Vector2F getCenter() const = 0;
-	virtual void setCenter(Vector2F center) = 0;
-	virtual void move(Vector2F deltaPosition) = 0;
+	Vector2F getRelativePosition() const
+	{
+		return m_relativePosition;
+	}
+
 	virtual void draw(GraphicsContext *graphicsContext, Color color) const = 0;
 	virtual bool contains(Vector2F point) const = 0;
 
-	void rotate(const float angle)
-	{
-		m_angle += angle;
-	}
-
 	Type getType() const { return m_type; }
 
-	float getMass() const { return m_mass; }
-	float getMassInv() const { return m_massInv; }
-	void setMass(const float mass) { m_mass = mass; m_massInv = mass > 0.0f ? 1.0f / mass : 0.0f; }
-	bool isStatic() const { return m_mass <= 0.0f; }
-
-	float getInertia() const { return m_inertia; }
-	float getInertiaInv() const { return m_inertiaInv; }
-	void setInertia(const float inertia) { m_inertia = inertia; m_inertiaInv = inertia > 0.0f ? 1.0f / inertia : 0.0f; }
-
-	float getRestitution() const { return m_restitution; }
-	float setRestitution(const float restitution) { m_restitution = restitution; }
-
-	Vector2F getVelocity() const { return m_velocity; }
-	void setVelocity(const Vector2F velocity) { m_velocity = velocity; }
-
-	float getAngularVelocity() const { return m_angularVelocity; }
-	void setAngularVelocity(const float angularVelocity) { m_angularVelocity = angularVelocity; }
-
-	void applyImpulse(const Vector2F &impulse, const Vector2F &radius)
-	{
-		m_velocity += impulse * m_massInv;
-		m_angularVelocity += radius.cross(impulse) * m_inertiaInv;
-	}
-
-	float staticFriction = 0.2f;
-	float dynamicFriction = 0.1f;
-
-	float m_angle = 0.0f;
+	list<pair<Vector2F, Color>> debugPoints;
 
 private:
 	const Type m_type;
-	float m_mass, m_massInv;
-	float m_inertia, m_inertiaInv;
-	Vector2F m_velocity;
-	float m_angularVelocity;
-	float m_restitution;
+	Vector2F m_relativePosition;
 };
 
 class Box : public Shape
@@ -86,32 +49,31 @@ class Box : public Shape
 public:
 	Box() :
 		Shape(BOX),
-		min(0.0f, 0.0f),
-		max(10.0f, 10.0f)
+		m_size(10.0f, 10.0f)
 	{
-		normals[0] = Vector2F( 0.0f, -1.0f); // Top
-		normals[1] = Vector2F( 1.0f,  0.0f); // Right
-		normals[2] = Vector2F( 0.0f,  1.0f); // Bottom
-		normals[3] = Vector2F(-1.0f,  0.0f); // Left
+		m_normals[0] = Vector2F( 0.0f, -1.0f); // Top
+		m_normals[1] = Vector2F( 1.0f,  0.0f); // Right
+		m_normals[2] = Vector2F( 0.0f,  1.0f); // Bottom
+		m_normals[3] = Vector2F(-1.0f,  0.0f); // Left
 	}
 
-	Vector2F getCenter() const override
-	{
-		return (min + max) / 2;
-	}
+	//Vector2F getCenter() const override
+	//{
+	//	return (min + max) / 2;
+	//}
 
-	void setCenter(Vector2F center) override
-	{
-		Vector2F halfSize = getSize() * 0.5f;
-		min = center - halfSize;
-		max = center + halfSize;
-	}
+	//void setCenter(Vector2F center) override
+	//{
+	//	Vector2F halfSize = getSize() * 0.5f;
+	//	min = center - halfSize;
+	//	max = center + halfSize;
+	//}
 
-	void move(Vector2F deltaPosition) override
-	{
-		min += deltaPosition;
-		max += deltaPosition;
-	}
+	//void move(Vector2F deltaPosition) override
+	//{
+	//	min += deltaPosition;
+	//	max += deltaPosition;
+	//}
 
 	void draw(GraphicsContext *graphicsContext, Color color) const override
 	{
@@ -123,21 +85,14 @@ public:
 			2, 0
 		};
 
-		//Matrix4 mat;
-		//mat.scale(m_size.x, m_size.y, 1.0f);
-		//mat.translate(-m_origin.x, -m_origin.y, 0.0f);
-		//mat.scale(m_scale.x, m_scale.y, 1.0f);
-		//mat.rotateZ(m_angle);
-		//mat.translate(m_position.x, m_position.y, 0.0f);
-
-		Vector2F position = getCenter();
+		Vector2F position = getRelativePosition();
 		Vector2F size = getSize();
 		Vector2F halfSize = size * 0.5f;
 
 		Matrix4 mat;
 		mat.scale(size.x, size.y, 1.0f);
  		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(math::radToDeg(m_angle));
+		//mat.rotateZ(math::radToDeg(m_angle));
 		mat.translate(position.x, position.y, 0.0f);
 
 		for(int i = 0; i < 4; i++)
@@ -157,7 +112,7 @@ public:
 
 
 		Vector2F transformedNormals[4];
-		getTransformedNormals(transformedNormals);
+		getTransformedNormals(transformedNormals, Matrix4());
 		for(int i = 0; i < 4; i++)
 		{
 			graphicsContext->drawArrow(position + transformedNormals[i] * halfSize, position + transformedNormals[i] * (halfSize + Vector2F(15.0f)), Color::Blue);
@@ -174,58 +129,53 @@ public:
 
 	bool contains(Vector2F point) const override
 	{
+		const Vector2F halfSize = getSize() * 0.5f;
+		const Vector2F min = getRelativePosition() - halfSize;
+		const Vector2F max = getRelativePosition() + halfSize;
 		return point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y;
 	}
 
-	Vector2F getMin() const { return min; }
-	Vector2F getMax() const { return max; }
-	Vector2F getSize() const { return max - min; }
-	void setSize(Vector2F size)
-	{
-		Vector2F center = getCenter();
-		min = Vector2F(0.0f, 0.0f);
-		max = size;
-		setCenter(center);
-	}
+	Vector2F getSize() const { return m_size; }
+	void setSize(const Vector2F size) { m_size = size; }
 
 	//Polygon *getPolygon() const
-	void getPolygon(PhysicsPolygon *polygon) const
+	void getPolygon(PhysicsPolygon *polygon, Matrix4 normalTransform = Matrix4(), Matrix4 pointTransform = Matrix4()) const
 	{
 		Vector2F normals[4], corners[4];
-		getTransformedNormals(normals);
-		getCornerVectors(corners);
+		getTransformedNormals(normals, normalTransform);
+		getCornerVectors(corners, normalTransform);
 		swap(corners[2], corners[3]);
-		polygon->init(corners, getCenter(), normals, 4);
+		polygon->init(corners, pointTransform * getRelativePosition(), normals, 4);
 	}
 
-	void getTransformedNormals(Vector2F *transformedNormals) const
+	void getTransformedNormals(Vector2F *transformedNormals, Matrix4 normalTransform) const
 	{
-		Vector2F position = getCenter();
+		Vector2F position = getRelativePosition();
 		Vector2F size = getSize();
 		Vector2F halfSize = size * 0.5f;
 
-		Matrix4 mat;
-		//mat.scale(size.x, size.y, 1.0f);
-		//mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(math::radToDeg(m_angle));
-		//mat.translate(position.x, position.y, 0.0f);
+		//Matrix4 mat;
+		//mat.rotateZ(math::radToDeg(m_angle));
 
 		for(int i = 0; i < 4; i++)
 		{
-			transformedNormals[i] = (mat * Vector4F(normals[i].x, normals[i].y, 0,1)).getXY();
+			transformedNormals[i] = normalTransform * m_normals[i];
 		}
 	}
 
-	void getCornerVectors(Vector2F *cornerVectors) const
+	void getCornerVectors(Vector2F *cornerVectors, Matrix4 pointTransform) const
 	{
-		Vector2F position = getCenter();
+		Vector2F position = getRelativePosition();
 		Vector2F size = getSize();
 		Vector2F halfSize = size * 0.5f;
 
 		Matrix4 mat;
 		mat.scale(size.x, size.y, 1.0f);
 		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		mat.rotateZ(math::radToDeg(m_angle));
+		//mat.rotateZ(math::radToDeg(m_angle));
+		//mat.rotateZ(math::radToDeg(45.0f));
+
+		mat = pointTransform * mat;
 
 		for(int i = 0; i < 4; i++)
 		{
@@ -233,52 +183,50 @@ public:
 		}
 	}
 
-	list<pair<Vector2F, Color>> debugPoints;
-
 private:
-	Vector2F min, max;
-	Vector2F normals[4];
+	Vector2F m_size;
+	Vector2F m_normals[4];
 };
 
-class Circle : public Shape
-{
-public:
-	Circle() :
-		Shape(CIRCLE),
-		position(0.0f),
-		radius(10.0f)
-	{
-	}
-	
-	Vector2F getCenter() const override
-	{
-		return position;
-	}
-	
-	void setCenter(Vector2F center) override
-	{
-		position = center;
-	}
-	
-	void move(Vector2F deltaPosition) override
-	{
-		position += deltaPosition;
-	}
-
-	void draw(GraphicsContext *graphicsContext, Color color) const override
-	{
-		graphicsContext->drawCircle(position, radius, 32, color);
-	}
-
-	bool contains(Vector2F point) const override
-	{
-		return (position - point).lengthSquared() < radius * radius;
-	}
-
-	float getRadius() const { return radius; }
-	void setRadius(const float rad) { radius = rad; }
-
-private:
-	Vector2F position;
-	float radius;
-};
+//class Circle : public Shape
+//{
+//public:
+//	Circle() :
+//		Shape(CIRCLE),
+//		position(0.0f),
+//		radius(10.0f)
+//	{
+//	}
+//	
+//	Vector2F getCenter() const override
+//	{
+//		return position;
+//	}
+//	
+//	void setCenter(Vector2F center) override
+//	{
+//		position = center;
+//	}
+//	
+//	void move(Vector2F deltaPosition) override
+//	{
+//		position += deltaPosition;
+//	}
+//
+//	void draw(GraphicsContext *graphicsContext, Color color) const override
+//	{
+//		graphicsContext->drawCircle(position, radius, 32, color);
+//	}
+//
+//	bool contains(Vector2F point) const override
+//	{
+//		return (position - point).lengthSquared() < radius * radius;
+//	}
+//
+//	float getRadius() const { return radius; }
+//	void setRadius(const float rad) { radius = rad; }
+//
+//private:
+//	Vector2F position;
+//	float radius;
+//};
