@@ -5,7 +5,7 @@
 
 using namespace sauce;
 
-//#define DEBUG_DRAW
+#define DEBUG_DRAW
 
 // TODO:
 // [x] Add static objects
@@ -16,12 +16,13 @@ using namespace sauce;
 // [x] Add a gravity scale variable
 // [x] Add friction
 // [x] Add oriented boxes
-// [ ] Fix the memory leak (generalize boxes as polygons)
+// [x] Fix the memory leak (generalize boxes as polygons)
 // [ ] Add angle to Box class
-// [ ] Add oriented polygons
-// [ ] Add oriented circles
+// [x] Add oriented polygons
+// [x] Add oriented circles
 // [ ] Implement "mass = volume * density" mass initialization
 // [ ] Fix drifting with stacked boxes
+// [ ] Add grid to grid collision
 // [ ] Consider adding ImGui
 
 /*
@@ -38,146 +39,159 @@ namespace manifolds
 {
 	void CircleToCircle(Manifold *m)
 	{
-		//Circle *a = dynamic_cast<Circle*>(m->a);
-		//Circle *b = dynamic_cast<Circle*>(m->b);
+		Circle *a = dynamic_cast<Circle*>(m->shapeA);
+		Circle *b = dynamic_cast<Circle*>(m->shapeB);
 
-		//// Calculate vector from a to b
-		//Vector2F normal = b->getCenter() - a->getCenter();
-		//float lengthSquared = normal.lengthSquared();
-		//float totalRadius = a->getRadius() + b->getRadius();
+		// Rotation only matrices (used later)
+		Matrix4 worldToBodyARotationOnly;
+		Matrix4 bodyAToWorldRotationOnly;
+		Matrix4 bodyBToWorldRotationOnly;
 
-		//// If their combined radius is less than the distance between,
-		//// there is no contact
-		//if(lengthSquared >= totalRadius * totalRadius)
-		//{
-		//	return;
-		//}
+		// Get body to world matrices
+		Matrix4 bodyAToWorld = m->bodyA->bodyLocalToWorld(&bodyAToWorldRotationOnly);
+		Matrix4 bodyBToWorld = m->bodyB->bodyLocalToWorld(&bodyBToWorldRotationOnly);
 
-		//// There is contact, calculate the distance using sqrt
-		//float distance = std::sqrt(lengthSquared);
-		//m->contactCount += 1;
-		//if(distance == 0.0f)
-		//{
-		//	m->penetration = a->getRadius();
+		// Get matrices for transforming from bodyB space to bodyA space
+		Matrix4 bodyBToBodyA = m->bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
+		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
-		//	// If the circles are at the exact same point,
-		//	// we'll simply use the following normal vector
-		//	m->normal = Vector2F(1, 0);
-		//}
-		//else
-		//{
-		//	// Calculate the penetation and normal vector
-		//	m->penetration = totalRadius - distance;
+		// Calculate vector from shape in bodyA to shape in bodyB
+		const Vector2F normal = bodyBToBodyA * b->getLocalPosition() - a->getLocalPosition();
+		const float lengthSquared = normal.lengthSquared();
+		const float totalRadius = a->getRadius() + b->getRadius();
 
-		//	// Normalize the vector from a to b (will be the collision normal)
-		//	m->normal = normal / distance;
-		//}
+		// If their combined radius is less than the distance between,
+		// there is no contact
+		if(lengthSquared >= totalRadius * totalRadius)
+		{
+			return;
+		}
+
+		// There is contact, calculate the distance using sqrt
+		float distance = std::sqrt(lengthSquared);
+		if(distance == 0.0f)
+		{
+			m->penetration = a->getRadius();
+			m->contactPoints.push_back(m->bodyA->getPosition());
+
+			// If the circles are at the exact same point,
+			// we'll simply use the following normal vector
+			m->normal = Vector2F(1, 0);
+;		}
+		else
+		{
+			// Calculate the penetation and normal vector
+			m->penetration = totalRadius - distance;
+
+			// Normalize the vector from a to b (will be the collision normal)
+			m->normal = normal / distance;
+
+			// Calculate contact point
+			m->contactPoints.push_back(bodyAToWorld * (m->normal * a->getRadius() + m->shapeA->getLocalPosition()));
+		}
+
+		// Transform collision normal to world space
+		m->normal = bodyAToWorldRotationOnly * m->normal;
 	}
 
-	void AABBToCircle(Manifold *m)
+	void PolygonToCircle(Manifold *m)
 	{
-		//Box *a = dynamic_cast<Box*>(m->a);
-		//Circle *b = dynamic_cast<Circle*>(m->b);
+		PolygonShape *a = dynamic_cast<PolygonShape*>(m->shapeA);
+		Circle *b = dynamic_cast<Circle*>(m->shapeB);
 
-		//// Vector from a to b
-		//Vector2F delta = b->getCenter() - a->getCenter();
+		// Rotation only matrices (used later)
+		Matrix4 worldToBodyARotationOnly;
+		Matrix4 bodyAToWorldRotationOnly;
+		Matrix4 bodyBToWorldRotationOnly;
 
-		//// Calculate half extents of box
-		//Vector2F halfExtents = a->getSize() * 0.5f;
+		// Get body to world matrices
+		Matrix4 bodyAToWorld = m->bodyA->bodyLocalToWorld(&bodyAToWorldRotationOnly);
+		Matrix4 bodyBToWorld = m->bodyB->bodyLocalToWorld(&bodyBToWorldRotationOnly);
 
-		//// Closes point on a to the center of b
-		//Vector2F closest;
-		//closest.x = math::clamp(delta.x, -halfExtents.x, halfExtents.x);
-		//closest.y = math::clamp(delta.y, -halfExtents.y, halfExtents.y);
+		// Get matrices for transforming from bodyB space to bodyA space
+		Matrix4 bodyBToBodyA = m->bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
+		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
-		//// Delta did not change, meaning that the center of
-		//// the circle is inside the box
-		//bool inside = delta == closest;
-		//if(inside)
-		//{
-		//	// TODO
-		//}
+		// Calculate vector from shape in bodyA to shape in bodyB
+		const Vector2F shapePositionB = bodyBToBodyA * b->getLocalPosition();
+		const float radiusOfB = b->getRadius();
+		const Vector2F deltaPosition = shapePositionB - a->getLocalPosition();
 
-		//Vector2F normal = delta - closest;
-		//float lengthSquared = normal.lengthSquared();
-		//float radius = b->getRadius();
+		PhysicsPolygon &polygonA = *a->getPolygon();
+		float separation = -FLT_MAX;
+		int faceNormal = 0;
+		for(int i = 0; i < polygonA.vertices.size(); i++)
+		{
+			float s = polygonA.edges[i]->normal.dot(shapePositionB - polygonA.vertices[i]->position);
+			if(s > radiusOfB)
+			{
+				return;
+			}
 
-		//// Check if distance to the closest point is less than
-		//// the circle radius
-		//if(lengthSquared > radius * radius && !inside)
-		//	return;
+			if(s > separation)
+			{
+				separation = s;
+				faceNormal = i;
+			}
+		}
 
-		//float length = sqrt(lengthSquared);
+		PhysicsPolygon::Edge *edge = polygonA.edges[faceNormal];
 
-		//if(inside)
-		//{
-		//	// TODO
-		//}
-		//else
-		//{
-		//	m->normal = normal / length;
-		//	m->penetration = radius - length;
-		//}
-		//m->contactCount += 1;
+		if(separation < 0.0f)
+		{
+			m->normal = edge->normal;
+			m->contactPoints.push_back(bodyAToWorld * (m->normal * radiusOfB + bodyBToBodyA * b->getLocalPosition()));
+			m->normal = bodyAToWorldRotationOnly * m->normal;
+			m->penetration = radiusOfB;
+			return;
+		}
+
+		float dot1 = (shapePositionB - edge->v0->position).dot(edge->v1->position - edge->v0->position);
+		float dot2 = (shapePositionB - edge->v1->position).dot(edge->v0->position - edge->v1->position);
+		if(dot1 <= 0.0f)
+		{
+			if((shapePositionB - edge->v0->position).lengthSquared() > radiusOfB * radiusOfB)
+			{
+				return;
+			}
+
+			m->normal = -(edge->v0->position - shapePositionB).normalized();
+			m->contactPoints.push_back(bodyAToWorld * (edge->v0->position + a->getLocalPosition()));
+		}
+		else if(dot2 <= 0.0f)
+		{
+			if((shapePositionB - edge->v1->position).lengthSquared() > radiusOfB * radiusOfB)
+			{
+				return;
+			}
+
+			m->normal = -(edge->v1->position - shapePositionB).normalized();
+			m->contactPoints.push_back(bodyAToWorld * (edge->v1->position + a->getLocalPosition()));
+		}
+		else
+		{
+			if(edge->normal.dot(shapePositionB - edge->v0->position) > radiusOfB)
+			{
+				return;
+			}
+
+			m->normal = edge->normal;
+			m->contactPoints.push_back(bodyAToWorld * (-m->normal * radiusOfB + bodyBToBodyA * b->getLocalPosition()));
+		}
+		m->normal = bodyAToWorldRotationOnly * m->normal;
 	}
 
-	void CircleToAABB(Manifold *m)
+	void CircleToPolygon(Manifold *m)
 	{
-		//m->swapShapes();
-		//AABBToCircle(m);
-	}
-
-	void AABBToAABB(Manifold *m)
-	{
-		//Box *a = dynamic_cast<Box*>(m->a);
-		//Box *b = dynamic_cast<Box*>(m->b);
-
-		//// Calculate vector from a to b
-		//Vector2F d = b->getCenter() - a->getCenter();
-
-		//// Calculate half extents for each object
-		//Vector2F halfExtentsOfA = a->getSize() * 0.5f;
-		//Vector2F halfExtentsOfB = b->getSize() * 0.5f;
-
-		//// Calculate overlap on x-axis
-		//Vector2F overlaps = halfExtentsOfA + halfExtentsOfB - math::abs(d);
-
-		//// SAT test on x-axis
-		//if(overlaps.x > 0)
-		//{
-		//	// SAT test on y-axis
-		//	if(overlaps.y > 0)
-		//	{
-		//		// Find out which axis is axis of least penetration
-		//		if(overlaps.x < overlaps.y)
-		//		{
-		//			// Create collision normal in the direction of B
-		//			if(d.x < 0)
-		//				m->normal = Vector2F(-1, 0);
-		//			else
-		//				m->normal = Vector2F(1, 0);
-		//			m->penetration = overlaps.x;
-		//		}
-		//		else
-		//		{
-		//			// Create collision normal in the direction of B
-		//			if(d.y < 0)
-		//				m->normal = Vector2F(0, -1);
-		//			else
-		//				m->normal = Vector2F(0, 1);
-		//			m->penetration = overlaps.y;
-		//		}
-		//		m->contactCount += 1;
-		//		return;
-		//	}
-		//}
+		m->swapAAndB();
+		PolygonToCircle(m);
 	}
 
 	PhysicsPolygon::Vertex *GetFarthestPoint(PhysicsPolygon *polygon, Vector2F dir)
 	{
 		float maxDist = -FLT_MAX;
 		int index = 0;
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < polygon->vertices.size(); i++)
 		{
 			float dist = polygon->vertices[i]->position.dot(dir);
 			if(dist > maxDist)
@@ -210,10 +224,10 @@ namespace manifolds
 		return clipEdges;
 	}
 
-	void AABBToOBB(Manifold *m)
+	void PolygonToPolygon(Manifold *m)
 	{
-		Box *a = dynamic_cast<Box*>(m->shapeA);
-		Box *b = dynamic_cast<Box*>(m->shapeB);
+		PolygonShape *a = dynamic_cast<PolygonShape*>(m->shapeA);
+		PolygonShape *b = dynamic_cast<PolygonShape*>(m->shapeB);
 
 		// Rotation only matrices (used later)
 		Matrix4 worldToBodyARotationOnly;
@@ -228,21 +242,25 @@ namespace manifolds
 		Matrix4 bodyBToBodyA = m->bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
 		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
-		// Calculate vector from bodyA to bodyB
-		Vector2F deltaPositions = bodyBToBodyA * b->getRelativePosition() - a->getRelativePosition();
+		// Calculate vector from shape in bodyA to shape in bodyB
+		Vector2F deltaPositions = bodyBToBodyA * b->getLocalPosition() - a->getLocalPosition();
 
-		// TODO: Fix memory leak here
-		PhysicsPolygon polygonA;
-		PhysicsPolygon polygonB;
-		a->getPolygon(&polygonA);
-		b->getPolygon(&polygonB, bodyBToBodyARotationOnly, bodyBToBodyA);
+		PhysicsPolygon &polygonA = *a->getPolygon();
+		PhysicsPolygon &polygonB = *b->getPolygon(bodyBToBodyARotationOnly, bodyBToBodyA);
 
-		// Pick the axes that lie between the two bodies
-		Vector2F axes[4];
-		axes[0] = polygonA.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[0]->normal : polygonA.edges[2]->normal;
-		axes[1] = polygonA.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonA.edges[1]->normal : polygonA.edges[3]->normal;
-		axes[2] = polygonB.edges[0]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[0]->normal : polygonB.edges[2]->normal;
-		axes[3] = polygonB.edges[1]->normal.dot(deltaPositions) > 0.0f ? polygonB.edges[1]->normal : polygonB.edges[3]->normal;
+		vector<Vector2F> axes;
+		for(PhysicsPolygon::Edge *edge : polygonA.edges)
+		{
+			// TODO: Does this actually work?
+			const Vector2F axis = edge->normal.dot(deltaPositions) > 0.0f ? edge->normal : -edge->normal;
+			axes.push_back(axis); // TODO: Verify that the same axis is not added twice
+		}
+
+		for(PhysicsPolygon::Edge *edge : polygonB.edges)
+		{
+			const Vector2F axis = edge->normal.dot(deltaPositions) > 0.0f ? edge->normal : -edge->normal;
+			axes.push_back(axis);
+		}
 
 		// Determine if the shapes are overlapping by iterating every axis of both shapes
 		// and checking the separation along every axis (SAT)
@@ -253,53 +271,56 @@ namespace manifolds
 		//
 		// For oriented boxes, there are 4 axes (normals) to check in total, 2 per box
 		float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < axes.size(); i++)
 		{
-			Vector2F axis = axes[i];
+			const Vector2F axis = axes[i];
 
 			// Find min and max extents when projected onto the axis
 			// TODO: Optimizations may be done here since we are already using
 			//       body A's space as reference
-			float halfWidthOfA;
+			float dotMinA = FLT_MAX;
+			float dotMaxA = -FLT_MAX;
 			{
-				float dotMin = FLT_MAX;
-				float dotMax = -FLT_MAX;
-				for(int j = 0; j < 4; j++)
+				for(int j = 0; j < polygonA.vertices.size(); j++)
 				{
-					float dot = axis.dot(polygonA.vertices[j]->localPosition);
-					if(dot > dotMax)
+					float dot = axis.dot(polygonA.vertices[j]->position);
+					if(dot > dotMaxA)
 					{
-						dotMax = dot;
+						dotMaxA = dot;
 					}
-					if(dot < dotMin)
+					if(dot < dotMinA)
 					{
-						dotMin = dot;
+						dotMinA = dot;
 					}
 				}
-				halfWidthOfA = (dotMax - dotMin) * 0.5f;
 			}
 
-			float halfWidthOfB;
+			float dotMinB = FLT_MAX;
+			float dotMaxB = -FLT_MAX;
 			{
-				float dotMin = FLT_MAX;
-				float dotMax = -FLT_MAX;
-				for(int j = 0; j < 4; j++)
+				for(int j = 0; j < polygonB.vertices.size(); j++)
 				{
-					float dot = axis.dot(polygonB.vertices[j]->localPosition);
-					if(dot > dotMax)
+					float dot = axis.dot(polygonB.vertices[j]->position);
+					if(dot > dotMaxB)
 					{
-						dotMax = dot;
+						dotMaxB = dot;
 					}
-					if(dot < dotMin)
+					if(dot < dotMinB)
 					{
-						dotMin = dot;
+						dotMinB = dot;
 					}
 				}
-				halfWidthOfB = (dotMax - dotMin) * 0.5f;
 			}
 
-			float projectedDistance = abs(axis.dot(deltaPositions)); // Distance between A and B along the axis
-			float penetration = halfWidthOfA + halfWidthOfB - projectedDistance;
+			float penetration;
+			if(dotMaxA > dotMaxB)
+			{
+				penetration = dotMaxB - dotMinA;
+			}
+			else
+			{
+				penetration = dotMaxA - dotMinB;
+			}
 
 			// SAT: Return if no overlap along this axis
 			if(penetration < 0.0f)
@@ -373,7 +394,7 @@ namespace manifolds
 
 		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
 		{
-			m->contactPoints.push_back(bodyAToWorld *clippedEdge[1]);
+			m->contactPoints.push_back(bodyAToWorld * clippedEdge[1]);
 		}
 
 		// Transform collision normal to world space
@@ -476,10 +497,13 @@ public:
 		
 		getWindow()->getGraphicsContext()->setPointSize(5.0f);
 
-		m_manifoldGenerationFunctionTable[Shape::BOX][Shape::BOX] = manifolds::AABBToOBB;//manifolds::AABBToAABB;
-		m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::BOX] = manifolds::CircleToAABB;
-		m_manifoldGenerationFunctionTable[Shape::BOX][Shape::CIRCLE] = manifolds::AABBToCircle;
+		//m_manifoldGenerationFunctionTable[Shape::BOX][Shape::BOX] = manifolds::AABBToOBB;//manifolds::AABBToAABB;
+		//m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::BOX] = manifolds::CircleToAABB;
+		//m_manifoldGenerationFunctionTable[Shape::BOX][Shape::CIRCLE] = manifolds::AABBToCircle;
 		m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::CIRCLE] = manifolds::CircleToCircle;
+		m_manifoldGenerationFunctionTable[Shape::CIRCLE][Shape::POLYGON] = manifolds::CircleToPolygon;
+		m_manifoldGenerationFunctionTable[Shape::POLYGON][Shape::CIRCLE] = manifolds::PolygonToCircle;
+		m_manifoldGenerationFunctionTable[Shape::POLYGON][Shape::POLYGON] = manifolds::PolygonToPolygon;
 
 		Game::onStart(e);
 	}
@@ -544,7 +568,7 @@ public:
 							ResolveCollision(&manifold);
 							CorrectPositions(&manifold);
 							m_manifolds.push_back(manifold);
-							//body->m_isColliding = otherBody->m_isColliding = true;
+							body->m_isColliding = otherBody->m_isColliding = true;
 						}
 					}
 				}
@@ -587,11 +611,6 @@ public:
 		}
 
 		Game::onDraw(e);
-	}
-
-	Vector2F perp(const Vector2F &v)
-	{
-		return Vector2F(-v.y, v.x);
 	}
 
 	void ResolveCollision(Manifold *m)
@@ -725,14 +744,20 @@ public:
 		{
 			case Keycode::SAUCE_KEY_1:
 			{
-				//Circle *circle = new Circle;
-				//circle->setCenter(e->getInputManager()->getPosition());
-				//circle->setRadius(25.0f);
-				//if(e->getModifiers() & KeyEvent::SHIFT)
-				//{
-				//	circle->setMass(0.0f);
-				//}
-				//shapes.push_back(circle);
+				Body *body = new Body();
+				body->setPosition(e->getInputManager()->getPosition());
+				{
+					Circle *circle = new Circle;
+					circle->setRadius(25.0f);
+					body->addShape(circle);
+				}
+
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					body->setMass(0.0f);
+				}
+
+				m_bodies.push_back(body);
 			}
 			break;
 
@@ -742,7 +767,7 @@ public:
 				body->setPosition(e->getInputManager()->getPosition());
 				{
 					Box *box = new Box;
-					box->setRelativePosition(Vector2F(0.0f, 0.0f));
+					box->setLocalPosition(Vector2F(0.0f, 0.0f));
 					box->setSize(Vector2F(50.0f, 50.0f));
 					body->addShape(box);
 				}
@@ -762,14 +787,63 @@ public:
 				body->setPosition(e->getInputManager()->getPosition());
 				{
 					Box *box = new Box;
-					box->setRelativePosition(Vector2F(0.0f, 0.0f));
+					box->setLocalPosition(Vector2F(0.0f, 0.0f));
 					box->setSize(Vector2F(50.0f, 50.0f));
 					body->addShape(box);
 
 					Box *box2 = new Box;
-					box2->setRelativePosition(Vector2F(200.0f, 0.0f));
+					box2->setLocalPosition(Vector2F(200.0f, 0.0f));
 					box2->setSize(Vector2F(50.0f, 50.0f));
 					body->addShape(box2);
+				}
+
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					body->setMass(0.0f);
+				}
+
+				m_bodies.push_back(body);
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_4:
+			{
+				Body *body = new Body();
+				body->setPosition(e->getInputManager()->getPosition());
+				{
+					PolygonShape *polygon = new PolygonShape;
+					const Vector2F points[] = {
+						Vector2F(-25.0f, -25.0f),
+						Vector2F(25.0f, 25.0f),
+						Vector2F(-25.0f, 25.0f),
+					};
+					polygon->initialize(points, 3);
+					body->addShape(polygon);
+				}
+
+				if(e->getModifiers() & KeyEvent::SHIFT)
+				{
+					body->setMass(0.0f);
+				}
+
+				m_bodies.push_back(body);
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_5:
+			{
+				Body *body = new Body();
+				body->setPosition(e->getInputManager()->getPosition());
+				{
+					PolygonShape *polygon = new PolygonShape;
+					const Vector2F points[] = {
+						Vector2F(-25.0f, -25.0f),
+						Vector2F(35.0f, -30.0f),
+						Vector2F(25.0f, 25.0f),
+						Vector2F(-30.0f, -15.0f)
+					};
+					polygon->initialize(points, 4);
+					body->addShape(polygon);
 				}
 
 				if(e->getModifiers() & KeyEvent::SHIFT)

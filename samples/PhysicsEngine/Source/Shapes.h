@@ -10,26 +10,26 @@ class Shape
 public:
 	enum Type
 	{
-		BOX,
+		POLYGON,
 		CIRCLE,
 		NUM_SHAPES
 	};
 
 	Shape(Type type) :
 		m_type(type),
-		m_relativePosition(0.0f, 0.0f)
+		m_localPosition(0.0f, 0.0f),
+		m_localAngle(0.0f)
 	{
 	}
 
-	// TODO: Rename bodyLocalPosition?
-	void setRelativePosition(Vector2F relativePosition)
+	void setLocalPosition(Vector2F relativePosition)
 	{
-		m_relativePosition = relativePosition;
+		m_localPosition = relativePosition;
 	}
 
-	Vector2F getRelativePosition() const
+	Vector2F getLocalPosition() const
 	{
-		return m_relativePosition;
+		return m_localPosition;
 	}
 
 	virtual void draw(GraphicsContext *graphicsContext, Color color) const = 0;
@@ -41,65 +41,62 @@ public:
 
 private:
 	const Type m_type;
-	Vector2F m_relativePosition;
+	Vector2F m_localPosition;
+	float m_localAngle;
 };
 
-class Box : public Shape
+class PolygonShape : public Shape
 {
 public:
-	Box() :
-		Shape(BOX),
-		m_size(10.0f, 10.0f)
+	PolygonShape() :
+		Shape(POLYGON)
 	{
-		m_normals[0] = Vector2F( 0.0f, -1.0f); // Top
-		m_normals[1] = Vector2F( 1.0f,  0.0f); // Right
-		m_normals[2] = Vector2F( 0.0f,  1.0f); // Bottom
-		m_normals[3] = Vector2F(-1.0f,  0.0f); // Left
+	}
+
+	void initialize(const Vector2F *points, const int numPoints)
+	{
+		// TODO: Add an automatic centering option
+		m_polygon.init(points, numPoints);
 	}
 
 	void draw(GraphicsContext *graphicsContext, Color color) const override
 	{
-		static Vertex vertices[4];
-		static uint indices[8] = {
-			0, 1,
-			1, 3,
-			3, 2,
-			2, 0
-		};
+		// Static draw data
+		static vector<Vertex> vertices;
+		static vector<uint> indices;
 
-		Vector2F position = getRelativePosition();
-		Vector2F size = getSize();
-		Vector2F halfSize = size * 0.5f;
-
-		Matrix4 mat;
-		mat.scale(size.x, size.y, 1.0f);
- 		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		//mat.rotateZ(math::radToDeg(m_angle));
-		mat.translate(position.x, position.y, 0.0f);
-
-		for(int i = 0; i < 4; i++)
+		// Generate vertex and index arrays
+		const vector<PhysicsPolygon::Vertex*> &polygonVertices = m_polygon.vertices;
+		const int numVertices = polygonVertices.size();
+		for(int i = 0; i < numVertices; i++)
 		{
-			Vector2F pos = (mat * QUAD_VERTICES[i]).getXY();
+			if(i >= vertices.size())
+			{
+				vertices.push_back(Vertex());
+				indices.push_back(uint());
+				indices.push_back(uint());
+			}
+
+			const Vector2F pos = polygonVertices[i]->localPosition;
 			vertices[i].set2f(VERTEX_POSITION, pos.x, pos.y);
 			vertices[i].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+			indices[i*2] = i;
+			indices[i*2+1] = (i + 1) % numVertices;
 		}
 
-		//vertices[0].set2f(VERTEX_TEX_COORD, m_textureRegion.uv0.x, m_textureRegion.uv0.y);
-		//vertices[1].set2f(VERTEX_TEX_COORD, m_textureRegion.uv1.x, m_textureRegion.uv0.y);
-		//vertices[2].set2f(VERTEX_TEX_COORD, m_textureRegion.uv0.x, m_textureRegion.uv1.y);
-		//vertices[3].set2f(VERTEX_TEX_COORD, m_textureRegion.uv1.x, m_textureRegion.uv1.y);
+		// Draw outline
+		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, vertices.data(), numVertices, indices.data(), numVertices * 2);
 
-		//graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, vertices, 4, QUAD_INDICES, 6);
-		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, vertices, 4, indices, 8);
-
-
-		Vector2F transformedNormals[4];
-		getTransformedNormals(transformedNormals, Matrix4());
-		for(int i = 0; i < 4; i++)
+		// Draw box normals
+		for(int i = 0; i < numVertices; i++)
 		{
-			graphicsContext->drawArrow(position + transformedNormals[i] * halfSize, position + transformedNormals[i] * (halfSize + Vector2F(15.0f)), Color::Blue);
+			const PhysicsPolygon::Edge *edge = m_polygon.edges[i];
+			const Vector2F edgeNormal = edge->localNormal;
+			const Vector2F edgeCenter = (edge->v0->localPosition + edge->v1->localPosition) * 0.5f;
+			graphicsContext->drawArrow(edgeCenter, edgeCenter + edgeNormal * 15.0f, Color::Blue);
 		}
 
+		// Draw debug points
 		for(pair<Vector2F, Color> p : debugPoints)
 		{
 			Vertex v;
@@ -111,104 +108,107 @@ public:
 
 	bool contains(Vector2F point) const override
 	{
-		const Vector2F halfSize = getSize() * 0.5f;
-		const Vector2F min = getRelativePosition() - halfSize;
-		const Vector2F max = getRelativePosition() + halfSize;
-		return point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y;
-	}
-
-	Vector2F getSize() const { return m_size; }
-	void setSize(const Vector2F size) { m_size = size; }
-
-	//Polygon *getPolygon() const
-	void getPolygon(PhysicsPolygon *polygon, Matrix4 normalTransform = Matrix4(), Matrix4 pointTransform = Matrix4()) const
-	{
-		Vector2F normals[4], corners[4];
-		getTransformedNormals(normals, normalTransform);
-		getCornerVectors(corners, normalTransform);
-		swap(corners[2], corners[3]);
-		polygon->init(corners, pointTransform * getRelativePosition(), normals, 4);
-	}
-
-	void getTransformedNormals(Vector2F *transformedNormals, Matrix4 normalTransform) const
-	{
-		Vector2F position = getRelativePosition();
-		Vector2F size = getSize();
-		Vector2F halfSize = size * 0.5f;
-
-		//Matrix4 mat;
-		//mat.rotateZ(math::radToDeg(m_angle));
-
-		for(int i = 0; i < 4; i++)
+		for(PhysicsPolygon::Edge *edge : m_polygon.edges)
 		{
-			transformedNormals[i] = normalTransform * m_normals[i];
+			if(edge->localNormal.dot(edge->v0->localPosition - point) < 0.0f)
+			{
+				return false;
+			}
 		}
+		return true;
 	}
 
-	void getCornerVectors(Vector2F *cornerVectors, Matrix4 pointTransform) const
+	PhysicsPolygon *getPolygon(Matrix4 normalTransform = Matrix4(), Matrix4 pointTransform = Matrix4())
 	{
-		Vector2F position = getRelativePosition();
-		Vector2F size = getSize();
-		Vector2F halfSize = size * 0.5f;
+		m_polygon.setTransform(pointTransform, normalTransform);
+		return &m_polygon;
+	}
 
-		Matrix4 mat;
-		mat.scale(size.x, size.y, 1.0f);
-		mat.translate(-halfSize.x, -halfSize.y, 0.0f);
-		//mat.rotateZ(math::radToDeg(m_angle));
-		//mat.rotateZ(math::radToDeg(45.0f));
+private:
+	PhysicsPolygon m_polygon;
+};
 
-		mat = pointTransform * mat;
+class Box : public PolygonShape
+{
+public:
+	Box()
+	{
+		setSize(Vector2F(10.f, 10.f));
+	}
 
-		for(int i = 0; i < 4; i++)
-		{
-			cornerVectors[i] = (mat * QUAD_VERTICES[i]).getXY();
-		}
+	Vector2F getSize() const
+	{
+		return m_size;
+	}
+
+	void setSize(const Vector2F size)
+	{
+		// TODO: Add dirty flag
+		m_size = size;
+		const Vector2F position = getLocalPosition();
+		const Vector2F halfSize = size * 0.5f;
+		const Vector2F corners[4] = {
+			 Vector2F(position.x - halfSize.x, position.y - halfSize.y),
+			 Vector2F(position.x + halfSize.x, position.y - halfSize.y),
+			 Vector2F(position.x + halfSize.x, position.y + halfSize.y),
+			 Vector2F(position.x - halfSize.x, position.y + halfSize.y)
+		};
+		initialize(corners, 4);
 	}
 
 private:
 	Vector2F m_size;
-	Vector2F m_normals[4];
 };
 
-//class Circle : public Shape
-//{
-//public:
-//	Circle() :
-//		Shape(CIRCLE),
-//		position(0.0f),
-//		radius(10.0f)
-//	{
-//	}
-//	
-//	Vector2F getCenter() const override
-//	{
-//		return position;
-//	}
-//	
-//	void setCenter(Vector2F center) override
-//	{
-//		position = center;
-//	}
-//	
-//	void move(Vector2F deltaPosition) override
-//	{
-//		position += deltaPosition;
-//	}
-//
-//	void draw(GraphicsContext *graphicsContext, Color color) const override
-//	{
-//		graphicsContext->drawCircle(position, radius, 32, color);
-//	}
-//
-//	bool contains(Vector2F point) const override
-//	{
-//		return (position - point).lengthSquared() < radius * radius;
-//	}
-//
-//	float getRadius() const { return radius; }
-//	void setRadius(const float rad) { radius = rad; }
-//
-//private:
-//	Vector2F position;
-//	float radius;
-//};
+class Circle : public Shape
+{
+public:
+	Circle() :
+		Shape(CIRCLE),
+		m_radius(10.0f)
+	{
+	}
+
+	void draw(GraphicsContext *graphicsContext, Color color) const override
+	{
+		// Static draw data
+		static vector<Vertex> vertices;
+		static vector<uint> indices;
+		const int segments = 32;
+		const int numVertices = segments + 1;
+
+		// Make sure we have enough vertices
+		if(vertices.size() < numVertices)
+		{
+			vertices.resize(numVertices);
+			indices.resize(numVertices * 2);
+		}
+
+		const Vector2F position = getLocalPosition();
+		vertices[0].set2f(VERTEX_POSITION, position.x, position.y);
+		vertices[0].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+		indices[0] = 0;
+		indices[1] = 1;
+		for(int i = 0; i < segments; ++i)
+		{
+			float r = (2.0f * PI * i) / segments;
+			vertices[i+1].set2f(VERTEX_POSITION, position.x + cos(r) * m_radius, position.y + sin(r) * m_radius);
+			vertices[i+1].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+			indices[(i+1)*2] = i+1;
+			indices[(i+1)*2+1] = i+1 == segments ? 1 : i+2;
+		}
+
+		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, vertices.data(), numVertices, indices.data(), numVertices * 2);
+	}
+
+	bool contains(Vector2F point) const override
+	{
+		return (getLocalPosition() - point).lengthSquared() < m_radius * m_radius;
+	}
+
+	float getRadius() const { return m_radius; }
+	void setRadius(const float rad) { m_radius = rad; }
+
+private:
+	float m_radius;
+};

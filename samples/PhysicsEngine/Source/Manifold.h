@@ -15,7 +15,7 @@ public:
 	{
 	}
 
-	void swapAB()
+	void swapAAndB()
 	{
 		Body *tmpBody = bodyA;
 		const_cast<Body*>(bodyA) = bodyB;
