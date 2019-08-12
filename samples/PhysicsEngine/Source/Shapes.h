@@ -3,7 +3,7 @@
 #include <Sauce/Sauce.h>
 using namespace sauce;
 
-#include "Geometry.h"
+Vector2F perp(const Vector2F &v);
 
 class Shape
 {
@@ -48,6 +48,41 @@ private:
 class PolygonShape : public Shape
 {
 public:
+	struct Edge;
+
+	struct Vertex
+	{
+		Vertex(const int id) :
+			id(id),
+			leftEdge(nullptr),
+			rightEdge(nullptr)
+		{
+		}
+
+		const int id;
+		Vector2F localPosition;
+		Vector2F position;
+		Edge *leftEdge, *rightEdge;
+	};
+
+	struct Edge
+	{
+		Edge(int id) :
+			id(id),
+			v0(nullptr),
+			v1(nullptr),
+			leftEdge(nullptr),
+			rightEdge(nullptr)
+		{
+		}
+
+		const int id;
+		Vector2F localNormal;
+		Vector2F normal;
+		Vertex *v0, *v1;
+		Edge *leftEdge, *rightEdge;
+	};
+
 	PolygonShape() :
 		Shape(POLYGON)
 	{
@@ -56,41 +91,97 @@ public:
 	void initialize(const Vector2F *points, const int numPoints)
 	{
 		// TODO: Add an automatic centering option
-		m_polygon.init(points, numPoints);
+		// TODO: Assert convexness
+
+		if(vertices.size() > 0) free();
+
+		for(int i = 0; i < numPoints; i++)
+		{
+			Vertex *v = new Vertex(i);
+			v->localPosition = v->position = points[i];
+			vertices.push_back(v);
+		}
+
+		Edge *previousEdge = nullptr;
+		for(int i = 0; i < numPoints; i++)
+		{
+			Edge *edge = new Edge(i);
+			edge->v0 = vertices[i];
+			edge->v0->rightEdge = edge;
+			edge->v1 = vertices[(i + 1) % numPoints];
+			edge->v1->leftEdge = edge;
+			edge->localNormal = edge->normal = perp((edge->v0->localPosition - edge->v1->localPosition).normalized()); // TODO: Cache all axies of the polygon
+			if(previousEdge)
+			{
+				edge->leftEdge = previousEdge;
+				previousEdge->rightEdge = edge;
+			}
+			previousEdge = edge;
+			edges.push_back(edge);
+		}
+		edges[0]->leftEdge = edges[numPoints - 1];
+	}
+
+	void setTransform(const Matrix4 &pointTransform, const Matrix4 &normalTransform)
+	{
+		for(Vertex *v : vertices)
+		{
+			v->position = pointTransform * v->localPosition;
+		}
+
+		for(Edge *e : edges)
+		{
+			e->normal = normalTransform * e->localNormal;
+		}
+	}
+
+	void free()
+	{
+		for(Vertex *v : vertices)
+		{
+			delete v;
+		}
+		vertices.clear();
+
+		for(Edge *v : edges)
+		{
+			delete v;
+		}
+		edges.clear();
 	}
 
 	void draw(GraphicsContext *graphicsContext, Color color) const override
 	{
 		// Static draw data
-		static vector<Vertex> vertices;
+		static vector<sauce::Vertex> drawVertices;
 		static vector<uint> indices;
 
 		// Generate vertex and index arrays
-		const vector<PhysicsPolygon::Vertex*> &polygonVertices = m_polygon.vertices;
+		const vector<Vertex*> &polygonVertices = vertices;
 		const int numVertices = polygonVertices.size();
 		for(int i = 0; i < numVertices; i++)
 		{
-			if(i >= vertices.size())
+			if(i >= drawVertices.size())
 			{
-				vertices.push_back(Vertex());
+				drawVertices.push_back(sauce::Vertex());
 				indices.push_back(uint());
 				indices.push_back(uint());
 			}
 
 			const Vector2F pos = polygonVertices[i]->localPosition;
-			vertices[i].set2f(VERTEX_POSITION, pos.x, pos.y);
-			vertices[i].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+			drawVertices[i].set2f(VERTEX_POSITION, pos.x, pos.y);
+			drawVertices[i].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
 			indices[i*2] = i;
 			indices[i*2+1] = (i + 1) % numVertices;
 		}
 
 		// Draw outline
-		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, vertices.data(), numVertices, indices.data(), numVertices * 2);
+		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, drawVertices.data(), numVertices, indices.data(), numVertices * 2);
 
 		// Draw box normals
 		for(int i = 0; i < numVertices; i++)
 		{
-			const PhysicsPolygon::Edge *edge = m_polygon.edges[i];
+			const Edge *edge = edges[i];
 			const Vector2F edgeNormal = edge->localNormal;
 			const Vector2F edgeCenter = (edge->v0->localPosition + edge->v1->localPosition) * 0.5f;
 			graphicsContext->drawArrow(edgeCenter, edgeCenter + edgeNormal * 15.0f, Color::Blue);
@@ -99,7 +190,7 @@ public:
 		// Draw debug points
 		for(pair<Vector2F, Color> p : debugPoints)
 		{
-			Vertex v;
+			sauce::Vertex v;
 			v.set2f(VERTEX_POSITION, p.first.x, p.first.y);
 			v.set4ub(VERTEX_COLOR, p.second.getR(), p.second.getG(), p.second.getB(), p.second.getA());
 			graphicsContext->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
@@ -108,7 +199,7 @@ public:
 
 	bool contains(Vector2F point) const override
 	{
-		for(PhysicsPolygon::Edge *edge : m_polygon.edges)
+		for(Edge *edge : edges)
 		{
 			if(edge->localNormal.dot(edge->v0->localPosition - point) < 0.0f)
 			{
@@ -118,14 +209,8 @@ public:
 		return true;
 	}
 
-	PhysicsPolygon *getPolygon(Matrix4 normalTransform = Matrix4(), Matrix4 pointTransform = Matrix4())
-	{
-		m_polygon.setTransform(pointTransform, normalTransform);
-		return &m_polygon;
-	}
-
-private:
-	PhysicsPolygon m_polygon;
+	vector<Vertex*> vertices;
+	vector<Edge*> edges;
 };
 
 class Box : public PolygonShape
@@ -174,8 +259,8 @@ public:
 		// Static draw data
 		static vector<Vertex> vertices;
 		static vector<uint> indices;
-		const int segments = 32;
-		const int numVertices = segments + 1;
+		static const int segments = 32;
+		static const int numVertices = segments + 1;
 
 		// Make sure we have enough vertices
 		if(vertices.size() < numVertices)

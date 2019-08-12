@@ -11,12 +11,15 @@ class Body
 public:
 	Body() :
 		m_position(0.0f, 0.0f),
+		m_positionPrev(0.0f, 0.0f),
 		m_angle(0.0f),
+		m_anglePrev(0.0f),
 		m_velocity(0.0f, 0.0f),
 		m_angularVelocity(0.0f),
 		m_staticFriction(0.2f),
 		m_dynamicFriction(0.1f),
-		m_restitution(0.5f)
+		m_restitution(0.5f),
+		m_transformsDirty(true)
 	{
 		setMass(0.001f);
 		setInertia(1.0f);
@@ -24,7 +27,8 @@ public:
 
 	void setPosition(Vector2F position)
 	{
-		m_position = position;
+		m_position = m_positionPrev = position;
+		m_transformsDirty = true;
 	}
 
 	Vector2F getPosition() const
@@ -34,7 +38,8 @@ public:
 
 	void setAngle(const float angle)
 	{
-		m_angle = angle;
+		m_angle = m_anglePrev = angle;
+		m_transformsDirty = true;
 	}
 
 	float getAngle() const
@@ -45,14 +50,16 @@ public:
 	void move(Vector2F deltaPosition)
 	{
 		m_position += deltaPosition;
+		m_transformsDirty = true;
 	}
 
 	void rotate(const float angle)
 	{
 		m_angle += angle;
+		m_transformsDirty = true;
 	}
 
-	bool contains(const Vector2F point) const
+	bool contains(const Vector2F point)
 	{
 		const Vector2F transformedPoint = worldToBodyLocal() * point;
 		for(Shape *shape : m_shapes)
@@ -65,38 +72,74 @@ public:
 		return false;
 	}
 
-	void draw(GraphicsContext *graphicsContext, Color color) const
+	void draw(GraphicsContext *graphicsContext, Color color, float alpha)
 	{
-		graphicsContext->pushMatrix(bodyLocalToWorld());
+		graphicsContext->pushMatrix(bodyLocalToWorld(alpha));
 		for(Shape *shape : m_shapes)
 		{
 			shape->draw(graphicsContext, color);
 		}
 		graphicsContext->popMatrix();
+		m_positionPrev = m_position;
+		m_anglePrev = m_angle;
 	}
 
-	inline Matrix4 bodyLocalToWorld(Matrix4 *rotationOnlyMatrix = nullptr) const
+	Matrix4 bodyLocalToWorld(Matrix4 *rotationOnlyMatrix = nullptr)
+	{
+		//return bodyLocalToWorld(0,rotationOnlyMatrix); //problem
+		if(m_transformsDirty)
+		{
+			updateBodyToWorldMatrices();
+		}
+
+		if(rotationOnlyMatrix)
+		{
+			*rotationOnlyMatrix = m_bodyLocalToWorldRotationsOnly;
+		}
+
+		return m_bodyLocalToWorld;
+	}
+
+	inline Matrix4 bodyLocalToWorld(const float alpha, Matrix4 *rotationOnlyMatrix = nullptr) const
 	{
 		// Body relative shape transforms to world transform
 		Matrix4 localToWorld;
-		localToWorld.rotateZ(math::radToDeg(m_angle));
+		localToWorld.rotateZ(math::radToDeg(math::lerp(m_anglePrev, m_angle, alpha)));
 		if(rotationOnlyMatrix) *rotationOnlyMatrix = localToWorld;
-		localToWorld.translate(m_position.x, m_position.y, 0.0f);
+		const Vector2F position = math::lerp(m_positionPrev, m_position, alpha);
+		localToWorld.translate(position.x, position.y, 0.0f);
 		return localToWorld;
 	}
 
-	inline Matrix4 worldToBodyLocal(Matrix4 *rotationOnlyMatrix = nullptr) const
+	Matrix4 worldToBodyLocal(Matrix4 *rotationOnlyMatrix = nullptr)
+	{
+		//return worldToBodyLocal(0, rotationOnlyMatrix);
+		if(m_transformsDirty)
+		{
+			updateBodyToWorldMatrices();
+		}
+
+		if(rotationOnlyMatrix)
+		{
+			*rotationOnlyMatrix = m_worldToBodyLocalRotationsOnly;
+		}
+
+		return m_worldToBodyLocal;
+	}
+
+	inline Matrix4 worldToBodyLocal(const float alpha, Matrix4 *rotationOnlyMatrix = nullptr) const
 	{
 		// World transform to body relative shape transforms
 		Matrix4 worldToLocalRotation;
-		worldToLocalRotation.rotateZ(-math::radToDeg(m_angle));
+		worldToLocalRotation.rotateZ(-math::radToDeg(math::lerp(m_anglePrev, m_angle, alpha)));
 		if(rotationOnlyMatrix)
 		{
 			*rotationOnlyMatrix = worldToLocalRotation;
 		}
 
 		Matrix4 worldToLocal;
-		worldToLocal.translate(-m_position.x, -m_position.y, 0.0f);
+		const Vector2F position = math::lerp(m_positionPrev, m_position, alpha);
+		worldToLocal.translate(-position.x, -position.y, 0.0f);
 		worldToLocal = worldToLocalRotation * worldToLocal;
 		return worldToLocal;
 	}
@@ -142,14 +185,33 @@ public:
 	}
 
 	bool m_isColliding = false;
+
 private:
+	void updateBodyToWorldMatrices()
+	{
+		// Body relative shape transforms to world transform
+		m_bodyLocalToWorld = Matrix4();
+		m_bodyLocalToWorld.rotateZ(math::radToDeg(m_angle));
+		m_bodyLocalToWorldRotationsOnly = m_bodyLocalToWorld; // Copy rotation only matrix here
+		m_bodyLocalToWorld.translate(m_position.x, m_position.y, 0.0f);
+
+		// World transform to body relative shape transforms
+		m_worldToBodyLocalRotationsOnly = Matrix4();
+		m_worldToBodyLocalRotationsOnly.rotateZ(-math::radToDeg(m_angle));
+		m_worldToBodyLocal = Matrix4();
+		m_worldToBodyLocal.translate(-m_position.x, -m_position.y, 0.0f);
+		m_worldToBodyLocal = m_worldToBodyLocalRotationsOnly * m_worldToBodyLocal;
+
+		m_transformsDirty = false;
+	}
+
 	vector<Shape*> m_shapes;
 
 	float m_mass, m_massInv;
 	float m_inertia, m_inertiaInv;
 
-	Vector2F m_position;
-	float m_angle;
+	Vector2F m_position, m_positionPrev;
+	float m_angle, m_anglePrev;
 
 	Vector2F m_velocity;
 	float m_angularVelocity;
@@ -157,4 +219,10 @@ private:
 	float m_staticFriction;
 	float m_dynamicFriction;
 	float m_restitution;
+
+	bool m_transformsDirty;
+	Matrix4 m_bodyLocalToWorld;
+	Matrix4 m_bodyLocalToWorldRotationsOnly;
+	Matrix4 m_worldToBodyLocal;
+	Matrix4 m_worldToBodyLocalRotationsOnly;
 };

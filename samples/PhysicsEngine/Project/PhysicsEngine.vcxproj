@@ -174,12 +174,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\Collision.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
+    <ClCompile Include="..\Source\Scenes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Body.h" />
-    <ClInclude Include="..\Source\Geometry.h" />
+    <ClInclude Include="..\Source\Collision.h" />
+    <ClInclude Include="..\Source\Config.h" />
     <ClInclude Include="..\Source\Manifold.h" />
+    <ClInclude Include="..\Source\Scenes.h" />
     <ClInclude Include="..\Source\Shapes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
