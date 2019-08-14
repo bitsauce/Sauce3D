@@ -15,6 +15,7 @@ public:
 		SCENE_EMPTY,
 		SCENE_ENCLOSURE,
 		SCENE_SHAPES_TEST,
+		SCENE_RESTITUTION_TEST,
 		SCENE_BENCHMARK_CIRCLES,
 		SCENE_BENCHMARK_BOXES,
 		SCENE_BENCHMARK_POLYGONS,
@@ -28,4 +29,5 @@ private:
 	void setupCirclesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 	void setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 	void setupShapeTestScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
+	void setupRestitutionTestScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 };

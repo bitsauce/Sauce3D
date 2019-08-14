@@ -5,8 +5,6 @@
 #include "Shapes.h"
 #include "PhysicsGrid.h"
 
-// TODO: Create a BodyDef class, maybe
-
 struct BodyDef
 {
 	BodyDef() :
@@ -18,7 +16,7 @@ struct BodyDef
 		angularVelocity(0.0f),
 		staticFriction(0.2f),
 		dynamicFriction(0.1f),
-		restitution(0.1f)
+		restitution(0.5f)
 	{
 	}
 

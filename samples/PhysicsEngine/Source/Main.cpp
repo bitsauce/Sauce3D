@@ -29,7 +29,7 @@ using namespace sauce;
 //     etc.)
 // [x] Add AABB generation for circles
 // [ ] Make the drag functionality drag from the clicked point (may require joints)
-// [ ] Fix sinking bug with polygon <-> circle
+// [x] Fix sinking bug with polygon <-> circle
 // [ ] Implement "mass = volume * density" mass initialization
 // [ ] Fix drifting with stacked boxes (maybe caused by low mass?)
 // [ ] Do optimization

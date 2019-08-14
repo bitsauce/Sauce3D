@@ -161,6 +161,8 @@ namespace collision
 
 		float dot1 = (shapePositionB - edge->v0->position).dot(edge->v1->position - edge->v0->position);
 		float dot2 = (shapePositionB - edge->v1->position).dot(edge->v0->position - edge->v1->position);
+		m->penetration = radiusOfB - separation;
+
 		if(dot1 <= 0.0f)
 		{
 			if((shapePositionB - edge->v0->position).lengthSquared() > radiusOfB * radiusOfB)
