@@ -19,10 +19,15 @@ using namespace sauce;
 // [x] Add friction
 // [x] Add oriented boxes
 // [x] Fix the memory leak (generalize boxes as polygons)
-// [ ] Add angle to Box class
+// [ ] Add angle to Box class (maybe just rotate the box before init?)
 // [x] Add oriented polygons
 // [x] Add oriented circles
 // [ ] Implement a real broadphase
+// [ ] Optimize PhysicsGrid (add circlular buffer in each cell)
+// [ ] Fix AABB generation (rotated AABB, cache AABBs,
+//     consider what happens if a body's shape is added before setting its local position,
+//     etc.)
+// [ ] Add AABB generation for circles
 // [ ] Make the drag functionality drag from the clicked point (may require joints)
 // [ ] Fix sinking bug with polygon <-> circle
 // [ ] Implement "mass = volume * density" mass initialization
@@ -30,7 +35,8 @@ using namespace sauce;
 // [ ] Do optimization
 // [ ] Add grid to grid collision
 // [ ] Optimize the rendering
-// [ ] Finetune CircleToCircle
+// [x] Finetune CircleToCircle
+// [x] Finetune PolygonToPolygon
 // [ ] Consider adding ImGui
 
 /*
@@ -45,7 +51,17 @@ using namespace sauce;
 
 class PhysicsEngineGame : public Game
 {
-	SceneManager m_scene;
+	// PhysicsScene:
+	// Handles setup of example scenes
+	PhysicsScene m_scene;
+
+	// List of all bodies
+	list<Body*> m_bodies;
+
+	// PhysicsGrid:
+	// Manages the spatial division of physics bodies
+	PhysicsGrid m_physicsGrid;
+
 	Body *m_selectedBody;
 	Vector2F m_lastMousePosition;
 	function<void(Manifold*)> m_manifoldGenerationFunctionTable[Shape::NUM_SHAPES][Shape::NUM_SHAPES];
@@ -53,11 +69,9 @@ class PhysicsEngineGame : public Game
 	vector<Manifold> m_manifoldPool;
 	uint m_numManifolds;
 
-	Vector2F m_gravity = Vector2F(0.0f, 150.0f);
-	//Vector2F m_gravity = Vector2F(0.0f, 0.0f);
-
 	SpriteBatch *m_spriteBatch;
 	Resource<Font> m_font;
+
 
 	const int m_manifoldPoolChunkSize = 10000;
 
@@ -68,8 +82,15 @@ public:
 		m_font = Resource<Font>("Arial");
 
 		m_selectedBody = nullptr;
-		
-		m_scene.initialize(g_initialScene);
+
+		// Initialize physics grid division
+		Window *window = Game::Get()->getWindow();
+		const Vector2I size = window->getSize();
+		const Vector2I numCells = (size / g_physicsCellSize) + Vector2I(1);
+		m_physicsGrid.initialize(numCells);
+
+		// Generate scene bodies
+		m_scene.initialize(g_initialScene, m_bodies, &m_physicsGrid);
 
 		m_manifoldPool.resize(m_manifoldPoolChunkSize);
 		
@@ -97,10 +118,14 @@ public:
 
 	void onTick(TickEvent *e)
 	{
-		vector<Body*> &m_bodies = m_scene.getBodies();
-
 		const float timeScale = 1.0f;
 		const float dt = e->getDelta() * timeScale;
+
+		// Update positions of physics bodies
+		for(Body *body : m_bodies)
+		{
+			body->move(body->getVelocity() * dt, body->getAngularVelocity() * dt);
+		}
 
 		// Apply velocity to selected shape
 		if(m_selectedBody)
@@ -114,7 +139,7 @@ public:
 		{
 			if(!body->isStatic())
 			{
-				body->setVelocity(body->getVelocity() + m_gravity * dt);
+				body->setVelocity(body->getVelocity() + g_defaultGravity * dt);
 			}
 
 			body->m_isColliding = false;
@@ -124,53 +149,63 @@ public:
 
 		m_numManifolds = 0;
 
-		// Broadphase - Find and resolve all colliding shapes
-		for(int i = 0; i < m_bodies.size(); i++)
+		// Broadphase:
+		// We use a grid division of the physics world to retrieve nearby bodies
+		Vector2I physicsGridNumCells = m_physicsGrid.getNumCells();
+		for(int y = 0; y < physicsGridNumCells.y; ++y)
 		{
-			Body *body = m_bodies[i];
-			for(int j = i + 1; j < m_bodies.size(); j++)
+			for(int x = 0; x < physicsGridNumCells.x; ++x)
 			{
-				Body *otherBody = m_bodies[j];
-
-				// Skip collision between static objects
-				if(body->isStatic() && otherBody->isStatic())
-					continue;
-
-				// Check collision on every shape of each body
-				vector<Shape*> &shapes = body->getShapes();
-				vector<Shape*> &otherShapes = otherBody->getShapes();
-				for(int k = 0; k < shapes.size(); k++)
+				list<Body*> bodies = m_physicsGrid.getBodiesInCell(Vector2I(x, y));
+				for(auto itrI = bodies.begin(); itrI != bodies.end();)
 				{
-					for(int j = 0; j < otherShapes.size(); j++)
+					Body *body = *itrI;
+					itrI++;
+					for(auto itrJ = itrI; itrJ != bodies.end(); ++itrJ)
 					{
-						Shape *shape = shapes[k];
-						Shape *otherShape = otherShapes[j];
-						
-						if(m_numManifolds >= m_manifoldPool.size())
-						{
-							m_manifoldPool.resize(m_manifoldPool.size() + m_manifoldPoolChunkSize);
-						}
+						Body *otherBody = *itrJ;
 
-						Manifold &manifold = m_manifoldPool[m_numManifolds++];
-						manifold.initialize(body, otherBody, shape, otherShape);
-						m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
-						if(manifold.numContacts > 0)
+						// Skip collision between static objects
+						if(body->isStatic() && otherBody->isStatic())
+							continue;
+
+						// TODO: Check that bodies' AABB overlap
+						if(!body->getAABB().overlaps(otherBody->getAABB()))
+							continue;
+
+						// Check collision on every shape of each body
+						vector<Shape*> &shapes = body->getShapes();
+						vector<Shape*> &otherShapes = otherBody->getShapes();
+						for(int k = 0; k < shapes.size(); k++)
 						{
+							for(int j = 0; j < otherShapes.size(); j++)
+							{
+								Shape *shape = shapes[k];
+								Shape *otherShape = otherShapes[j];
+
+								// TODO: Manifold pool is actually only used for visualizing the
+								//       collisions in onDraw. Maybe remove?
+								if(m_numManifolds >= m_manifoldPool.size())
+								{
+									m_manifoldPool.resize(m_manifoldPool.size() + m_manifoldPoolChunkSize);
+								}
+
+								Manifold &manifold = m_manifoldPool[m_numManifolds++];
+								manifold.initialize(body, otherBody, shape, otherShape);
+								m_manifoldGenerationFunctionTable[shape->getType()][otherShape->getType()](&manifold);
+								if(manifold.numContacts > 0)
+								{
 #if DISABLE_COLLISIONS != 1
-							ResolveCollision(&manifold);
-							CorrectPositions(&manifold);
+									ResolveCollision(&manifold);
+									CorrectPositions(&manifold);
 #endif
-							body->m_isColliding = otherBody->m_isColliding = true;
+									body->m_isColliding = otherBody->m_isColliding = true;
+								}
+							}
 						}
 					}
 				}
 			}
-		}
-
-		for(Body *body : m_bodies)
-		{
-			body->move(body->getVelocity() * dt);
-			body->rotate(body->getAngularVelocity() * dt);
 		}
 
 		Game::onTick(e);
@@ -178,8 +213,6 @@ public:
 
 	void onDraw(DrawEvent *e)
 	{
-		vector<Body*> &m_bodies = m_scene.getBodies();
-
 		for(Body *body : m_bodies)
 		{
 			Color color = body->m_isColliding ? Color::Blue : Color::White;
@@ -192,6 +225,7 @@ public:
 			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, Color::Red);
 		}
 
+#if DRAW_IMPULSES == 1
 		for(int i = 0; i < m_numManifolds; ++i)
 		{
 			Manifold &m = m_manifoldPool[i];
@@ -206,6 +240,7 @@ public:
 				e->getGraphicsContext()->drawArrow(contactPoint, contactPoint + m.normal * 15.0f, Color::Red);
 			}
 		}
+#endif // DRAW_IMPULSES
 
 		stringstream debugStr;
 		debugStr << "FPS: " << getFPS() << "\n";
@@ -314,7 +349,6 @@ public:
 
 	void onMouseDown(MouseEvent *e)
 	{
-		vector<Body*> &m_bodies = m_scene.getBodies();
 		Vector2F inputPos = e->getPosition();
 		for(Body *body : m_bodies)
 		{
@@ -341,138 +375,153 @@ public:
 		if(m_selectedBody)
 		{
 			const float rotationalSpeed = math::degToRad(5.0f);
-			m_selectedBody->rotate(e->getWheelY() * rotationalSpeed);
+			m_selectedBody->setAngularVelocity(m_selectedBody->getAngularVelocity() + e->getWheelY() * rotationalSpeed);
 		}
 	}
 
 	void onKeyDown(KeyEvent *e)
 	{
-		vector<Body*> &m_bodies = m_scene.getBodies();
-
 		switch(e->getKeycode())
 		{
 			case Keycode::SAUCE_KEY_C:
 			{
-				Body *body = new Body();
-				body->setPosition(e->getInputManager()->getPosition());
-				{
-					Circle *circle = new Circle;
-					circle->setRadius(25.0f);
-					body->addShape(circle);
-				}
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
 
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					body->setMass(0.0f);
-				}
+				Circle *circle = new Circle;
+				circle->setRadius(25.0f);
+				bodyDef.shapes.push_back(circle);
 
-				m_bodies.push_back(body);
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_B:
 			{
-				Body *body = new Body();
-				body->setPosition(e->getInputManager()->getPosition());
-				{
-					Box *box = new Box;
-					box->setLocalPosition(Vector2F(0.0f, 0.0f));
-					box->setSize(Vector2F(50.0f, 50.0f));
-					body->addShape(box);
-				}
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
 
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					body->setMass(0.0f);
-				}
+				Box *box = new Box;
+				box->setLocalPosition(Vector2F(0.0f, 0.0f));
+				box->setSize(Vector2F(50.0f, 50.0f));
+				bodyDef.shapes.push_back(box);
 
-				m_bodies.push_back(body);
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_N:
 			{
-				Body *body = new Body();
-				body->setPosition(e->getInputManager()->getPosition());
-				{
-					Box *box = new Box;
-					box->setLocalPosition(Vector2F(0.0f, 0.0f));
-					box->setSize(Vector2F(50.0f, 50.0f));
-					body->addShape(box);
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
 
-					Box *box2 = new Box;
-					box2->setLocalPosition(Vector2F(200.0f, 0.0f));
-					box2->setSize(Vector2F(50.0f, 50.0f));
-					body->addShape(box2);
-				}
+				Box *box1 = new Box;
+				box1->setLocalPosition(Vector2F(0.0f, 0.0f));
+				box1->setSize(Vector2F(50.0f, 50.0f));
+				bodyDef.shapes.push_back(box1);
 
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					body->setMass(0.0f);
-				}
+				Box *box2 = new Box;
+				box2->setLocalPosition(Vector2F(200.0f, 0.0f));
+				box2->setSize(Vector2F(50.0f, 50.0f));
+				bodyDef.shapes.push_back(box2);
 
-				m_bodies.push_back(body);
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_P:
 			{
-				Body *body = new Body();
-				body->setPosition(e->getInputManager()->getPosition());
-				{
-					PolygonShape *polygon = new PolygonShape;
-					const Vector2F points[] = {
-						Vector2F(-25.0f, -25.0f),
-						Vector2F(25.0f, 25.0f),
-						Vector2F(-25.0f, 25.0f),
-					};
-					polygon->initialize(points, 3);
-					body->addShape(polygon);
-				}
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
 
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					body->setMass(0.0f);
-				}
+				PolygonShape *polygon = new PolygonShape;
+				const Vector2F points[] = {
+					Vector2F(-25.0f, -25.0f),
+					Vector2F(25.0f, 25.0f),
+					Vector2F(-25.0f, 25.0f),
+				};
+				polygon->initialize(points, 3);
+				bodyDef.shapes.push_back(polygon);
 
-				m_bodies.push_back(body);
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_O:
 			{
-				Body *body = new Body();
-				body->setPosition(e->getInputManager()->getPosition());
-				{
-					PolygonShape *polygon = new PolygonShape;
-					const Vector2F points[] = {
-						Vector2F(-25.0f, -25.0f),
-						Vector2F(35.0f, -30.0f),
-						Vector2F(25.0f, 25.0f),
-						Vector2F(-30.0f, -15.0f)
-					};
-					polygon->initialize(points, 4);
-					body->addShape(polygon);
-				}
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
 
-				if(e->getModifiers() & KeyEvent::SHIFT)
-				{
-					body->setMass(0.0f);
-				}
+				PolygonShape *polygon = new PolygonShape;
+				const Vector2F points[] = {
+					Vector2F(-25.0f, -25.0f),
+					Vector2F( 35.0f, -30.0f),
+					Vector2F( 25.0f,  25.0f),
+					Vector2F(-30.0f, -15.0f)
+				};
+				polygon->initialize(points, 4);
+				bodyDef.shapes.push_back(polygon);
 
-				m_bodies.push_back(body);
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_D:
+			{
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
+				
+				Vector2F offset(-50.0f, 0.0f);
+				PolygonShape *polygon = new PolygonShape;
+				const Vector2F points[] = {
+					Vector2F(-25.0f, -25.0f) + offset,
+					Vector2F( 25.0f, -25.0f) + offset,
+					Vector2F( 25.0f,  25.0f) + offset,
+					Vector2F(-25.0f,  25.0f) + offset
+				};
+				polygon->initialize(points, 4);
+				bodyDef.shapes.push_back(polygon);
+
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_F:
+			{
+				BodyDef bodyDef;
+				bodyDef.position = e->getInputManager()->getPosition();
+				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
+				
+				Vector2F offset(50.0f, 0.0f);
+				PolygonShape *polygon = new PolygonShape;
+				const Vector2F points[] = {
+					Vector2F(-25.0f, -25.0f) + offset,
+					Vector2F( 25.0f, -25.0f) + offset,
+					Vector2F( 25.0f,  25.0f) + offset,
+					Vector2F(-25.0f,  25.0f) + offset
+				};
+				polygon->initialize(points, 4);
+				bodyDef.shapes.push_back(polygon);
+
+				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
 			}
 			break;
 			
 			case Keycode::SAUCE_KEY_1:
 			{
-				m_scene.initialize(SceneManager::SCENE_ENCLOSURE);
+				m_scene.initialize(PhysicsScene::SCENE_ENCLOSURE, m_bodies, &m_physicsGrid);
 			}
 			break;
 
 			case Keycode::SAUCE_KEY_2:
 			{
-				m_scene.initialize(SceneManager::SCENE_BENCHMARK_CIRCLES);
+				m_scene.initialize(PhysicsScene::SCENE_BENCHMARK_CIRCLES, m_bodies, &m_physicsGrid);
 				new std::thread([]() {
 					std::this_thread::sleep_for(5s);
 					exit(0);

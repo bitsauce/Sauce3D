@@ -3,32 +3,79 @@
 #include <Sauce/Sauce.h>
 
 #include "Shapes.h"
+#include "PhysicsGrid.h"
 
 // TODO: Create a BodyDef class, maybe
+
+struct BodyDef
+{
+	BodyDef() :
+		mass(0.001f),
+		inertia(1.0f),
+		position(0.0f, 0.0f),
+		angle(0.0f),
+		velocity(0.0f, 0.0f),
+		angularVelocity(0.0f),
+		staticFriction(0.2f),
+		dynamicFriction(0.1f),
+		restitution(0.5f)
+	{
+	}
+
+	float mass;
+	float inertia;
+
+	Vector2F position;
+	float angle;
+	
+	Vector2F velocity;
+	float angularVelocity;
+	
+	float staticFriction;
+	float dynamicFriction;
+	float restitution;
+
+	list<Shape*> shapes;
+};
 
 class Body
 {
 public:
-	Body() :
-		m_position(0.0f, 0.0f),
-		m_positionPrev(0.0f, 0.0f),
-		m_angle(0.0f),
-		m_anglePrev(0.0f),
-		m_velocity(0.0f, 0.0f),
-		m_angularVelocity(0.0f),
-		m_staticFriction(0.2f),
-		m_dynamicFriction(0.1f),
-		m_restitution(0.5f),
-		m_transformsDirty(true)
+	Body(const BodyDef bodyDef, PhysicsGrid *physicsGrid) :
+		m_position(bodyDef.position),
+		m_positionPrev(bodyDef.position),
+		m_angle(bodyDef.angle),
+		m_anglePrev(bodyDef.angle),
+		m_velocity(bodyDef.velocity),
+		m_angularVelocity(bodyDef.angularVelocity),
+		m_staticFriction(bodyDef.staticFriction),
+		m_dynamicFriction(bodyDef.dynamicFriction),
+		m_restitution(bodyDef.restitution),
+		m_transformsDirty(true),
+		m_physicsGrid(physicsGrid)
 	{
-		setMass(0.001f);
-		setInertia(1.0f);
+		assert(bodyDef.shapes.size() > 0);
+
+		// Add shapes (will set the AABB)
+		for(Shape *shape : bodyDef.shapes)
+		{
+			addShape(shape);
+		}
+
+		// Add body to physics grid
+		physicsGrid->addBody(this);
+
+		// Set mass and inertia
+		setMass(bodyDef.mass);
+		setInertia(bodyDef.inertia);
 	}
 
 	void setPosition(Vector2F position)
 	{
+		const AABB aabbBefore = getAABB();
 		m_position = m_positionPrev = position;
 		m_transformsDirty = true;
+		m_physicsGrid->bodyMoved(this, aabbBefore);
 	}
 
 	Vector2F getPosition() const
@@ -38,25 +85,47 @@ public:
 
 	void setAngle(const float angle)
 	{
+		m_physicsGrid->removeBody(this);
 		m_angle = m_anglePrev = angle;
 		m_transformsDirty = true;
+		m_physicsGrid->addBody(this);
 	}
 
 	float getAngle() const
 	{
 		return m_angle;
 	}
-	
-	void move(Vector2F deltaPosition)
-	{
-		m_position += deltaPosition;
-		m_transformsDirty = true;
-	}
 
-	void rotate(const float angle)
+	AABB getAABB()
 	{
+		AABB aabb = m_nonTransformedAABB;
+		
+		Matrix4 bodyToWorld = bodyLocalToWorld();
+		static Vector2F corners[4];
+		corners[0] = bodyToWorld * Vector2F(aabb.min.x, aabb.min.y);
+		corners[1] = bodyToWorld * Vector2F(aabb.max.x, aabb.min.y);
+		corners[2] = bodyToWorld * Vector2F(aabb.max.x, aabb.max.y);
+		corners[3] = bodyToWorld * Vector2F(aabb.min.x, aabb.max.y);
+
+		aabb.max = aabb.min = corners[0];
+		for(int i = 1; i < 4; ++i)
+		{
+			aabb.min.x = math::minimum(aabb.min.x, corners[i].x);
+			aabb.min.y = math::minimum(aabb.min.y, corners[i].y);
+			aabb.max.x = math::maximum(aabb.max.x, corners[i].x);
+			aabb.max.y = math::maximum(aabb.max.y, corners[i].y);
+		}
+
+		return aabb;
+	}
+	
+	void move(const Vector2F &deltaPosition, const float angle)
+	{
+		const AABB aabbBefore = getAABB();
+		m_position += deltaPosition;
 		m_angle += angle;
 		m_transformsDirty = true;
+		m_physicsGrid->bodyMoved(this, aabbBefore);
 	}
 
 	bool contains(const Vector2F point)
@@ -72,21 +141,10 @@ public:
 		return false;
 	}
 
-	void draw(GraphicsContext *graphicsContext, Color color, float alpha)
-	{
-		graphicsContext->pushMatrix(bodyLocalToWorld(alpha));
-		for(Shape *shape : m_shapes)
-		{
-			shape->draw(graphicsContext, color);
-		}
-		graphicsContext->popMatrix();
-		m_positionPrev = m_position;
-		m_anglePrev = m_angle;
-	}
+	void draw(GraphicsContext *graphicsContext, Color color, float alpha);
 
 	Matrix4 bodyLocalToWorld(Matrix4 *rotationOnlyMatrix = nullptr)
 	{
-		//return bodyLocalToWorld(0,rotationOnlyMatrix); //problem
 		if(m_transformsDirty)
 		{
 			updateBodyToWorldMatrices();
@@ -113,7 +171,6 @@ public:
 
 	Matrix4 worldToBodyLocal(Matrix4 *rotationOnlyMatrix = nullptr)
 	{
-		//return worldToBodyLocal(0, rotationOnlyMatrix);
 		if(m_transformsDirty)
 		{
 			updateBodyToWorldMatrices();
@@ -142,11 +199,6 @@ public:
 		worldToLocal.translate(-position.x, -position.y, 0.0f);
 		worldToLocal = worldToLocalRotation * worldToLocal;
 		return worldToLocal;
-	}
-
-	void addShape(Shape *shape)
-	{
-		m_shapes.push_back(shape);
 	}
 
 	vector<Shape*> &getShapes()
@@ -187,6 +239,22 @@ public:
 	bool m_isColliding = false;
 
 private:
+	void addShape(Shape *shape)
+	{
+		//m_physicsGrid->removeBody(this);
+		// TODO: Careful! Have to update AABB when shape changes it local position
+		AABB aabb = shape->getAABB(); // + shape->localPosition
+
+		m_nonTransformedAABB.min.x = math::minimum(m_nonTransformedAABB.min.x, aabb.min.x);
+		m_nonTransformedAABB.min.y = math::minimum(m_nonTransformedAABB.min.y, aabb.min.y);
+		m_nonTransformedAABB.max.x = math::maximum(m_nonTransformedAABB.max.x, aabb.max.x);
+		m_nonTransformedAABB.max.y = math::maximum(m_nonTransformedAABB.max.y, aabb.max.y);
+
+		//m_physicsGrid->addBody(this);
+
+		m_shapes.push_back(shape);
+	}
+
 	void updateBodyToWorldMatrices()
 	{
 		// Body relative shape transforms to world transform
@@ -204,6 +272,10 @@ private:
 
 		m_transformsDirty = false;
 	}
+
+	PhysicsGrid *m_physicsGrid;
+
+	AABB m_nonTransformedAABB;
 
 	vector<Shape*> m_shapes;
 

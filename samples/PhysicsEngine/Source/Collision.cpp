@@ -68,7 +68,6 @@ namespace collision
 
 		// Get matrices for transforming from bodyB space to bodyA space
 		Matrix4 bodyBToBodyA = bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
-		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
 		// Calculate vector from shape in bodyA to shape in bodyB
 		const Vector2F normal = bodyBToBodyA * circleB->getLocalPosition() - circleA->getLocalPosition();
@@ -203,8 +202,10 @@ namespace collision
 
 	void PolygonToPolygon(Manifold *m)
 	{
-		PolygonShape *a = dynamic_cast<PolygonShape*>(m->shapeA);
-		PolygonShape *b = dynamic_cast<PolygonShape*>(m->shapeB);
+		PolygonShape *polygonA = dynamic_cast<PolygonShape*>(m->shapeA);
+		PolygonShape *polygonB = dynamic_cast<PolygonShape*>(m->shapeB);
+		Body *bodyA = m->bodyA;
+		Body *bodyB = m->bodyB;
 
 		// Rotation only matrices (used later)
 		Matrix4 worldToBodyARotationOnly;
@@ -212,31 +213,51 @@ namespace collision
 		Matrix4 bodyBToWorldRotationOnly;
 
 		// Get body to world matrices
-		Matrix4 bodyAToWorld = m->bodyA->bodyLocalToWorld(&bodyAToWorldRotationOnly);
-		Matrix4 bodyBToWorld = m->bodyB->bodyLocalToWorld(&bodyBToWorldRotationOnly);
+		Matrix4 bodyAToWorld = bodyA->bodyLocalToWorld(&bodyAToWorldRotationOnly);
+		Matrix4 bodyBToWorld = bodyB->bodyLocalToWorld(&bodyBToWorldRotationOnly);
 
 		// Get matrices for transforming from bodyB space to bodyA space
-		Matrix4 bodyBToBodyA = m->bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
+		Matrix4 bodyBToBodyA = bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
 		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
+		polygonA->resetTransform(); // TODO: This could be completely removed with some work
+		polygonB->setTransform(bodyBToBodyA, bodyBToBodyARotationOnly);
+
 		// Calculate vector from shape in bodyA to shape in bodyB
-		Vector2F deltaPositions = bodyBToBodyA * b->getLocalPosition() - a->getLocalPosition();
+		const Vector2F deltaPositions = polygonB->centroid - polygonA->centroid;
 
-		a->setTransform(Matrix4(), Matrix4());
-		b->setTransform(bodyBToBodyA, bodyBToBodyARotationOnly);
+		static vector<Vector2F> axes;
+		int axisMaxSize = axes.size();
+		int numAxis = 0;
 
-		vector<Vector2F> axes;
-		for(PolygonShape::Edge *edge : a->edges)
+		for(PolygonShape::Edge *edge : polygonA->edges)
 		{
-			// TODO: Does this actually work?
-			const Vector2F axis = edge->normal.dot(deltaPositions) > 0.0f ? edge->normal : -edge->normal;
-			axes.push_back(axis); // TODO: Verify that the same axis is not added twice
+			// An optimization is made here:
+			// We assume that normals pointing in the opposite direction of
+			// the delta positions are highly unlikely to be the axis of least
+			// peneration, so we pre-cull them here
+			if(edge->normal.dot(deltaPositions) > 0.0f)
+			{
+				if(numAxis >= axisMaxSize)
+				{
+					axes.resize(axisMaxSize + 100);
+					axisMaxSize += 100;
+				}
+				axes[numAxis++] = edge->normal;
+			}
 		}
 
-		for(PolygonShape::Edge *edge : b->edges)
+		for(PolygonShape::Edge *edge : polygonB->edges)
 		{
-			const Vector2F axis = edge->normal.dot(deltaPositions) > 0.0f ? edge->normal : -edge->normal;
-			axes.push_back(axis);
+			if(edge->normal.dot(deltaPositions) > 0.0f)
+			{
+				if(numAxis >= axisMaxSize)
+				{
+					axes.resize(axisMaxSize + 100);
+					axisMaxSize += 100;
+				}
+				axes[numAxis++] = edge->normal;
+			}
 		}
 
 		// Determine if the shapes are overlapping by iterating every axis of both shapes
@@ -247,23 +268,24 @@ namespace collision
 		// if there's any axis without an overlap, we can conclude that there's no collision.
 		//
 		// For oriented boxes, there are 4 axes (normals) to check in total, 2 per box
-		float minPenetration = FLT_MAX; int minPenetrationAxis = -1;
-		for(int i = 0; i < axes.size(); i++)
+		float leastPenetration = FLT_MAX; int axisOfLeastPenetration = -1;
+		PolygonShape::Vertex *farthestCornerOfA = nullptr, *farthestCornerOfB = nullptr;
+		int farthestCornerOfAIndex = -1, farthestCornerOfBIndex = -1;
+		for(int i = 0; i < numAxis; i++)
 		{
 			const Vector2F axis = axes[i];
 
 			// Find min and max extents when projected onto the axis
-			// TODO: Optimizations may be done here since we are already using
-			//       body A's space as reference
 			float dotMinA = FLT_MAX;
 			float dotMaxA = -FLT_MAX;
 			{
-				for(int j = 0; j < a->vertices.size(); j++)
+				for(int j = 0; j < polygonA->numVerticesAndEdges; j++)
 				{
-					float dot = axis.dot(a->vertices[j]->position);
+					float dot = axis.dot(polygonA->vertices[j]->position);
 					if(dot > dotMaxA)
 					{
 						dotMaxA = dot;
+						farthestCornerOfAIndex = j;
 					}
 					if(dot < dotMinA)
 					{
@@ -275,9 +297,9 @@ namespace collision
 			float dotMinB = FLT_MAX;
 			float dotMaxB = -FLT_MAX;
 			{
-				for(int j = 0; j < b->vertices.size(); j++)
+				for(int j = 0; j < polygonB->numVerticesAndEdges; j++)
 				{
-					float dot = axis.dot(b->vertices[j]->position);
+					float dot = axis.dot(polygonB->vertices[j]->position);
 					if(dot > dotMaxB)
 					{
 						dotMaxB = dot;
@@ -285,6 +307,7 @@ namespace collision
 					if(dot < dotMinB)
 					{
 						dotMinB = dot;
+						farthestCornerOfBIndex = j;
 					}
 				}
 			}
@@ -303,22 +326,22 @@ namespace collision
 			if(penetration < 0.0f)
 				return;
 
-			if(penetration < minPenetration)
+			if(penetration < leastPenetration)
 			{
-				minPenetration = penetration;
-				minPenetrationAxis = i;
+				leastPenetration = penetration;
+				axisOfLeastPenetration = i;
+
+				// Find the vertex farthest along +n for object a
+				farthestCornerOfA = polygonA->vertices[farthestCornerOfAIndex];
+
+				// Find the vertex farthest along -n for object b
+				farthestCornerOfB = polygonB->vertices[farthestCornerOfBIndex];
 			}
 		}
 
 		// Store axis of least penetation
-		m->normal = axes[minPenetrationAxis];
-		m->penetration = minPenetration;
-
-		// Find the vertex farthest along -n for object b
-		PolygonShape::Vertex *farthestCornerOfB = GetFarthestPoint(b, -m->normal);
-
-		// Find the vertex farthest along +n for object a
-		PolygonShape::Vertex *farthestCornerOfA = GetFarthestPoint(a, m->normal);
+		m->normal = axes[axisOfLeastPenetration];
+		m->penetration = leastPenetration;
 
 		// Determine best edge of a and b by considering the edges
 		// neighbouring the fartest vertices, and picking the ones

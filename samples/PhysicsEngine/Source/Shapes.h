@@ -5,6 +5,37 @@ using namespace sauce;
 
 Vector2F perp(const Vector2F &v);
 
+struct AABB
+{
+	Vector2F min, max;
+
+	bool overlaps(const AABB &other) const
+	{
+		return min.x <= other.max.x &&
+			max.x >= other.min.x &&
+			min.y <= other.max.y &&
+			max.y >= other.min.y;
+	}
+
+	bool contains(const Vector2F &point) const
+	{
+		return point.x >= min.x &&
+			point.x <= max.x &&
+			point.y <= max.y &&
+			point.y >= min.y;
+	}
+
+	AABB intersection(const AABB &other) const
+	{
+		AABB aabb;
+		aabb.min.x = math::maximum(min.x, other.min.x);
+		aabb.min.y = math::maximum(min.y, other.min.y);
+		aabb.max.x = math::minimum(max.x, other.max.x);
+		aabb.max.y = math::minimum(max.y, other.max.y);
+		return aabb;
+	}
+};
+
 class Shape
 {
 public:
@@ -32,12 +63,20 @@ public:
 		return m_localPosition;
 	}
 
+	AABB getAABB() const
+	{
+		return m_aabb;
+	}
+
 	virtual void draw(GraphicsContext *graphicsContext, Color color) const = 0;
 	virtual bool contains(Vector2F point) const = 0;
 
 	Type getType() const { return m_type; }
 
 	list<pair<Vector2F, Color>> debugPoints;
+
+protected:
+	AABB m_aabb;
 
 private:
 	const Type m_type;
@@ -84,7 +123,8 @@ public:
 	};
 
 	PolygonShape() :
-		Shape(POLYGON)
+		Shape(POLYGON),
+		numVerticesAndEdges(0)
 	{
 	}
 
@@ -93,14 +133,25 @@ public:
 		// TODO: Add an automatic centering option
 		// TODO: Assert convexness
 
-		if(vertices.size() > 0) free();
+		free();
 
+		m_aabb = AABB();
+		m_aabb.max = m_aabb.min = points[0];
+		localCentroid = Vector2F();
 		for(int i = 0; i < numPoints; i++)
 		{
 			Vertex *v = new Vertex(i);
 			v->localPosition = v->position = points[i];
 			vertices.push_back(v);
+			localCentroid += v->localPosition;
+
+			m_aabb.min.x = math::minimum(m_aabb.min.x, v->localPosition.x);
+			m_aabb.min.y = math::minimum(m_aabb.min.y, v->localPosition.y);
+			m_aabb.max.x = math::maximum(m_aabb.max.x, v->localPosition.x);
+			m_aabb.max.y = math::maximum(m_aabb.max.y, v->localPosition.y);
 		}
+		localCentroid /= numPoints;
+		centroid = localCentroid;
 
 		Edge *previousEdge = nullptr;
 		for(int i = 0; i < numPoints; i++)
@@ -110,7 +161,7 @@ public:
 			edge->v0->rightEdge = edge;
 			edge->v1 = vertices[(i + 1) % numPoints];
 			edge->v1->leftEdge = edge;
-			edge->localNormal = edge->normal = perp((edge->v0->localPosition - edge->v1->localPosition).normalized()); // TODO: Cache all axies of the polygon
+			edge->localNormal = edge->normal = perp((edge->v0->localPosition - edge->v1->localPosition).normalized());
 			if(previousEdge)
 			{
 				edge->leftEdge = previousEdge;
@@ -120,6 +171,8 @@ public:
 			edges.push_back(edge);
 		}
 		edges[0]->leftEdge = edges[numPoints - 1];
+
+		numVerticesAndEdges = vertices.size();
 	}
 
 	void setTransform(const Matrix4 &pointTransform, const Matrix4 &normalTransform)
@@ -133,6 +186,23 @@ public:
 		{
 			e->normal = normalTransform * e->localNormal;
 		}
+
+		centroid = pointTransform * localCentroid;
+	}
+
+	void resetTransform()
+	{
+		for(Vertex *v : vertices)
+		{
+			v->position = v->localPosition;
+		}
+
+		for(Edge *e : edges)
+		{
+			e->normal = e->localNormal;
+		}
+
+		centroid = localCentroid;
 	}
 
 	void free()
@@ -148,54 +218,11 @@ public:
 			delete v;
 		}
 		edges.clear();
+
+		numVerticesAndEdges = 0;
 	}
 
-	void draw(GraphicsContext *graphicsContext, Color color) const override
-	{
-		// Static draw data
-		static vector<sauce::Vertex> drawVertices;
-		static vector<uint> indices;
-
-		// Generate vertex and index arrays
-		const vector<Vertex*> &polygonVertices = vertices;
-		const int numVertices = polygonVertices.size();
-		for(int i = 0; i < numVertices; i++)
-		{
-			if(i >= drawVertices.size())
-			{
-				drawVertices.push_back(sauce::Vertex());
-				indices.push_back(uint());
-				indices.push_back(uint());
-			}
-
-			const Vector2F pos = polygonVertices[i]->localPosition;
-			drawVertices[i].set2f(VERTEX_POSITION, pos.x, pos.y);
-			drawVertices[i].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-			indices[i*2] = i;
-			indices[i*2+1] = (i + 1) % numVertices;
-		}
-
-		// Draw outline
-		graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_LINES, drawVertices.data(), numVertices, indices.data(), numVertices * 2);
-
-		// Draw box normals
-		for(int i = 0; i < numVertices; i++)
-		{
-			const Edge *edge = edges[i];
-			const Vector2F edgeNormal = edge->localNormal;
-			const Vector2F edgeCenter = (edge->v0->localPosition + edge->v1->localPosition) * 0.5f;
-			graphicsContext->drawArrow(edgeCenter, edgeCenter + edgeNormal * 15.0f, Color::Blue);
-		}
-
-		// Draw debug points
-		for(pair<Vector2F, Color> p : debugPoints)
-		{
-			sauce::Vertex v;
-			v.set2f(VERTEX_POSITION, p.first.x, p.first.y);
-			v.set4ub(VERTEX_COLOR, p.second.getR(), p.second.getG(), p.second.getB(), p.second.getA());
-			graphicsContext->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
-		}
-	}
+	void draw(GraphicsContext *graphicsContext, Color color) const override;
 
 	bool contains(Vector2F point) const override
 	{
@@ -211,6 +238,10 @@ public:
 
 	vector<Vertex*> vertices;
 	vector<Edge*> edges;
+	int numVerticesAndEdges;
+	Vector2F localCentroid;
+	Vector2F centroid;
+	AABB aabb;
 };
 
 class Box : public PolygonShape

@@ -5,9 +5,9 @@ using namespace sauce;
 
 #include "Body.h"
 
-const int g_benchmarkSceneNumCircles = 100; // Release, best: 400
+class PhysicsGrid;
 
-class SceneManager
+class PhysicsScene
 {
 public:
 	enum ExampleScene
@@ -20,17 +20,10 @@ public:
 		SCENE_BENCHMARK_ALL,
 	};
 
-	void initialize(const ExampleScene scene);
-	void clear();
-
-	vector<Body*> &getBodies()
-	{
-		return m_bodies;
-	}
+	void initialize(const ExampleScene scene, list<Body*> &bodies, PhysicsGrid *physicsGrid);
 
 private:
-	void initializeEnclosureScene();
-	void initializeCirclesBenchmarkScene();
-
-	vector<Body*> m_bodies;
+	void setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
+	void setupCirclesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
+	void setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 };
