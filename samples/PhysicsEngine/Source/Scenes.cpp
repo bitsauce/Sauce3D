@@ -18,6 +18,10 @@ void PhysicsScene::initialize(const ExampleScene scene, list<Body*> &bodies, Phy
 		case SCENE_ENCLOSURE:
 			setupEnclosureScene(bodies, physicsGrid);
 			break;
+		case SCENE_SHAPES_TEST:
+			setupEnclosureScene(bodies, physicsGrid);
+			setupShapeTestScene(bodies, physicsGrid);
+			break;
 		case SCENE_BENCHMARK_CIRCLES:
 			setupEnclosureScene(bodies, physicsGrid);
 			setupCirclesBenchmarkScene(bodies, physicsGrid);
@@ -139,6 +143,26 @@ void PhysicsScene::setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *ph
 		Box *box = new Box;
 		box->setSize(boxSize);
 		bodyDef.shapes.push_back(box);
+
+		bodies.push_back(new Body(bodyDef, physicsGrid));
+	}
+}
+
+void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physicsGrid)
+{
+	{
+		BodyDef bodyDef;
+		bodyDef.position = Vector2F(100.0f, 100.0f);
+		bodyDef.mass = 0.001f;
+
+		Box *box = new Box;
+		box->setSize(Vector2F(50.0f));
+		bodyDef.shapes.push_back(box);
+
+		Circle *circle = new Circle;
+		circle->setRadius(15.0f);
+		circle->setLocalPosition(Vector2F(100.0f, 100.0f));
+		bodyDef.shapes.push_back(circle);
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}

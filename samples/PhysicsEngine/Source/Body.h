@@ -18,7 +18,7 @@ struct BodyDef
 		angularVelocity(0.0f),
 		staticFriction(0.2f),
 		dynamicFriction(0.1f),
-		restitution(0.5f)
+		restitution(0.1f)
 	{
 	}
 
@@ -57,9 +57,11 @@ public:
 		assert(bodyDef.shapes.size() > 0);
 
 		// Add shapes (will set the AABB)
+		//float totalArea = 0.0f;
 		for(Shape *shape : bodyDef.shapes)
 		{
 			addShape(shape);
+			//totalArea += shape->getArea();
 		}
 
 		// Add body to physics grid
@@ -244,6 +246,8 @@ private:
 		//m_physicsGrid->removeBody(this);
 		// TODO: Careful! Have to update AABB when shape changes it local position
 		AABB aabb = shape->getAABB(); // + shape->localPosition
+		aabb.min += shape->getLocalPosition();
+		aabb.max += shape->getLocalPosition();
 
 		m_nonTransformedAABB.min.x = math::minimum(m_nonTransformedAABB.min.x, aabb.min.x);
 		m_nonTransformedAABB.min.y = math::minimum(m_nonTransformedAABB.min.y, aabb.min.y);
@@ -270,11 +274,37 @@ private:
 		m_worldToBodyLocal.translate(-m_position.x, -m_position.y, 0.0f);
 		m_worldToBodyLocal = m_worldToBodyLocalRotationsOnly * m_worldToBodyLocal;
 
+		// Update AABB
+		/*m_aabb.min = Vector2F(FLT_MAX);
+		m_aabb.max = Vector2F(-FLT_MAX);
+		for(Shape *shape : m_shapes)
+		{
+			switch(shape->getType())
+			{
+				case Shape::POLYGON:
+				{
+					PolygonShape *polygon = dynamic_cast<PolygonShape*>(shape);
+					for(int i = 0; i < polygon->numVerticesAndEdges; ++i)
+					{
+
+						m_aabb.min.x = math::minimum(m_aabb.min.x, v->localPosition.x);
+						m_aabb.min.y = math::minimum(m_aabb.min.y, v->localPosition.y);
+						m_aabb.max.x = math::maximum(m_aabb.max.x, v->localPosition.x);
+						m_aabb.max.y = math::maximum(m_aabb.max.y, v->localPosition.y);
+
+						polygon->vertices[i]->localPosition;
+					}
+				}
+				break;
+			}
+		}*/
+
 		m_transformsDirty = false;
 	}
 
 	PhysicsGrid *m_physicsGrid;
 
+	AABB m_aabb;
 	AABB m_nonTransformedAABB;
 
 	vector<Shape*> m_shapes;

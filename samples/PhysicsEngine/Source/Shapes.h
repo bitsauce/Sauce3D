@@ -68,6 +68,11 @@ public:
 		return m_aabb;
 	}
 
+	float getArea() const
+	{
+		return m_area;
+	}
+
 	virtual void draw(GraphicsContext *graphicsContext, Color color) const = 0;
 	virtual bool contains(Vector2F point) const = 0;
 
@@ -77,6 +82,7 @@ public:
 
 protected:
 	AABB m_aabb;
+	float m_area;
 
 private:
 	const Type m_type;
@@ -137,6 +143,7 @@ public:
 
 		m_aabb = AABB();
 		m_aabb.max = m_aabb.min = points[0];
+		m_area = 0.0f;
 		localCentroid = Vector2F();
 		for(int i = 0; i < numPoints; i++)
 		{
@@ -149,9 +156,20 @@ public:
 			m_aabb.min.y = math::minimum(m_aabb.min.y, v->localPosition.y);
 			m_aabb.max.x = math::maximum(m_aabb.max.x, v->localPosition.x);
 			m_aabb.max.y = math::maximum(m_aabb.max.y, v->localPosition.y);
+
+			m_area += points[i].cross(points[(i+1)%numPoints]);
 		}
+		m_area /= 2;
 		localCentroid /= numPoints;
 		centroid = localCentroid;
+		
+		//Let 'vertices' be an array of N pairs(x, y), indexed from 0
+		//	Let 'area' = 0.0
+		//	for i = 0 to N-1, do
+		//		Let j = (i+1) mod N
+		//		Let area = area + vertices[i].x * vertices[j].y
+		//		Let area = area - vertices[i].y * vertices[j].x
+		//		end for
 
 		Edge *previousEdge = nullptr;
 		for(int i = 0; i < numPoints; i++)
@@ -249,6 +267,7 @@ class Box : public PolygonShape
 public:
 	Box()
 	{
+		// TODO: Create ShapeDefs as this is inefficient
 		setSize(Vector2F(10.f, 10.f));
 	}
 
@@ -322,8 +341,18 @@ public:
 		return (getLocalPosition() - point).lengthSquared() < m_radius * m_radius;
 	}
 
-	float getRadius() const { return m_radius; }
-	void setRadius(const float rad) { m_radius = rad; }
+	float getRadius() const
+	{
+		return m_radius;
+	}
+
+	void setRadius(const float rad)
+	{
+		m_radius = rad;
+		m_aabb.max = Vector2F(rad);
+		m_aabb.min = -m_aabb.max;
+		m_area = PI * rad * rad;
+	}
 
 private:
 	float m_radius;

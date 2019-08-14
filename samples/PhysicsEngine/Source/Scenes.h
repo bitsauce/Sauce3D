@@ -14,6 +14,7 @@ public:
 	{
 		SCENE_EMPTY,
 		SCENE_ENCLOSURE,
+		SCENE_SHAPES_TEST,
 		SCENE_BENCHMARK_CIRCLES,
 		SCENE_BENCHMARK_BOXES,
 		SCENE_BENCHMARK_POLYGONS,
@@ -26,4 +27,5 @@ private:
 	void setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 	void setupCirclesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 	void setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
+	void setupShapeTestScene(list<Body*> &bodies, PhysicsGrid *physicsGrid);
 };

@@ -22,12 +22,12 @@ using namespace sauce;
 // [ ] Add angle to Box class (maybe just rotate the box before init?)
 // [x] Add oriented polygons
 // [x] Add oriented circles
-// [ ] Implement a real broadphase
+// [x] Implement a real broadphase
 // [ ] Optimize PhysicsGrid (add circlular buffer in each cell)
 // [ ] Fix AABB generation (rotated AABB, cache AABBs,
 //     consider what happens if a body's shape is added before setting its local position,
 //     etc.)
-// [ ] Add AABB generation for circles
+// [x] Add AABB generation for circles
 // [ ] Make the drag functionality drag from the clicked point (may require joints)
 // [ ] Fix sinking bug with polygon <-> circle
 // [ ] Implement "mass = volume * density" mass initialization
@@ -374,7 +374,7 @@ public:
 	{
 		if(m_selectedBody)
 		{
-			const float rotationalSpeed = math::degToRad(5.0f);
+			const float rotationalSpeed = math::degToRad(30.0f);
 			m_selectedBody->setAngularVelocity(m_selectedBody->getAngularVelocity() + e->getWheelY() * rotationalSpeed);
 		}
 	}
