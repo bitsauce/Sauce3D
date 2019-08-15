@@ -6,18 +6,19 @@
 #define DRAW_PHYSICS_GRID 0
 #define DRAW_NORMALS 0
 #define DRAW_VELOCITIES 0
-#define DRAW_IMPULSES 1
+#define DRAW_IMPULSES 0
 #define DRAW_AABB 0
 
 #define DISABLE_COLLISIONS 0
 #define RUN_AS_BENCHMARK 0
 
 const uint32_t g_randomSeed = 453423120;
+const float    g_physicsUnit = 50.0f;
 
 const PhysicsScene::ExampleScene g_initialScene = PhysicsScene::SCENE_RESTITUTION_TEST;//PhysicsScene::SCENE_ENCLOSURE;
-const Vector2F                   g_defaultGravity = Vector2F(0.0f, 150.0f);
+const Vector2F                   g_defaultGravity = Vector2F(0.0f, 150.0f) / g_physicsUnit;
 
-const Vector2I g_physicsCellSize      = Vector2I(200, 200); // px
+const Vector2I g_physicsCellSize      = Vector2I(200, 200) / g_physicsUnit; // px
 const int      g_initialBodiesPerCell = 100;
 
 // Benchmark constants                       // Current best (on release, with FPS ~30)

@@ -86,7 +86,7 @@ public:
 
 		// Initialize physics grid division
 		Window *window = Game::Get()->getWindow();
-		const Vector2I size = window->getSize();
+		const Vector2I size = Vector2FInPhysicsSpace(window->getSize());
 		const Vector2I numCells = (size / g_physicsCellSize) + Vector2I(1);
 		m_physicsGrid.initialize(numCells);
 
@@ -131,7 +131,7 @@ public:
 		// Apply velocity to selected shape
 		if(m_selectedBody)
 		{
-			m_selectedBody->setVelocity((getInputManager()->getPosition() - m_selectedBody->getPosition()) * 0.25f / e->getDelta());
+			m_selectedBody->setVelocity((Vector2FInPhysicsSpace(getInputManager()->getPosition()) - m_selectedBody->getPosition()) * 0.25f / e->getDelta());
 			m_selectedBody->setAngularVelocity(0.0f);
 		}
 
@@ -214,6 +214,11 @@ public:
 
 	void onDraw(DrawEvent *e)
 	{
+		// Scale visualization of physics bodies
+		Matrix4 physicsUnitsToWorld;
+		physicsUnitsToWorld.scale(g_physicsUnit);
+		e->getGraphicsContext()->pushMatrix(physicsUnitsToWorld);
+
 		for(Body *body : m_bodies)
 		{
 			Color color = body->m_isColliding ? Color::Blue : Color::White;
@@ -224,7 +229,7 @@ public:
 
 #if DRAW_VELOCITIES == 1
 			// Draw velocity arrow
-			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, Color::Red);
+			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, ValueInPhysicsSpace(10.0f), Color::Red);
 #endif // DRAW_VELOCITIES
 		}
 
@@ -240,10 +245,12 @@ public:
 				v.set2f(VERTEX_POSITION, contactPoint.x, contactPoint.y);
 				v.set4ub(VERTEX_COLOR, 255, 255, 0, 255);
 				e->getGraphicsContext()->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
-				e->getGraphicsContext()->drawArrow(contactPoint, contactPoint + m.normal * 15.0f, Color::Red);
+				e->getGraphicsContext()->drawArrow(contactPoint, contactPoint + m.normal * ValueInPhysicsSpace(15.0f), ValueInPhysicsSpace(10.0f), Color::Red);
 			}
 		}
 #endif // DRAW_IMPULSES
+
+		e->getGraphicsContext()->popMatrix();
 
 		stringstream debugStr;
 		debugStr << "FPS: " << getFPS() << "\n";
@@ -352,7 +359,7 @@ public:
 
 	void onMouseDown(MouseEvent *e)
 	{
-		Vector2F inputPos = e->getPosition();
+		const Vector2F inputPos = Vector2FInPhysicsSpace(e->getPosition());
 		for(Body *body : m_bodies)
 		{
 			if(body->contains(inputPos))
@@ -370,7 +377,7 @@ public:
 
 	void onMouseMove(MouseEvent *e)
 	{
-		m_lastMousePosition = e->getPosition();
+		m_lastMousePosition = Vector2FInPhysicsSpace(e->getPosition());
 	}
 
 	void onMouseWheel(MouseEvent *e)

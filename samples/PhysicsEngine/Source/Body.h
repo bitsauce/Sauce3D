@@ -49,9 +49,7 @@ public:
 	bool contains(const Vector2F point);
 	void draw(GraphicsContext *graphicsContext, Color color, float alpha);
 	Matrix4 bodyLocalToWorld(Matrix4 *rotationOnlyMatrix = nullptr);
-	inline Matrix4 bodyLocalToWorld(const float alpha, Matrix4 *rotationOnlyMatrix = nullptr) const;
 	Matrix4 worldToBodyLocal(Matrix4 *rotationOnlyMatrix = nullptr);
-	inline Matrix4 worldToBodyLocal(const float alpha, Matrix4 *rotationOnlyMatrix = nullptr) const;
 
 	float getMass() const { return m_mass; }
 	float getMassInv() const { return m_massInv; }

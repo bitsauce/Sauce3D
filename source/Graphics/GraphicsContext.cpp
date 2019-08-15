@@ -273,7 +273,7 @@ void GraphicsContext::drawCircle(const Vector2F &pos, const float radius, const 
 	drawCircleGradient(pos.x, pos.y, radius, segments, color, color);
 }
 
-void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, const float y1, const Color &color)
+void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, const float y1, const float arrowHeadSize, const Color &color)
 {
 	// Make sure we have enough vertices
 	if(m_vertices.size() < 6) m_vertices.resize(6);
@@ -281,7 +281,7 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	m_vertices[0].set2f(VERTEX_POSITION, x0, y0); m_vertices[0].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[0].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
 	m_vertices[1].set2f(VERTEX_POSITION, x1, y1); m_vertices[1].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[1].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
 
-	Vector2F p0 = (Vector2F(x0, y0) - Vector2F(x1, y1)).normalized() * 10;
+	Vector2F p0 = (Vector2F(x0, y0) - Vector2F(x1, y1)).normalized() * arrowHeadSize;
 	Vector2F p1 = p0;
 	const float angle = math::degToRad(30.f);
 	p0.rotate(-angle);

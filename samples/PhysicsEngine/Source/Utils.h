@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Sauce/Sauce.h>
-using namespace sauce;
+#include "Config.h"
 
 namespace sauce
 {
@@ -10,6 +9,10 @@ namespace sauce
 		Vector2F perp(const Vector2F &v);
 	}
 }
+
+Vector2F Vector2FInPhysicsSpace(const float x, const float y);
+Vector2F Vector2FInPhysicsSpace(const Vector2F &v);
+float ValueInPhysicsSpace(const float x);
 
 struct AABB
 {

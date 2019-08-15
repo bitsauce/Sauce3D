@@ -105,7 +105,15 @@ bool Body::contains(const Vector2F point)
 
 void Body::draw(GraphicsContext *graphicsContext, Color color, float alpha)
 {
-	graphicsContext->pushMatrix(bodyLocalToWorld(alpha));
+	const Vector2F position = math::lerp(m_positionPrev, m_position, alpha);
+	const float angle = math::lerp(m_anglePrev, m_angle, alpha);
+
+	// Body relative shape transforms to world transform
+	Matrix4 localToWorld;
+	localToWorld.rotateZ(math::radToDeg(angle));
+	localToWorld.translate(position.x, position.y, 0.0f);
+
+	graphicsContext->pushMatrix(localToWorld);
 	for(Shape *shape : m_shapes)
 	{
 		shape->draw(graphicsContext, color);
@@ -136,17 +144,6 @@ Matrix4 Body::bodyLocalToWorld(Matrix4 *rotationOnlyMatrix)
 	return m_bodyLocalToWorld;
 }
 
-inline Matrix4 Body::bodyLocalToWorld(const float alpha, Matrix4 *rotationOnlyMatrix) const
-{
-	// Body relative shape transforms to world transform
-	Matrix4 localToWorld;
-	localToWorld.rotateZ(math::radToDeg(math::lerp(m_anglePrev, m_angle, alpha)));
-	if(rotationOnlyMatrix) *rotationOnlyMatrix = localToWorld;
-	const Vector2F position = math::lerp(m_positionPrev, m_position, alpha);
-	localToWorld.translate(position.x, position.y, 0.0f);
-	return localToWorld;
-}
-
 Matrix4 Body::worldToBodyLocal(Matrix4 *rotationOnlyMatrix)
 {
 	if(m_transformsDirty)
@@ -160,23 +157,6 @@ Matrix4 Body::worldToBodyLocal(Matrix4 *rotationOnlyMatrix)
 	}
 
 	return m_worldToBodyLocal;
-}
-
-inline Matrix4 Body::worldToBodyLocal(const float alpha, Matrix4 *rotationOnlyMatrix) const
-{
-	// World transform to body relative shape transforms
-	Matrix4 worldToLocalRotation;
-	worldToLocalRotation.rotateZ(-math::radToDeg(math::lerp(m_anglePrev, m_angle, alpha)));
-	if(rotationOnlyMatrix)
-	{
-		*rotationOnlyMatrix = worldToLocalRotation;
-	}
-
-	Matrix4 worldToLocal;
-	const Vector2F position = math::lerp(m_positionPrev, m_position, alpha);
-	worldToLocal.translate(-position.x, -position.y, 0.0f);
-	worldToLocal = worldToLocalRotation * worldToLocal;
-	return worldToLocal;
 }
 
 void Body::applyImpulse(const Vector2F &impulse, const Vector2F &radius)

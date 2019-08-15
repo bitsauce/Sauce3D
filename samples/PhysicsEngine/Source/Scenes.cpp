@@ -44,13 +44,13 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 	// Create ground
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(size.x * 0.5f, size.y - 10.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(size.x * 0.5f, size.y - 10.0f);
 		bodyDef.mass = 0.0f;
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(size.x, 20.0f);
+		boxDef.size = Vector2FInPhysicsSpace(size.x, 20.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -59,13 +59,13 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 	// Create right wall
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(size.x - 10.0f, size.y * 0.5f);
+		bodyDef.position = Vector2FInPhysicsSpace(size.x - 10.0f, size.y * 0.5f);
 		bodyDef.mass = 0.0f;
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(20.0f, size.y);
+		boxDef.size = Vector2FInPhysicsSpace(20.0f, size.y);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -74,13 +74,13 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 	// Create left wall
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(10.0f, size.y * 0.5f);
+		bodyDef.position = Vector2FInPhysicsSpace(10.0f, size.y * 0.5f);
 		bodyDef.mass = 0.0f;
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(20.0f, size.y);
+		boxDef.size = Vector2FInPhysicsSpace(20.0f, size.y);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -89,13 +89,13 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 	// Create roof
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(size.x * 0.5f, 10.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(size.x * 0.5f, 10.0f);
 		bodyDef.mass = 0.0f;
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(size.x, 20.0f);
+		boxDef.size = Vector2FInPhysicsSpace(size.x, 20.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -113,8 +113,8 @@ void PhysicsScene::setupCirclesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *
 	Random rand(g_randomSeed);
 	for(int i = 0; i < g_benchmarkSceneNumCircles; ++i)
 	{
-		const float radius = rand.nextDouble(radiusMin, radiusMax);
-		const Vector2F spawnPoint = Vector2F(rand.nextDouble(20.0f+radius, size.x-20.0f-radius), rand.nextDouble(20.0f+radius, size.x-20.0f-radius));
+		const float radius = ValueInPhysicsSpace(rand.nextDouble(radiusMin, radiusMax));
+		const Vector2F spawnPoint = Vector2FInPhysicsSpace(rand.nextDouble(20.0f+radius, size.x-20.0f-radius), rand.nextDouble(20.0f+radius, size.x-20.0f-radius));
 
 		BodyDef bodyDef;
 		bodyDef.position = spawnPoint;
@@ -139,8 +139,8 @@ void PhysicsScene::setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *ph
 	Random rand(g_randomSeed);
 	for(int i = 0; i < g_benchmarkSceneNumBoxes; ++i)
 	{
-		const Vector2F boxSize = Vector2F(rand.nextDouble(radiusMin, radiusMax), rand.nextDouble(radiusMin, radiusMax));
-		const Vector2F spawnPoint = Vector2F(rand.nextDouble(20.0f+boxSize.x, size.x-20.0f-boxSize.x), rand.nextDouble(20.0f+boxSize.y, size.x-20.0f-boxSize.y));
+		const Vector2F boxSize = Vector2FInPhysicsSpace(rand.nextDouble(radiusMin, radiusMax), rand.nextDouble(radiusMin, radiusMax));
+		const Vector2F spawnPoint = Vector2FInPhysicsSpace(rand.nextDouble(20.0f+boxSize.x, size.x-20.0f-boxSize.x), rand.nextDouble(20.0f+boxSize.y, size.x-20.0f-boxSize.y));
 
 		BodyDef bodyDef;
 		bodyDef.position = spawnPoint;
@@ -160,28 +160,28 @@ void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physics
 	// Create a shape that tests compound bodies with body-relative transforms
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(100.0f, 600.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(100.0f, 600.0f);
 		bodyDef.mass = 0.001f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(50.0f, 50.0f);
+		boxDef.size = Vector2FInPhysicsSpace(50.0f, 50.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		CircleDef circleDef;
-		circleDef.radius = 15.0f;
-		circleDef.bodyRelativePosition = Vector2F(25.0f, 25.0f);
+		circleDef.radius = ValueInPhysicsSpace(15.0f);
+		circleDef.bodyRelativePosition = Vector2FInPhysicsSpace(25.0f, 25.0f);
 		bodyDef.shapes.push_back(new Circle(circleDef));
 
-		circleDef.bodyRelativePosition = Vector2F(-25.0f, 25.0f);
+		circleDef.bodyRelativePosition = Vector2FInPhysicsSpace(-25.0f, 25.0f);
 		circleDef.bodyRelativeAngle = math::degToRad(45.0f);
 		bodyDef.shapes.push_back(new Circle(circleDef));
 
-		boxDef.size = Vector2F(30.0f, 20.0f);
-		boxDef.bodyRelativePosition = Vector2F(25.0f, -25.0f);
+		boxDef.size = Vector2FInPhysicsSpace(30.0f, 20.0f);
+		boxDef.bodyRelativePosition = Vector2FInPhysicsSpace(25.0f, -25.0f);
 		boxDef.bodyRelativeAngle = math::degToRad(45.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
-		boxDef.bodyRelativePosition = Vector2F(-25.0f, -25.0f);
+		boxDef.bodyRelativePosition = Vector2FInPhysicsSpace(-25.0f, -25.0f);
 		boxDef.bodyRelativeAngle = -math::degToRad(75.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
@@ -190,11 +190,11 @@ void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physics
 
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(100.0f, 600.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(100.0f, 600.0f);
 		bodyDef.mass = 0.001f;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(50.0f, 50.0f);
+		boxDef.size = Vector2FInPhysicsSpace(50.0f, 50.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		boxDef.angle = math::degToRad(45.0f);
@@ -206,15 +206,19 @@ void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physics
 
 void PhysicsScene::setupRestitutionTestScene(list<Body*>& bodies, PhysicsGrid * physicsGrid)
 {
+	Window *window = Game::Get()->getWindow();
+	const Vector2I size = window->getSize();
+
 	auto createCircle = [&](float x, float restitution)
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(x, 100.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(x, 100.0f);
 		bodyDef.mass = 0.001f;
+		bodyDef.inertia = 0.0001f;
 		bodyDef.restitution = restitution;
 
 		CircleDef circleDef;
-		circleDef.radius = 15.0f;
+		circleDef.radius = ValueInPhysicsSpace(15.0f);
 		bodyDef.shapes.push_back(new Circle(circleDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -223,13 +227,13 @@ void PhysicsScene::setupRestitutionTestScene(list<Body*>& bodies, PhysicsGrid * 
 	auto createBox = [&](float x, float restitution)
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(x, 100.0f);
+		bodyDef.position = Vector2FInPhysicsSpace(x, 100.0f);
 		bodyDef.mass = 0.001f;
-		bodyDef.inertia = 1.0f;
+		bodyDef.inertia = 0.0001f;
 		bodyDef.restitution = restitution;
 
 		BoxDef boxDef;
-		boxDef.size = Vector2F(30.0f, 30.0f);
+		boxDef.size = Vector2FInPhysicsSpace(30.0f, 30.0f);
 		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
@@ -240,7 +244,7 @@ void PhysicsScene::setupRestitutionTestScene(list<Body*>& bodies, PhysicsGrid * 
 		createCircle(x, restitution);
 	}
 
-	for(float restitution = 0.0f, x = 600.0f; restitution < 1.0f; restitution += 0.1f, x += 35.0f)
+	for(float restitution = 0.0f, x = size.x - 100.0f; restitution < 1.0f; restitution += 0.1f, x -= 35.0f)
 	{
 		createBox(x, restitution);
 	}
