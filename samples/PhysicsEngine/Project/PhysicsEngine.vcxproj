@@ -174,20 +174,31 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\Body.cpp" />
     <ClCompile Include="..\Source\Collision.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
     <ClCompile Include="..\Source\PhysicsGrid.cpp" />
     <ClCompile Include="..\Source\Scenes.cpp" />
-    <ClCompile Include="..\Source\Shapes.cpp" />
+    <ClCompile Include="..\Source\Shapes\Box.cpp" />
+    <ClCompile Include="..\Source\Shapes\Circle.cpp" />
+    <ClCompile Include="..\Source\Shapes\Polygon.cpp" />
+    <ClCompile Include="..\Source\Shapes\Shape.cpp" />
+    <ClCompile Include="..\Source\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Body.h" />
     <ClInclude Include="..\Source\Collision.h" />
     <ClInclude Include="..\Source\Config.h" />
+    <ClInclude Include="..\Source\Constants.h" />
     <ClInclude Include="..\Source\Manifold.h" />
     <ClInclude Include="..\Source\PhysicsGrid.h" />
     <ClInclude Include="..\Source\Scenes.h" />
     <ClInclude Include="..\Source\Shapes.h" />
+    <ClInclude Include="..\Source\Shapes\Box.h" />
+    <ClInclude Include="..\Source\Shapes\Circle.h" />
+    <ClInclude Include="..\Source\Shapes\Polygon.h" />
+    <ClInclude Include="..\Source\Shapes\Shape.h" />
+    <ClInclude Include="..\Source\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

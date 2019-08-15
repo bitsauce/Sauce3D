@@ -1,7 +1,6 @@
+#include "Constants.h"
 #include "Scenes.h"
-#include "Config.h"
 #include "PhysicsGrid.h"
-
 
 void PhysicsScene::initialize(const ExampleScene scene, list<Body*> &bodies, PhysicsGrid *physicsGrid)
 {
@@ -50,9 +49,9 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
-		Box *box = new Box;
-		box->setSize(Vector2F(size.x, 20.0f));
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = Vector2F(size.x, 20.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -65,9 +64,9 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
-		Box *box = new Box;
-		box->setSize(Vector2F(20.0f, size.y));
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = Vector2F(20.0f, size.y);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -80,9 +79,9 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
-		Box *box = new Box;
-		box->setSize(Vector2F(20.0f, size.y));
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = Vector2F(20.0f, size.y);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -95,9 +94,9 @@ void PhysicsScene::setupEnclosureScene(list<Body*> &bodies, PhysicsGrid *physics
 		bodyDef.inertia = 0.0f;
 		bodyDef.restitution = 1.0f;
 
-		Box *box = new Box;
-		box->setSize(Vector2F(size.x, 20.0f));
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = Vector2F(size.x, 20.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -121,9 +120,9 @@ void PhysicsScene::setupCirclesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *
 		bodyDef.position = spawnPoint;
 		bodyDef.mass = 0.001f;
 
-		Circle *circle = new Circle;
-		circle->setRadius(radius);
-		bodyDef.shapes.push_back(circle);
+		CircleDef circleDef;
+		circleDef.radius = radius;
+		bodyDef.shapes.push_back(new Circle(circleDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -148,9 +147,9 @@ void PhysicsScene::setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *ph
 		bodyDef.angle = math::degToRad(rand.nextDouble(0.0f, 360.0f));
 		bodyDef.mass = 0.001f;
 
-		Box *box = new Box;
-		box->setSize(boxSize);
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = boxSize;
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -158,19 +157,48 @@ void PhysicsScene::setupBoxesBenchmarkScene(list<Body*> &bodies, PhysicsGrid *ph
 
 void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physicsGrid)
 {
+	// Create a shape that tests compound bodies with body-relative transforms
 	{
 		BodyDef bodyDef;
 		bodyDef.position = Vector2F(100.0f, 600.0f);
 		bodyDef.mass = 0.001f;
 
-		Box *box = new Box;
-		box->setSize(Vector2F(50.0f));
-		bodyDef.shapes.push_back(box);
+		BoxDef boxDef;
+		boxDef.size = Vector2F(50.0f, 50.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
-		Circle *circle = new Circle;
-		circle->setRadius(15.0f);
-		circle->setLocalPosition(Vector2F(25.0f, 25.0f));
-		bodyDef.shapes.push_back(circle);
+		CircleDef circleDef;
+		circleDef.radius = 15.0f;
+		circleDef.bodyRelativePosition = Vector2F(25.0f, 25.0f);
+		bodyDef.shapes.push_back(new Circle(circleDef));
+
+		circleDef.bodyRelativePosition = Vector2F(-25.0f, 25.0f);
+		circleDef.bodyRelativeAngle = math::degToRad(45.0f);
+		bodyDef.shapes.push_back(new Circle(circleDef));
+
+		boxDef.size = Vector2F(30.0f, 20.0f);
+		boxDef.bodyRelativePosition = Vector2F(25.0f, -25.0f);
+		boxDef.bodyRelativeAngle = math::degToRad(45.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
+
+		boxDef.bodyRelativePosition = Vector2F(-25.0f, -25.0f);
+		boxDef.bodyRelativeAngle = -math::degToRad(75.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
+
+		bodies.push_back(new Body(bodyDef, physicsGrid));
+	}
+
+	{
+		BodyDef bodyDef;
+		bodyDef.position = Vector2F(100.0f, 600.0f);
+		bodyDef.mass = 0.001f;
+
+		BoxDef boxDef;
+		boxDef.size = Vector2F(50.0f, 50.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
+
+		boxDef.angle = math::degToRad(45.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	}
@@ -178,33 +206,42 @@ void PhysicsScene::setupShapeTestScene(list<Body*>& bodies, PhysicsGrid *physics
 
 void PhysicsScene::setupRestitutionTestScene(list<Body*>& bodies, PhysicsGrid * physicsGrid)
 {
-	auto createCircle = [&](float offsetX, float restitution)
+	auto createCircle = [&](float x, float restitution)
 	{
 		BodyDef bodyDef;
-		bodyDef.position = Vector2F(100.0f + offsetX, 100.0f);
+		bodyDef.position = Vector2F(x, 100.0f);
 		bodyDef.mass = 0.001f;
 		bodyDef.restitution = restitution;
 
-		Circle *circle = new Circle;
-		circle->setRadius(15.0f);
-		bodyDef.shapes.push_back(circle);
-
-		//Box *box = new Box;
-		//box->setSize(Vector2F(30.0f, 30.0f));
-		//bodyDef.shapes.push_back(box);
+		CircleDef circleDef;
+		circleDef.radius = 15.0f;
+		bodyDef.shapes.push_back(new Circle(circleDef));
 
 		bodies.push_back(new Body(bodyDef, physicsGrid));
 	};
 
-	createCircle(0.0f, 1.0f);
-	createCircle(50.0f, 0.9f);
-	createCircle(100.0f, 0.8f);
-	createCircle(150.0f, 0.7f);
-	createCircle(200.0f, 0.6f);
-	createCircle(250.0f, 0.5f);
-	createCircle(300.0f, 0.4f);
-	createCircle(350.0f, 0.3f);
-	createCircle(400.0f, 0.2f);
-	createCircle(450.0f, 0.1f);
-	createCircle(500.0f, 0.0f);
+	auto createBox = [&](float x, float restitution)
+	{
+		BodyDef bodyDef;
+		bodyDef.position = Vector2F(x, 100.0f);
+		bodyDef.mass = 0.001f;
+		bodyDef.inertia = 1.0f;
+		bodyDef.restitution = restitution;
+
+		BoxDef boxDef;
+		boxDef.size = Vector2F(30.0f, 30.0f);
+		bodyDef.shapes.push_back(new Box(boxDef));
+
+		bodies.push_back(new Body(bodyDef, physicsGrid));
+	};
+
+	for(float restitution = 0.0f, x = 100.0f; restitution < 1.0f; restitution += 0.1f, x += 35.0f)
+	{
+		createCircle(x, restitution);
+	}
+
+	for(float restitution = 0.0f, x = 600.0f; restitution < 1.0f; restitution += 0.1f, x += 35.0f)
+	{
+		createBox(x, restitution);
+	}
 }

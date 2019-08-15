@@ -1,6 +1,7 @@
 #include <Sauce/Sauce.h>
 
 #include "Config.h"
+#include "Constants.h"
 #include "Body.h"
 #include "Shapes.h"
 #include "Manifold.h"
@@ -19,24 +20,26 @@ using namespace sauce;
 // [x] Add friction
 // [x] Add oriented boxes
 // [x] Fix the memory leak (generalize boxes as polygons)
-// [ ] Add angle to Box class (maybe just rotate the box before init?)
+// [x] Add angle to Box class (maybe just rotate the box before init?)
 // [x] Add oriented polygons
 // [x] Add oriented circles
-// [x] Implement a real broadphase
-// [ ] Optimize PhysicsGrid (add circlular buffer in each cell)
-// [ ] Fix AABB generation (rotated AABB, cache AABBs,
-//     consider what happens if a body's shape is added before setting its local position,
-//     etc.)
 // [x] Add AABB generation for circles
-// [ ] Make the drag functionality drag from the clicked point (may require joints)
+// [x] Implement a real broadphase
 // [x] Fix sinking bug with polygon <-> circle
-// [ ] Implement "mass = volume * density" mass initialization
-// [ ] Fix drifting with stacked boxes (maybe caused by low mass?)
-// [ ] Do optimization
-// [ ] Add grid to grid collision
-// [ ] Optimize the rendering
 // [x] Finetune CircleToCircle
 // [x] Finetune PolygonToPolygon
+// [x] Optimize the rendering
+// [x] Fix AABB generation
+// [ ] Add a physics unit variable, to scale world values to a space that is better suited for physics updates
+// [ ] Implement "mass = volume * density" mass initialization
+// [ ] Fix shaking boxes
+// [ ] Fix drifting with stacked boxes (maybe caused by low mass or floating point errors due to e.g. matrix multiplications in collision code?)
+// [ ] Fix objects going through other bodies (use RayCasting)
+// [ ] Add joints/contraints
+// [ ] Make the drag functionality drag from the clicked point (may require joints)
+// [ ] Add sleeping
+// [ ] Create test vehicle
+// [ ] Add grid to grid collision
 // [ ] Consider adding ImGui
 
 /*
@@ -51,15 +54,13 @@ using namespace sauce;
 
 class PhysicsEngineGame : public Game
 {
-	// PhysicsScene:
-	// Handles setup of example scenes
+	// PhysicsScene - Handles setup of example scenes
 	PhysicsScene m_scene;
 
 	// List of all bodies
 	list<Body*> m_bodies;
 
-	// PhysicsGrid:
-	// Manages the spatial division of physics bodies
+	// PhysicsGrid - Manages the spatial division of physics bodies
 	PhysicsGrid m_physicsGrid;
 
 	Body *m_selectedBody;
@@ -221,8 +222,10 @@ public:
 			//Color color = Color::White;
 			body->draw(e->getGraphicsContext(), color, e->getAlpha());
 
+#if DRAW_VELOCITIES == 1
 			// Draw velocity arrow
 			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, Color::Red);
+#endif // DRAW_VELOCITIES
 		}
 
 #if DRAW_IMPULSES == 1
@@ -268,8 +271,8 @@ public:
 
 			// Calculate relative velocity
 			Vector2F relativeVelocity =
-				b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
-				a->getVelocity() - perp(rAP) * a->getAngularVelocity();
+				b->getVelocity() + math::perp(rBP) * b->getAngularVelocity() -
+				a->getVelocity() - math::perp(rAP) * a->getAngularVelocity();
 
 			// Calculate relative velocity in terms of the normal direction
 			float velocityAlongNormal = relativeVelocity.dot(m->normal);
@@ -298,8 +301,8 @@ public:
 			
 			// Calculate relative velocity
 			relativeVelocity =
-				b->getVelocity() + perp(rBP) * b->getAngularVelocity() -
-				a->getVelocity() - perp(rAP) * a->getAngularVelocity();
+				b->getVelocity() + math::perp(rBP) * b->getAngularVelocity() -
+				a->getVelocity() - math::perp(rAP) * a->getAngularVelocity();
 
 			// Find a tangent in the direction of the relative velocity
 			Vector2F tangent = relativeVelocity - m->normal * relativeVelocity.dot(m->normal);
@@ -374,7 +377,7 @@ public:
 	{
 		if(m_selectedBody)
 		{
-			const float rotationalSpeed = math::degToRad(30.0f);
+			const float rotationalSpeed = math::degToRad(50.0f);
 			m_selectedBody->setAngularVelocity(m_selectedBody->getAngularVelocity() + e->getWheelY() * rotationalSpeed);
 		}
 	}
@@ -382,150 +385,10 @@ public:
 	void onKeyDown(KeyEvent *e)
 	{
 		switch(e->getKeycode())
-		{
-			case Keycode::SAUCE_KEY_C:
+		{			
+			case Keycode::SAUCE_KEY_R:
 			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-
-				Circle *circle = new Circle;
-				circle->setRadius(25.0f);
-				bodyDef.shapes.push_back(circle);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_B:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-
-				Box *box = new Box;
-				box->setLocalPosition(Vector2F(0.0f, 0.0f));
-				box->setSize(Vector2F(50.0f, 50.0f));
-				bodyDef.shapes.push_back(box);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_N:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-
-				Box *box1 = new Box;
-				box1->setLocalPosition(Vector2F(0.0f, 0.0f));
-				box1->setSize(Vector2F(50.0f, 50.0f));
-				bodyDef.shapes.push_back(box1);
-
-				Box *box2 = new Box;
-				box2->setLocalPosition(Vector2F(200.0f, 0.0f));
-				box2->setSize(Vector2F(50.0f, 50.0f));
-				bodyDef.shapes.push_back(box2);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_P:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-
-				PolygonShape *polygon = new PolygonShape;
-				const Vector2F points[] = {
-					Vector2F(-25.0f, -25.0f),
-					Vector2F(25.0f, 25.0f),
-					Vector2F(-25.0f, 25.0f),
-				};
-				polygon->initialize(points, 3);
-				bodyDef.shapes.push_back(polygon);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_O:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-
-				PolygonShape *polygon = new PolygonShape;
-				const Vector2F points[] = {
-					Vector2F(-25.0f, -25.0f),
-					Vector2F( 35.0f, -30.0f),
-					Vector2F( 25.0f,  25.0f),
-					Vector2F(-30.0f, -15.0f)
-				};
-				polygon->initialize(points, 4);
-				bodyDef.shapes.push_back(polygon);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_D:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-				
-				Vector2F offset(-50.0f, 0.0f);
-				PolygonShape *polygon = new PolygonShape;
-				const Vector2F points[] = {
-					Vector2F(-25.0f, -25.0f) + offset,
-					Vector2F( 25.0f, -25.0f) + offset,
-					Vector2F( 25.0f,  25.0f) + offset,
-					Vector2F(-25.0f,  25.0f) + offset
-				};
-				polygon->initialize(points, 4);
-				bodyDef.shapes.push_back(polygon);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_F:
-			{
-				BodyDef bodyDef;
-				bodyDef.position = e->getInputManager()->getPosition();
-				bodyDef.mass = (e->getModifiers() & KeyEvent::SHIFT) ? 0.0f : 0.001f;
-				
-				Vector2F offset(50.0f, 0.0f);
-				PolygonShape *polygon = new PolygonShape;
-				const Vector2F points[] = {
-					Vector2F(-25.0f, -25.0f) + offset,
-					Vector2F( 25.0f, -25.0f) + offset,
-					Vector2F( 25.0f,  25.0f) + offset,
-					Vector2F(-25.0f,  25.0f) + offset
-				};
-				polygon->initialize(points, 4);
-				bodyDef.shapes.push_back(polygon);
-
-				m_bodies.push_back(new Body(bodyDef, &m_physicsGrid));
-			}
-			break;
-			
-			case Keycode::SAUCE_KEY_1:
-			{
-				m_scene.initialize(PhysicsScene::SCENE_ENCLOSURE, m_bodies, &m_physicsGrid);
-			}
-			break;
-
-			case Keycode::SAUCE_KEY_2:
-			{
-				m_scene.initialize(PhysicsScene::SCENE_BENCHMARK_CIRCLES, m_bodies, &m_physicsGrid);
-				new std::thread([]() {
-					std::this_thread::sleep_for(5s);
-					exit(0);
-				});
+				m_scene.initialize(g_initialScene, m_bodies, &m_physicsGrid);
 			}
 			break;
 		}

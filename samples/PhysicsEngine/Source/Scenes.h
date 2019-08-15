@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Sauce/Sauce.h>
-using namespace sauce;
-
+#include "Config.h"
 #include "Body.h"
 
 class PhysicsGrid;

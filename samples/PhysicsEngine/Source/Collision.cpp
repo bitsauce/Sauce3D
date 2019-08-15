@@ -1,8 +1,9 @@
 #include <Sauce/Sauce.h>
+
 #include "Config.h"
 #include "Body.h"
-#include "Shapes.h"
 #include "Manifold.h"
+#include "Shapes.h"
 
 using namespace sauce;
 
@@ -43,10 +44,6 @@ vector<Vector2F> ClipEdge(Vector2F v0, Vector2F v1, Vector2F n, float o)
 	return clipEdges;
 }
 
-Vector2F perp(const Vector2F &v)
-{
-	return Vector2F(-v.y, v.x);
-}
 
 namespace collision
 {
@@ -70,7 +67,7 @@ namespace collision
 		Matrix4 bodyBToBodyA = bodyA->worldToBodyLocal(&worldToBodyARotationOnly) * bodyBToWorld;
 
 		// Calculate vector from shape in bodyA to shape in bodyB
-		const Vector2F normal = bodyBToBodyA * circleB->getLocalPosition() - circleA->getLocalPosition();
+		const Vector2F normal = bodyBToBodyA * circleB->getBodyRelativePosition() - circleA->getBodyRelativePosition();
 		const float lengthSquared = normal.lengthSquared();
 		const float totalRadius = circleA->getRadius() + circleB->getRadius();
 
@@ -100,7 +97,7 @@ namespace collision
 			m->normal = normal / distance;
 
 			// Calculate contact point
-			m->addContactPoints(bodyAToWorld * (m->normal * circleA->getRadius() + circleA->getLocalPosition()));
+			m->addContactPoints(bodyAToWorld * (m->normal * circleA->getRadius() + circleA->getBodyRelativePosition()));
 		}
 
 		// Transform collision normal to world space
@@ -126,9 +123,9 @@ namespace collision
 		Matrix4 bodyBToBodyARotationOnly = worldToBodyARotationOnly * bodyBToWorldRotationOnly;
 
 		// Calculate vector from shape in bodyA to shape in bodyB
-		const Vector2F shapePositionB = bodyBToBodyA * b->getLocalPosition();
+		const Vector2F shapePositionB = bodyBToBodyA * b->getBodyRelativePosition();
 		const float radiusOfB = b->getRadius();
-		const Vector2F deltaPosition = shapePositionB - a->getLocalPosition();
+		const Vector2F deltaPosition = shapePositionB - a->getBodyRelativePosition();
 
 		a->setTransform(Matrix4(), Matrix4());
 		float separation = -FLT_MAX;
@@ -153,7 +150,7 @@ namespace collision
 		if(separation < 0.0f)
 		{
 			m->normal = edge->normal;
-			m->addContactPoints(bodyAToWorld * (m->normal * radiusOfB + bodyBToBodyA * b->getLocalPosition()));
+			m->addContactPoints(bodyAToWorld * (m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition()));
 			m->normal = bodyAToWorldRotationOnly * m->normal;
 			m->penetration = radiusOfB;
 			return;
@@ -171,7 +168,7 @@ namespace collision
 			}
 
 			m->normal = -(edge->v0->position - shapePositionB).normalized();
-			m->addContactPoints(bodyAToWorld * (edge->v0->position + a->getLocalPosition()));
+			m->addContactPoints(bodyAToWorld * (edge->v0->position + a->getBodyRelativePosition()));
 		}
 		else if(dot2 <= 0.0f)
 		{
@@ -181,7 +178,7 @@ namespace collision
 			}
 
 			m->normal = -(edge->v1->position - shapePositionB).normalized();
-			m->addContactPoints(bodyAToWorld * (edge->v1->position + a->getLocalPosition()));
+			m->addContactPoints(bodyAToWorld * (edge->v1->position + a->getBodyRelativePosition()));
 		}
 		else
 		{
@@ -191,7 +188,7 @@ namespace collision
 			}
 
 			m->normal = edge->normal;
-			m->addContactPoints(bodyAToWorld * (-m->normal * radiusOfB + bodyBToBodyA * b->getLocalPosition()));
+			m->addContactPoints(bodyAToWorld * (-m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition()));
 		}
 		m->normal = bodyAToWorldRotationOnly * m->normal;
 	}
@@ -238,7 +235,7 @@ namespace collision
 			// We assume that normals pointing in the opposite direction of
 			// the delta positions are highly unlikely to be the axis of least
 			// peneration, so we pre-cull them here
-			if(edge->normal.dot(deltaPositions) > 0.0f)
+			if(edge->normal.dot(deltaPositions) >= 0.0f)
 			{
 				if(numAxis >= axisMaxSize)
 				{
@@ -251,7 +248,7 @@ namespace collision
 
 		for(PolygonShape::Edge *edge : polygonB->edges)
 		{
-			if(edge->normal.dot(deltaPositions) > 0.0f)
+			if(edge->normal.dot(deltaPositions) >= 0.0f)
 			{
 				if(numAxis >= axisMaxSize)
 				{
@@ -388,16 +385,25 @@ namespace collision
 		if(clippedEdge.size() < 2)
 			return;
 
-		Vector2F referenceEdgeNormal = referenceEdge->normal;
-		if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
+		// If reference and incident edge are parallel, use the center point of the clipped edge instead
+		//if(-referenceEdge->normal.dot(incidentEdge->normal) > 0.999f) // TODO: Move constant
+		//{
+		//	m->addContactPoints(bodyAToWorld * ((clippedEdge[0] + clippedEdge[1]) * 0.5f));
+		//}
+		//else
 		{
-			m->addContactPoints(bodyAToWorld * clippedEdge[0]);
+			Vector2F referenceEdgeNormal = referenceEdge->normal;
+			if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
+			{
+				m->addContactPoints(bodyAToWorld * clippedEdge[0]);
+			}
+
+			if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
+			{
+				m->addContactPoints(bodyAToWorld * clippedEdge[1]);
+			}
 		}
 
-		if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
-		{
-			m->addContactPoints(bodyAToWorld * clippedEdge[1]);
-		}
 
 		// Transform collision normal to world space
 		m->normal = bodyAToWorldRotationOnly * m->normal;
