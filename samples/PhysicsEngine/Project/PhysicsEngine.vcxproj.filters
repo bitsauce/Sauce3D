@@ -19,6 +19,7 @@
     </ClCompile>
     <ClCompile Include="..\Source\Utils.cpp" />
     <ClCompile Include="..\Source\Body.cpp" />
+    <ClCompile Include="..\Source\PhysicsWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Body.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="..\Source\Utils.h" />
     <ClInclude Include="..\Source\Shapes.h" />
     <ClInclude Include="..\Source\Constants.h" />
+    <ClInclude Include="..\Source\PhysicsWorld.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shapes">

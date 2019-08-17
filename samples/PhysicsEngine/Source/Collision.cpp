@@ -1,47 +1,55 @@
 #include <Sauce/Sauce.h>
 
 #include "Config.h"
+#include "Constants.h"
 #include "Body.h"
 #include "Manifold.h"
 #include "Shapes.h"
 
 using namespace sauce;
 
-PolygonShape::Vertex *GetFarthestPoint(PolygonShape *polygon, Vector2F dir)
+struct ClipVertex
 {
-	float maxDist = -FLT_MAX;
-	int index = 0;
-	for(int i = 0; i < polygon->vertices.size(); i++)
-	{
-		float dist = polygon->vertices[i]->position.dot(dir);
-		if(dist > maxDist)
-		{
-			maxDist = dist;
-			index = i;
-		}
-	}
-	return polygon->vertices[index];
-}
+	ClipVertex() { }
+	Vector2F v;
+	ContactFeature feature;
+};
 
-vector<Vector2F> ClipEdge(Vector2F v0, Vector2F v1, Vector2F n, float o)
+int ClipEdge(ClipVertex vOut[2], const ClipVertex vIn[2], const Vector2F &normal, float offset, char clipEdge)
 {
-	vector<Vector2F> clipEdges;
-	clipEdges.reserve(2);
+	// Start with no output points
+	int numOut = 0;
 
-	float d0 = n.dot(v0) - o;
-	float d1 = n.dot(v1) - o;
+	// Calculate the distance of end points to the line
+	float d0 = normal.dot(vIn[0].v) - offset;
+	float d1 = normal.dot(vIn[1].v) - offset;
 
-	if(d0 >= 0.0f) clipEdges.push_back(v0);
-	if(d1 >= 0.0f) clipEdges.push_back(v1);
+	// Add the points that lie behind the plane
+	if(d0 <= 0.0f) vOut[numOut++] = vIn[0];
+	if(d1 <= 0.0f) vOut[numOut++] = vIn[1];
 
+	// If the points are on different sides of the plane
 	if(d0 * d1 < 0.0f)
 	{
+		// Find intersection point of edge and plane
 		float u = d0 / (d0 - d1);
-		Vector2F e = (v1 - v0) * u + v0;
-		clipEdges.push_back(e);
+		vOut[numOut].v = vIn[0].v + (vIn[1].v - vIn[0].v) * u;
+		if(d0 > 0.0f)
+		{
+			// vIn[0] is clipped
+			vOut[numOut].feature = vIn[0].feature;
+			vOut[numOut].feature.edges.edge0 = clipEdge;
+		}
+		else
+		{
+			// vIn[1] is clipped
+			vOut[numOut].feature = vIn[1].feature;
+			vOut[numOut].feature.edges.edge1 = clipEdge;
+		}
+		numOut++;
 	}
 
-	return clipEdges;
+	return numOut;
 }
 
 
@@ -82,7 +90,10 @@ namespace collision
 		if(distance == 0.0f)
 		{
 			m->penetration = circleA->getRadius();
-			m->addContactPoints(m->bodyA->getPosition());
+
+			m->contacts[m->numContacts].position = bodyAToWorld * m->bodyA->getPosition();
+			m->contacts[m->numContacts].feature.value = 0;
+			m->numContacts++;
 
 			// If the circles are at the exact same point,
 			// we'll simply use the following normal vector
@@ -97,7 +108,9 @@ namespace collision
 			m->normal = normal / distance;
 
 			// Calculate contact point
-			m->addContactPoints(bodyAToWorld * (m->normal * circleA->getRadius() + circleA->getBodyRelativePosition()));
+			m->contacts[m->numContacts].position = bodyAToWorld * (m->normal * circleA->getRadius() + circleA->getBodyRelativePosition());
+			m->contacts[m->numContacts].feature.value = 1;
+			m->numContacts++;
 		}
 
 		// Transform collision normal to world space
@@ -150,7 +163,12 @@ namespace collision
 		if(separation < 0.0f)
 		{
 			m->normal = edge->normal;
-			m->addContactPoints(bodyAToWorld * (m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition()));
+
+			m->contacts[m->numContacts].position = bodyAToWorld * (m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition());
+			m->contacts[m->numContacts].feature.edges.edge0 = edge->id;
+			m->contacts[m->numContacts].feature.edges.edge1 = 0;
+			m->numContacts++;
+
 			m->normal = bodyAToWorldRotationOnly * m->normal;
 			m->penetration = radiusOfB;
 			return;
@@ -168,7 +186,11 @@ namespace collision
 			}
 
 			m->normal = -(edge->v0->position - shapePositionB).normalized();
-			m->addContactPoints(bodyAToWorld * (edge->v0->position + a->getBodyRelativePosition()));
+			
+			m->contacts[m->numContacts].position = bodyAToWorld * edge->v0->position;
+			m->contacts[m->numContacts].feature.edges.edge0 = 0;
+			m->contacts[m->numContacts].feature.edges.edge1 = 1;
+			m->numContacts++;
 		}
 		else if(dot2 <= 0.0f)
 		{
@@ -178,7 +200,11 @@ namespace collision
 			}
 
 			m->normal = -(edge->v1->position - shapePositionB).normalized();
-			m->addContactPoints(bodyAToWorld * (edge->v1->position + a->getBodyRelativePosition()));
+
+			m->contacts[m->numContacts].position = bodyAToWorld * edge->v1->position;
+			m->contacts[m->numContacts].feature.edges.edge0 = 0;
+			m->contacts[m->numContacts].feature.edges.edge1 = 2;
+			m->numContacts++;
 		}
 		else
 		{
@@ -188,7 +214,11 @@ namespace collision
 			}
 
 			m->normal = edge->normal;
-			m->addContactPoints(bodyAToWorld * (-m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition()));
+			
+			m->contacts[m->numContacts].position = bodyAToWorld * (-m->normal * radiusOfB + bodyBToBodyA * b->getBodyRelativePosition());
+			m->contacts[m->numContacts].feature.edges.edge0 = 0;
+			m->contacts[m->numContacts].feature.edges.edge1 = 0;
+			m->numContacts++;
 		}
 		m->normal = bodyAToWorldRotationOnly * m->normal;
 	}
@@ -372,53 +402,61 @@ namespace collision
 			incidentEdge = bestEdgeOfA;
 		}
 
-		// Perform edge clipping
-		Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
+		static ClipVertex incidentEdgePoints[2];
+		static ClipVertex clipPoints0[2];
+		static ClipVertex clipPoints1[2];
 
-		float o = referenceEdgeVector.dot(referenceEdge->v0->position);
-		vector<Vector2F> clippedEdge = ClipEdge(incidentEdge->v0->position, incidentEdge->v1->position, referenceEdgeVector, o);
-		if(clippedEdge.size() < 2)
+		incidentEdgePoints[0].v = incidentEdge->v0->position;
+		incidentEdgePoints[0].feature.edges.edge0 = incidentEdge->leftEdge->id;
+		incidentEdgePoints[0].feature.edges.edge1 = incidentEdge->id;
+		incidentEdgePoints[1].v = incidentEdge->v1->position;
+		incidentEdgePoints[1].feature.edges.edge0 = incidentEdge->id;
+		incidentEdgePoints[1].feature.edges.edge1 = incidentEdge->rightEdge->id;
+
+		// Perform edge clipping
+		const Vector2F referenceEdgeVector = Vector2F(-referenceEdge->normal.y, referenceEdge->normal.x);
+
+		float offset = referenceEdgeVector.dot(referenceEdge->v0->position);
+		int numPoints = ClipEdge(clipPoints0, incidentEdgePoints, -referenceEdgeVector, -offset, -referenceEdge->id - 1);
+		if(numPoints < 2)
 			return;
 
-		o = referenceEdgeVector.dot(referenceEdge->v1->position);
-		clippedEdge = ClipEdge(clippedEdge[0], clippedEdge[1], -referenceEdgeVector, -o);
-		if(clippedEdge.size() < 2)
+		offset = referenceEdgeVector.dot(referenceEdge->v1->position);
+		numPoints = ClipEdge(clipPoints1, clipPoints0, referenceEdgeVector, offset, -referenceEdge->id - 1);
+		if(numPoints < 2)
 			return;
 
 		// If reference and incident edge are parallel, use the center point of the clipped edge instead
-		//if(-referenceEdge->normal.dot(incidentEdge->normal) > 0.999f) // TODO: Move constant
-		//{
-		//	m->addContactPoints(bodyAToWorld * ((clippedEdge[0] + clippedEdge[1]) * 0.5f));
-		//}
-		//else
+		const Vector2F referenceEdgeNormal = referenceEdge->normal;
+		for(int i = 0; i < 2; ++i)
 		{
-			Vector2F referenceEdgeNormal = referenceEdge->normal;
-			if(referenceEdgeNormal.dot(clippedEdge[0] - referenceEdge->v0->position) < 0.0f)
+			if(referenceEdgeNormal.dot(clipPoints1[i].v - referenceEdge->v0->position) < 0.0f)
 			{
-				m->addContactPoints(bodyAToWorld * clippedEdge[0]);
-			}
-
-			if(referenceEdgeNormal.dot(clippedEdge[1] - referenceEdge->v0->position) < 0.0f)
-			{
-				m->addContactPoints(bodyAToWorld * clippedEdge[1]);
+				m->contacts[m->numContacts].position = bodyAToWorld * clipPoints1[i].v;
+				m->contacts[m->numContacts].feature = clipPoints1[i].feature;
+				m->numContacts++;
 			}
 		}
 
-
-		// Transform collision normal to world space
-		m->normal = bodyAToWorldRotationOnly * m->normal;
-
-#ifdef DEBUG_DRAW
-		Vector2F edge = referenceEdge->v1->position - referenceEdge->v0->position;
-		for(float f = 0.0f; f < 1.0f; f += 0.1f)
+#if DRAW_POLYGON_TO_POLYGON_DEBUG_INFO == 1
+		Shape *referenceShape = polygonB;
+		Shape *incidentShape = polygonA;
+		if(abs(bestEdgeOfA->normal.dot(m->normal)) < abs(bestEdgeOfB->normal.dot(m->normal)))
 		{
-			a->debugPoints.push_back(make_pair(referenceEdge->v0->position + edge * f, Color(0, 255, 0)));
+			referenceShape = polygonA;
+			incidentShape = polygonB;
 		}
 
-		edge = incidentEdge->v1->position - incidentEdge->v0->position;
+		Vector2F edge = referenceEdge->v1->localPosition - referenceEdge->v0->localPosition;
 		for(float f = 0.0f; f < 1.0f; f += 0.1f)
 		{
-			a->debugPoints.push_back(make_pair(incidentEdge->v0->position + edge * f, Color(255, 0, 0)));
+			referenceShape->debugPoints.push_back(make_pair(referenceEdge->v0->localPosition + edge * f, Color(0, 255, 0)));
+		}
+
+		edge = incidentEdge->v1->localPosition - incidentEdge->v0->localPosition;
+		for(float f = 0.0f; f < 1.0f; f += 0.1f)
+		{
+			incidentShape->debugPoints.push_back(make_pair(incidentEdge->v0->localPosition + edge * f, Color(255, 0, 0)));
 		}
 
 		//a->debugPoints.push_back(make_pair(farthestCornerOfB->position, Color(0, 255, 0)));
@@ -428,5 +466,8 @@ namespace collision
 		//else
 		//	a->debugPoints.push_back(make_pair(pointTransform * b->getRelativePosition() + m->normal * 25.0f, Color(255, 255, 0)));
 #endif
+
+		// Transform collision normal to world space
+		m->normal = bodyAToWorldRotationOnly * m->normal;
 	}
 }

@@ -5,62 +5,177 @@
 
 // TODO: Manifold objects should maybe be connected to shapes
 //       as then there will be less contactPoints.resize() calls
+
+union ContactFeature
+{
+	struct
+	{
+		int8_t edge0;
+		int8_t edge1;
+	} edges;
+	int16_t value;
+};
+
+struct Contact
+{
+	Vector2F position;
+	float invMassNormal;
+	float invMassTangent;
+
+	float jAccum=0, jtAccum=0;
+
+	ContactFeature feature;
+};
+
 class Manifold
 {
 public:
-	Manifold() :
-		bodyA(nullptr),
-		bodyB(nullptr),
-		shapeA(nullptr),
-		shapeB(nullptr),
+	static const int MAX_CONTACTS = 2;
+
+	Manifold(Body *bodyA, Body *bodyB, Shape *shapeA, Shape *shapeB) :
 		penetration(0.0f),
-		normal(0.0f),
-		numContacts(0)
+		normal(0.0f, 0.0f),
+		tangent(0.0f, 0.0f),
+		numContacts(0),
+		unused(false)
 	{
-		contactPoints.resize(10); // TODO: Common place for these constants
+		if(false && shapeA < shapeB)
+		{
+			this->bodyA = bodyA;
+			this->bodyB = bodyB;
+			this->shapeA = shapeA;
+			this->shapeB = shapeB;
+		}
+		else
+		{
+			// Swap a and b for coherence
+			this->bodyB = bodyA;
+			this->bodyA = bodyB;
+			this->shapeB = shapeA;
+			this->shapeA = shapeB;
+		}
 	}
 
-	void initialize(Body *bodyA, Body *bodyB, Shape *shapeA, Shape *shapeB)
-	{
-		const_cast<Body*>(this->bodyA) = bodyA;
-		const_cast<Body*>(this->bodyB) = bodyB;
-		const_cast<Shape*>(this->shapeA) = shapeA;
-		const_cast<Shape*>(this->shapeB) = shapeB;
-		numContacts = 0;
-	}
-
+	// TODO: Verify that this function works as expected when A > B
 	void swapAAndB()
 	{
 		Body *tmpBody = bodyA;
-		const_cast<Body*>(bodyA) = bodyB;
-		const_cast<Body*>(bodyB) = tmpBody;
+		bodyA = bodyB;
+		bodyB = tmpBody;
 		Shape *tmpShape = shapeA;
-		const_cast<Shape*>(shapeA) = shapeB;
-		const_cast<Shape*>(shapeB) = tmpShape;
+		shapeA = shapeB;
+		shapeB = tmpShape;
 	}
 
-	void addContactPoints(const Vector2F &contactPoint)
+	void update(Manifold &newManifold)
 	{
-		if(numContacts >= contactPoints.size())
+		assert(bodyA == newManifold.bodyA && bodyB == newManifold.bodyB);
+		assert(shapeA == newManifold.shapeA && shapeB == newManifold.shapeB);
+
+		if(!g_accumulateImpulses)
 		{
-			contactPoints.resize(contactPoints.size() + 10);
+			Contact *newContacts = newManifold.contacts; int numNewContacts = newManifold.numContacts;
+
+			for(int i = 0; i < numNewContacts; ++i)
+			{
+				contacts[i] = newContacts[i];
+			}
+			numContacts = numNewContacts;
+
+			normal = newManifold.normal;
+			penetration = newManifold.penetration;
+			unused = false;
+			return;
 		}
-		contactPoints[numContacts++] = contactPoint;
+
+		static Contact mergedContacts[MAX_CONTACTS];
+
+		for(int i = 0; i < newManifold.numContacts; ++i)
+		{
+			// Find matching contact in new manifold
+			const Contact &cNew = newManifold.contacts[i];
+			int index = -1;
+			for(int j = 0; j < numContacts; j++)
+			{
+				const Contact &cOld = contacts[j];
+				if(cNew.feature.value == cOld.feature.value)
+				{
+					index = j;
+					break;
+				}
+			}
+
+			if(index >= 0)
+			{
+				// Matching contact found, setup accumulators
+				Contact &c = mergedContacts[i];
+				const Contact &cOld = contacts[index];
+				c = cNew;
+				c.jAccum = cOld.jAccum;
+				//c.jtAccum = cOld.jtAccum;
+			}
+			else
+			{
+				// No matching contact found, copy new
+				mergedContacts[i] = cNew;
+			}
+		}
+
+		for(int i = 0; i < newManifold.numContacts; ++i)
+		{
+			contacts[i] = mergedContacts[i];
+		}
+		numContacts = newManifold.numContacts;
+
+		normal = newManifold.normal;
+		penetration = newManifold.penetration;
+		unused = false;
 	}
 
-	Vector2F getContactPoint(int i) const
-	{
-		return contactPoints[i];
-	}
-
-	Body * const bodyA;
-	Body * const bodyB;
-	Shape * const shapeA;
-	Shape * const shapeB;
+	Body *bodyA;
+	Body *bodyB;
+	Shape *shapeA;
+	Shape *shapeB;
 	float penetration;
 	Vector2F normal;
+	Vector2F tangent;
+
+	Contact contacts[MAX_CONTACTS];
 	int numContacts;
 
-private:
-	vector<Vector2F> contactPoints;
+	bool unused;
 };
+
+struct ManifoldKey
+{
+
+	ManifoldKey(Shape *shapeA, Shape *shapeB)
+	{
+		if(false && shapeA < shapeB)
+		{
+			this->shapeA = shapeA;
+			this->shapeB = shapeB;
+		}
+		else
+		{
+			// Swap a and b for coherence
+			this->shapeB = shapeA;
+			this->shapeA = shapeB;
+		}
+	}
+
+	Shape *shapeA;
+	Shape *shapeB;
+};
+
+
+inline bool operator < (const ManifoldKey& a1, const ManifoldKey& a2)
+{
+	if(a1.shapeA < a2.shapeA)
+		return true;
+
+	if(a1.shapeA == a2.shapeA && a1.shapeB < a2.shapeB)
+		return true;
+
+	return false;
+}

@@ -67,7 +67,8 @@ void PolygonShape::initialize(const Vector2F *points, const int numPoints)
 		previousEdge = edge;
 		edges.push_back(edge);
 	}
-	edges[0]->leftEdge = edges[numPoints - 1];
+	edges[0]->leftEdge = previousEdge;
+	previousEdge->rightEdge = edges[0];
 
 	numVerticesAndEdges = vertices.size();
 }

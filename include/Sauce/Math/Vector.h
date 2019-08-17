@@ -203,7 +203,7 @@ public:
 		return Vector2<T>(*this) /= v2;
 	}
 
-	inline const Vector2<T> operator-()
+	inline const Vector2<T> operator-() const
 	{
 		return Vector2F(*this) *= -1;
 	}

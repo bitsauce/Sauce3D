@@ -8,8 +8,7 @@ Body::Body(const BodyDef bodyDef, PhysicsGrid *physicsGrid) :
 	m_anglePrev(bodyDef.angle),
 	m_velocity(bodyDef.velocity),
 	m_angularVelocity(bodyDef.angularVelocity),
-	m_staticFriction(bodyDef.staticFriction),
-	m_dynamicFriction(bodyDef.dynamicFriction),
+	m_friction(bodyDef.friction),
 	m_restitution(bodyDef.restitution),
 	m_transformsDirty(true),
 	m_physicsGrid(physicsGrid)

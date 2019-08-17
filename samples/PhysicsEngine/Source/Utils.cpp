@@ -9,6 +9,11 @@ namespace sauce
 		{
 			return Vector2F(-v.y, v.x);
 		}
+
+		bool equal(const float a, const float b)
+		{
+			return abs(a - b) <= g_physicsEpsilon;
+		}
 	}
 }
 

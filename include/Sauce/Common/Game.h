@@ -877,6 +877,7 @@ struct SAUCE_API GameDesc
 	string organization             = "Sauce3D";
 	uint32_t flags                  = 0;
 	GraphicsBackend graphicsBackend = SAUCE_OPENGL_3;
+	double deltaTime                = 1.0f / 30.0f;
 };
 
 class SAUCE_API Game : public SceneObject

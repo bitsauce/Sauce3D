@@ -5,7 +5,7 @@
 
 class PhysicsGrid;
 
-class PhysicsScene
+class SceneManager
 {
 public:
 	enum ExampleScene

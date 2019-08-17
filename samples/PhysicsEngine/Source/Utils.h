@@ -7,6 +7,7 @@ namespace sauce
 	namespace math
 	{
 		Vector2F perp(const Vector2F &v);
+		bool equal(const float a, const float b);
 	}
 }
 

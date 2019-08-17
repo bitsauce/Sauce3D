@@ -13,8 +13,7 @@ struct BodyDef
 		angle(0.0f),
 		velocity(0.0f, 0.0f),
 		angularVelocity(0.0f),
-		staticFriction(0.2f),
-		dynamicFriction(0.1f),
+		friction(1.0f),
 		restitution(0.5f)
 	{
 	}
@@ -28,8 +27,7 @@ struct BodyDef
 	Vector2F velocity;
 	float angularVelocity;
 	
-	float staticFriction;
-	float dynamicFriction;
+	float friction;
 	float restitution;
 
 	list<Shape*> shapes;
@@ -69,13 +67,10 @@ public:
 	float getAngularVelocity() const { return m_angularVelocity; }
 	void setAngularVelocity(const float angularVelocity) { m_angularVelocity = angularVelocity; }
 
-	float getStaticFriction() const { return m_staticFriction; }
-	void setStaticFriction(const float staticFriction) { m_staticFriction = staticFriction; }
+	float getFriction() const { return m_friction; }
+	void setFriction(const float friction) { m_friction = friction; }
 
-	float getDynamicFriction() const { return m_dynamicFriction; }
-	void setDynamicFriction(const float dynamicFriction) { m_dynamicFriction = dynamicFriction; }
-
-	vector<Shape*> &getShapes() { return m_shapes; }
+	list<Shape*> &getShapes() { return m_shapes; }
 
 	bool m_isColliding = false;
 
@@ -88,7 +83,7 @@ private:
 	AABB m_aabb;
 	AABB m_nonTransformedAABB;
 
-	vector<Shape*> m_shapes;
+	list<Shape*> m_shapes;
 
 	float m_mass, m_massInv;
 	float m_inertia, m_inertiaInv;
@@ -99,8 +94,7 @@ private:
 	Vector2F m_velocity;
 	float m_angularVelocity;
 
-	float m_staticFriction;
-	float m_dynamicFriction;
+	float m_friction;
 	float m_restitution;
 
 	bool m_transformsDirty;

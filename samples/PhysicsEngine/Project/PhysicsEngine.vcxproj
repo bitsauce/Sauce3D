@@ -178,6 +178,7 @@
     <ClCompile Include="..\Source\Collision.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
     <ClCompile Include="..\Source\PhysicsGrid.cpp" />
+    <ClCompile Include="..\Source\PhysicsWorld.cpp" />
     <ClCompile Include="..\Source\Scenes.cpp" />
     <ClCompile Include="..\Source\Shapes\Box.cpp" />
     <ClCompile Include="..\Source\Shapes\Circle.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="..\Source\Constants.h" />
     <ClInclude Include="..\Source\Manifold.h" />
     <ClInclude Include="..\Source\PhysicsGrid.h" />
+    <ClInclude Include="..\Source\PhysicsWorld.h" />
     <ClInclude Include="..\Source\Scenes.h" />
     <ClInclude Include="..\Source\Shapes.h" />
     <ClInclude Include="..\Source\Shapes\Box.h" />
