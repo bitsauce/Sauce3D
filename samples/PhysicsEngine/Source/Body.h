@@ -12,9 +12,7 @@ struct BodyDef
 		position(0.0f, 0.0f),
 		angle(0.0f),
 		velocity(0.0f, 0.0f),
-		angularVelocity(0.0f),
-		friction(1.0f),
-		restitution(0.5f)
+		angularVelocity(0.0f)
 	{
 	}
 
@@ -26,9 +24,6 @@ struct BodyDef
 	
 	Vector2F velocity;
 	float angularVelocity;
-	
-	float friction;
-	float restitution;
 
 	list<Shape*> shapes;
 };
@@ -58,17 +53,11 @@ public:
 	float getInertiaInv() const { return m_inertiaInv; }
 	void setInertia(const float inertia) { m_inertia = inertia; m_inertiaInv = inertia > 0.0f ? 1.0f / inertia : 0.0f; }
 
-	float getRestitution() const { return m_restitution; }
-	float setRestitution(const float restitution) { m_restitution = restitution; }
-
 	Vector2F getVelocity() const { return m_velocity; }
 	void setVelocity(const Vector2F velocity) { m_velocity = velocity; }
 
 	float getAngularVelocity() const { return m_angularVelocity; }
 	void setAngularVelocity(const float angularVelocity) { m_angularVelocity = angularVelocity; }
-
-	float getFriction() const { return m_friction; }
-	void setFriction(const float friction) { m_friction = friction; }
 
 	list<Shape*> &getShapes() { return m_shapes; }
 
@@ -93,9 +82,6 @@ private:
 
 	Vector2F m_velocity;
 	float m_angularVelocity;
-
-	float m_friction;
-	float m_restitution;
 
 	bool m_transformsDirty;
 	Matrix4 m_bodyLocalToWorld;

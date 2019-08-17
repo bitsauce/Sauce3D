@@ -3,19 +3,21 @@
 #include "../Config.h"
 #include "../Utils.h"
 
-// TODO:
-// [ ] Move some parameters from BodyDef to ShapeDef
-
 struct ShapeDef
 {
 	ShapeDef() :
 		bodyRelativePosition(0.0f, 0.0f),
-		bodyRelativeAngle(0.0f)
+		bodyRelativeAngle(0.0f),
+		friction(1.0f),
+		restitution(0.0f)
 	{
 	}
 
 	Vector2F bodyRelativePosition;
 	float bodyRelativeAngle;
+
+	float friction;
+	float restitution;
 };
 
 class Shape
@@ -31,19 +33,16 @@ public:
 	Shape(const ShapeDef &shapeDef, const Type type) :
 		m_type(type),
 		m_bodyRelativePosition(shapeDef.bodyRelativePosition),
-		m_bodyRelativeAngle(shapeDef.bodyRelativeAngle)
+		m_bodyRelativeAngle(shapeDef.bodyRelativeAngle),
+		m_friction(shapeDef.friction),
+		m_restitution(shapeDef.restitution)
 	{
 	}
 
-	Vector2F getBodyRelativePosition() const
-	{
-		return m_bodyRelativePosition;
-	}
-
-	float getBodyRelativeAngle() const
-	{
-		return m_bodyRelativeAngle;
-	}
+	Vector2F getBodyRelativePosition() const { return m_bodyRelativePosition; }
+	float getBodyRelativeAngle() const { return m_bodyRelativeAngle; }
+	float getRestitution() const { return m_restitution; }
+	float getFriction() const { return m_friction; }
 
 	Matrix4 getBodyRelativeTransformation() const
 	{
@@ -78,4 +77,6 @@ private:
 	const Type m_type;
 	const Vector2F m_bodyRelativePosition;
 	const float m_bodyRelativeAngle;
+	const float m_friction;
+	const float m_restitution;
 };

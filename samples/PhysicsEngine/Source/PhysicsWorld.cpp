@@ -189,7 +189,7 @@ void PhysicsWorld::preStep(const float dt, Manifold *m)
 		// Calculate relative velocity in terms of the normal direction
 		float velocityAlongNormal = relativeVelocity.dot(m->normal);
 
-		float e = min(a->getRestitution(), b->getRestitution());
+		float e = min(m->shapeA->getRestitution(), m->shapeB->getRestitution());
 		if(velocityAlongNormal < -1.0f)
 		{
 			c.bias = -e * velocityAlongNormal;
@@ -257,7 +257,7 @@ void PhysicsWorld::resolveCollision(Manifold *m)
 		jt /= c.invMassTangent;
 						
 		// Approximate friction coefficient
-		float friction = std::sqrt(a->getFriction() * b->getFriction());
+		float friction = std::sqrt(m->shapeA->getFriction() * m->shapeB->getFriction());
 
 		// Clamp magnitude of friction and calculate impulse vector
 		if(g_accumulateImpulses)
