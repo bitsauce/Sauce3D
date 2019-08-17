@@ -36,6 +36,7 @@ public:
 
 	void update(float dt);
 
+	void preStep(const float dt, Manifold *m);
 	void resolveCollision(Manifold *m);
 	void correctPositions(Manifold *m);
 

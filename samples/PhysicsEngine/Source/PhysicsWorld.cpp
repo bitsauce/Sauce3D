@@ -125,12 +125,7 @@ void PhysicsWorld::update(float dt)
 			continue;
 		}
 		itr->second.unused = true;
-
-#if DISABLE_COLLISIONS != 1
-		// Resolve collisions
-		resolveCollision(&itr->second);
-		correctPositions(&itr->second);
-#endif // DISABLE_COLLISIONS
+		preStep(dt, &itr->second);
 	}
 
 	// Remove unused manifolds
@@ -139,6 +134,19 @@ void PhysicsWorld::update(float dt)
 		m_manifolds.erase(key);
 	}
 
+#if DISABLE_COLLISIONS != 1
+	// Perform iterations
+	for(int i = 0; i < g_iterations; ++i)
+	{
+		for(ManifoldItr itr = m_manifolds.begin(); itr != m_manifolds.end(); ++itr)
+		{
+			// Resolve collisions
+			resolveCollision(&itr->second);
+			//correctPositions(&itr->second);
+		}
+	}
+#endif // DISABLE_COLLISIONS
+
 	// Integrate velocities
 	for(Body *body : m_bodies)
 	{
@@ -146,8 +154,11 @@ void PhysicsWorld::update(float dt)
 	}
 }
 
-void PhysicsWorld::resolveCollision(Manifold *m)
+void PhysicsWorld::preStep(const float dt, Manifold *m)
 {
+	const float k_allowedPenetration = 0.01f;
+	float k_biasFactor = g_positionCorrection ? 0.2f : 0.0f;
+
 	Body *a = m->bodyA;
 	Body *b = m->bodyB;
 
@@ -168,7 +179,21 @@ void PhysicsWorld::resolveCollision(Manifold *m)
 		float rBPcrossT = rBP.cross(m->tangent);
 		c.invMassTangent = a->getMassInv() + b->getMassInv() + (rAPcrossT * rAPcrossT * a->getInertiaInv()) + (rBPcrossT * rBPcrossT * b->getInertiaInv());
 
-		//c->bias = -k_biasFactor * inv_dt * Min(0.0f, c->separation + k_allowedPenetration);
+		c.bias = -k_biasFactor * (1.0f / dt) * math::minimum(0.0f, k_allowedPenetration - m->penetration);
+
+		// Calculate relative velocity
+		Vector2F relativeVelocity =
+			b->getVelocity() + math::perp(rBP) * b->getAngularVelocity() -
+			a->getVelocity() - math::perp(rAP) * a->getAngularVelocity();
+
+		// Calculate relative velocity in terms of the normal direction
+		float velocityAlongNormal = relativeVelocity.dot(m->normal);
+
+		float e = min(a->getRestitution(), b->getRestitution());
+		if(velocityAlongNormal < -1.0f)
+		{
+			c.bias = -e * velocityAlongNormal;
+		}
 
 		// Apply accumulated impulses
 		if(g_accumulateImpulses)
@@ -179,6 +204,12 @@ void PhysicsWorld::resolveCollision(Manifold *m)
 			b->applyImpulse(impulse, rBP);
 		}
 	}
+}
+
+void PhysicsWorld::resolveCollision(Manifold *m)
+{
+	Body *a = m->bodyA;
+	Body *b = m->bodyB;
 
 	for(int i = 0; i < m->numContacts; ++i)
 	{
@@ -195,11 +226,8 @@ void PhysicsWorld::resolveCollision(Manifold *m)
 		// Calculate relative velocity in terms of the normal direction
 		float velocityAlongNormal = relativeVelocity.dot(m->normal);
 
-		// Calculate restitution
-		float e = min(a->getRestitution(), b->getRestitution());
-
 		// Calculate magnitude of impulse
-		float j = -(1.0f + e) * velocityAlongNormal;
+		float j = -velocityAlongNormal + c.bias;
 		j /= c.invMassNormal;
 
 		if(g_accumulateImpulses)

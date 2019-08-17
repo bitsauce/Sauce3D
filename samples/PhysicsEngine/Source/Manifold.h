@@ -22,6 +22,8 @@ struct Contact
 	float invMassNormal;
 	float invMassTangent;
 
+	float bias;
+
 	float jAccum=0, jtAccum=0;
 
 	ContactFeature feature;

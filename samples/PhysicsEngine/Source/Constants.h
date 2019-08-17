@@ -21,9 +21,10 @@ const float    g_physicsEpsilon = 0.0001f;
 const double   g_deltaTime = 1.0 / 60.0;
 const bool     g_accumulateImpulses = true;
 
-const bool     g_positionalCorrection = true; // TODO
+const bool     g_positionCorrection = true;
+const int      g_iterations = 10;
 
-const SceneManager::ExampleScene g_initialScene = SceneManager::SCENE_SHAPES_TEST;//PhysicsScene::SCENE_ENCLOSURE;
+const SceneManager::ExampleScene g_initialScene = SceneManager::SCENE_BENCHMARK_BOXES;//PhysicsScene::SCENE_ENCLOSURE;
 const Vector2F                   g_defaultGravity = Vector2F(0.0f, 150.0f) / g_physicsUnit;
 
 const Vector2I g_physicsCellSize      = Vector2I(200, 200) / g_physicsUnit;

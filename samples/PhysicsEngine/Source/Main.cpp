@@ -34,9 +34,9 @@ using namespace sauce;
 // [x] Add a physics unit variable, to scale world values to a space that is better suited for physics updates
 // [ ] Implement "mass = volume * density" mass initialization
 // [x] Fix shaking boxes
-// [ ] Add c.bias
-// [ ] Add iterations
-// [ ] Fix drifting with stacked boxes (maybe caused by low mass or floating point errors due to e.g. matrix multiplications in collision code?)
+// [x] Add c.bias
+// [x] Add iterations
+// [x] Fix drifting with stacked boxes (maybe caused by low mass or floating point errors due to e.g. matrix multiplications in collision code?)
 // [ ] Fix objects going through other bodies (use RayCasting)
 // [ ] Add joints/contraints
 // [ ] Make the drag functionality drag from the clicked point (may require joints)
