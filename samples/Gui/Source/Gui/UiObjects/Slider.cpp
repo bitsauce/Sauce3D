@@ -38,7 +38,7 @@ void Slider::onDraw(DrawEvent *e)
 	graphicsContext->drawRectangle(rect.position.x + rect.size.x - 4.0f, rect.position.y + (rect.size.y - 8.0f) * 0.5f, 4.0f, 8.0f, Color::White, TextureRegion(8.0f / w, 0.0f, 12.0f / w, 8.0f / h));
 	
 	// Slider circle
-	graphicsContext->drawRectangle(rect.position.x - 13.0f + (rect.size.x - 4.0f) * m_percentage, rect.position.y + (rect.size.y - 26.0f) * 0.5f, 26.0f, 26.0f, Color(255, 255, 255, 127), TextureRegion(16.0f / w, 0.0f, 1.0f, 1.0f));
+	graphicsContext->drawRectangle(rect.position.x - 13.0f + (rect.size.x - 4.0f) * m_percentage, rect.position.y + (rect.size.y - 26.0f) * 0.5f, 26.0f, 26.0f, Color::White, TextureRegion(16.0f / w, 0.0f, 1.0f, 1.0f));
 
 	graphicsContext->setTexture(0);
 }

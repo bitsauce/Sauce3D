@@ -21,7 +21,7 @@ void PolygonShape::initialize(const Vector2F *points, const int numPoints)
 	free();
 
 	m_aabb = AABB();
-	m_aabb.max = m_aabb.min = points[0];
+	m_aabb.max = m_aabb.min = bodyToShape * points[0];
 	m_area = 0.0f;
 	localCentroid = Vector2F();
 	for(int i = 0; i < numPoints; i++)

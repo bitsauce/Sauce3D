@@ -204,10 +204,64 @@ public:
 	void onKeyDown(KeyEvent *e)
 	{
 		switch(e->getKeycode())
-		{			
+		{
+			case Keycode::SAUCE_KEY_1:
+			{
+				m_scene.initialize(SCENE_SINGLE_BOX, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_2:
+			{
+				m_scene.initialize(SCENE_VERTICAL_STACK, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_3:
+			{
+				m_scene.initialize(SCENE_COMPOUND_BODIES, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_4:
+			{
+				m_scene.initialize(SCENE_POLYGON_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_5:
+			{
+				m_scene.initialize(SCENE_SHAPES_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_6:
+			{
+				m_scene.initialize(SCENE_RESTITUTION_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_7:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_CIRCLES, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_8:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_BOXES, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_9:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_POLYGONS, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
 			case Keycode::SAUCE_KEY_R:
 			{
-				m_scene.initialize(g_initialScene, m_world.getBodies(), m_world.getPhysicsGrid());
+				m_scene.initialize(m_scene.m_currentScene, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
 			break;
 		}

@@ -29,6 +29,15 @@ Body::Body(const BodyDef bodyDef, PhysicsGrid *physicsGrid) :
 	setInertia(bodyDef.inertia);
 }
 
+Body::~Body()
+{
+	m_physicsGrid->removeBody(this);
+	for(Shape *shape : m_shapes)
+	{
+		delete shape;
+	}
+}
+
 void Body::setPosition(Vector2F position)
 {
 	const AABB aabbBefore = getAABB();
@@ -167,8 +176,8 @@ void Body::addShape(Shape *shape)
 	//m_physicsGrid->removeBody(this);
 	// TODO: Careful! Have to update AABB when shape changes it local position
 	AABB aabb = shape->getAABB(); // + shape->localPosition
-	aabb.min += shape->getBodyRelativePosition();
-	aabb.max += shape->getBodyRelativePosition();
+	//aabb.min += shape->getBodyRelativePosition();
+	//aabb.max += shape->getBodyRelativePosition();
 
 	m_nonTransformedAABB.min.x = math::minimum(m_nonTransformedAABB.min.x, aabb.min.x);
 	m_nonTransformedAABB.min.y = math::minimum(m_nonTransformedAABB.min.y, aabb.min.y);

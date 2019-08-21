@@ -7,7 +7,7 @@
 struct BodyDef
 {
 	BodyDef() :
-		mass(0.001f),
+		mass(1.0f),
 		inertia(1.0f),
 		position(0.0f, 0.0f),
 		angle(0.0f),
@@ -32,6 +32,7 @@ class Body
 {
 public:
 	Body(const BodyDef bodyDef, PhysicsGrid *physicsGrid);
+	~Body();
 	void setPosition(Vector2F position);
 	Vector2F getPosition() const;
 	void setAngle(const float angle);

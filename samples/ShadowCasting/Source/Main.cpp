@@ -79,11 +79,11 @@ public:
 		m_currentLight = new Light();
 		m_lights.push_back(m_currentLight);
 
-		// Set light map resolution
-		setLightMapResolution(256);
-
 		m_occludersRenderTarget = 0;
 		m_debugState = DEBUG_STATE_NONE;
+
+		// Set light map resolution
+		setLightMapResolution(256);
 
 		Game::onStart(e);
 	}

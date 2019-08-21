@@ -426,7 +426,7 @@ namespace collision
 		if(numPoints < 2)
 			return;
 
-		// If reference and incident edge are parallel, use the center point of the clipped edge instead
+		// Add the contact points that lie behind the reference edge
 		const Vector2F referenceEdgeNormal = referenceEdge->normal;
 		for(int i = 0; i < 2; ++i)
 		{
