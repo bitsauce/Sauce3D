@@ -149,6 +149,8 @@ class Simple3DGame : public Game
 	DirectionalLight m_directionalLight;
 	vector<PointLight> m_pointLights;
 
+	float m_time;
+
 public:
 	void onStart(GameEvent *e)
 	{
@@ -163,6 +165,7 @@ public:
 		camera.setYaw(-math::degToRad(90));
 
 		m_mesh = loadMesh("bunny.obj");
+		m_time = 0.0f;
 
 		m_pointLights.push_back(PointLight(Vector3F(0.f, 0.f, 2.f), Vector3F(1.f, 1.f, 1.f), 10.f));
 
@@ -176,6 +179,12 @@ public:
 
 	void onTick(TickEvent *e)
 	{
+		m_time += e->getDelta();
+		for(int i = 0; i < m_pointLights.size(); i++)
+		{
+			PointLight &light = m_pointLights[i];
+			light.position = Vector3F(cos(m_time) * 5, 1, sin(m_time) * 5);
+		}
 		Game::onTick(e);
 	}
 
@@ -224,7 +233,7 @@ public:
 
 		graphicsContext->disable(GraphicsContext::DEPTH_TEST);
 		m_spriteBatch->begin(e->getGraphicsContext());
-		m_font->draw(m_spriteBatch, 10, 10, ss.str().c_str(), FONT_ALIGN_LEFT);
+		//m_font->draw(m_spriteBatch, 10, 10, ss.str().c_str(), FONT_ALIGN_LEFT);
 		m_spriteBatch->end();
 
 		Game::onDraw(e);

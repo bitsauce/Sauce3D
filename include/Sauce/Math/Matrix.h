@@ -464,6 +464,7 @@ public:
     Matrix4&    operator-=(const Matrix4& rhs);
     Vector4<float>     operator*(const Vector4<float>& rhs) const;
     Vector3<float>     operator*(const Vector3<float> &rhs) const;
+	Vector2<float>     operator*(const Vector2<float> &rhs) const;
     Matrix4     operator*(const Matrix4& rhs) const;
     Matrix4&    operator*=(const Matrix4& rhs);
     bool        operator==(const Matrix4& rhs) const;
@@ -611,25 +612,31 @@ inline Matrix4& Matrix4::operator-=(const Matrix4& rhs)
 
 inline Vector4<float> Matrix4::operator*(const Vector4<float>& rhs) const
 {
-    return Vector4<float>(m[0]*rhs.x  + m[1]*rhs.y  + m[2]*rhs.z  + m[3]*rhs.w,
-                   m[4]*rhs.x  + m[5]*rhs.y  + m[6]*rhs.z  + m[7]*rhs.w,
-                   m[8]*rhs.x  + m[9]*rhs.y  + m[10]*rhs.z + m[11]*rhs.w,
-                   m[12]*rhs.x + m[13]*rhs.y + m[14]*rhs.z + m[15]*rhs.w);
+	return Vector4<float>(m[0]*rhs.x  + m[1]*rhs.y  + m[2]*rhs.z  + m[3]*rhs.w,
+						  m[4]*rhs.x  + m[5]*rhs.y  + m[6]*rhs.z  + m[7]*rhs.w,
+						  m[8]*rhs.x  + m[9]*rhs.y  + m[10]*rhs.z + m[11]*rhs.w,
+						  m[12]*rhs.x + m[13]*rhs.y + m[14]*rhs.z + m[15]*rhs.w);
 }
 
 inline Vector3<float> Matrix4::operator*(const Vector3<float> &rhs) const
 {
-    return Vector3<float>(m[0]*rhs.x + m[1]*rhs.y + m[2]*rhs.z,
-                   m[4]*rhs.x + m[5]*rhs.y + m[6]*rhs.z,
-                   m[8]*rhs.x + m[9]*rhs.y + m[10]*rhs.z);
+	return Vector3<float>(m[0]*rhs.x + m[1]*rhs.y + m[2]*rhs.z,
+						  m[4]*rhs.x + m[5]*rhs.y + m[6]*rhs.z,
+						  m[8]*rhs.x + m[9]*rhs.y + m[10]*rhs.z);
+}
+
+inline Vector2<float> Matrix4::operator*(const Vector2<float> &rhs) const
+{
+	return Vector2<float>(m[0]*rhs.x + m[1]*rhs.y + m[3],
+						  m[4]*rhs.x + m[5]*rhs.y + m[7]);
 }
 
 inline Matrix4 Matrix4::operator*(const Matrix4& n) const
 {
-    return Matrix4(m[0]*n[0]  + m[1]*n[4]  + m[2]*n[8]  + m[3]*n[12],   m[0]*n[1]  + m[1]*n[5]  + m[2]*n[9]  + m[3]*n[13],   m[0]*n[2]  + m[1]*n[6]  + m[2]*n[10]  + m[3]*n[14],   m[0]*n[3]  + m[1]*n[7]  + m[2]*n[11]  + m[3]*n[15],
-                   m[4]*n[0]  + m[5]*n[4]  + m[6]*n[8]  + m[7]*n[12],   m[4]*n[1]  + m[5]*n[5]  + m[6]*n[9]  + m[7]*n[13],   m[4]*n[2]  + m[5]*n[6]  + m[6]*n[10]  + m[7]*n[14],   m[4]*n[3]  + m[5]*n[7]  + m[6]*n[11]  + m[7]*n[15],
-                   m[8]*n[0]  + m[9]*n[4]  + m[10]*n[8] + m[11]*n[12],  m[8]*n[1]  + m[9]*n[5]  + m[10]*n[9] + m[11]*n[13],  m[8]*n[2]  + m[9]*n[6]  + m[10]*n[10] + m[11]*n[14],  m[8]*n[3]  + m[9]*n[7]  + m[10]*n[11] + m[11]*n[15],
-                   m[12]*n[0] + m[13]*n[4] + m[14]*n[8] + m[15]*n[12],  m[12]*n[1] + m[13]*n[5] + m[14]*n[9] + m[15]*n[13],  m[12]*n[2] + m[13]*n[6] + m[14]*n[10] + m[15]*n[14],  m[12]*n[3] + m[13]*n[7] + m[14]*n[11] + m[15]*n[15]);
+    return Matrix4(m[0]*n.m[0]  + m[1]*n.m[4]  + m[2]*n.m[8]  + m[3]*n.m[12],   m[0]*n.m[1]  + m[1]*n.m[5]  + m[2]*n.m[9]  + m[3]*n.m[13],   m[0]*n.m[2]  + m[1]*n.m[6]  + m[2]*n.m[10]  + m[3]*n.m[14],   m[0]*n.m[3]  + m[1]*n.m[7]  + m[2]*n.m[11]  + m[3]*n.m[15],
+                   m[4]*n.m[0]  + m[5]*n.m[4]  + m[6]*n.m[8]  + m[7]*n.m[12],   m[4]*n.m[1]  + m[5]*n.m[5]  + m[6]*n.m[9]  + m[7]*n.m[13],   m[4]*n.m[2]  + m[5]*n.m[6]  + m[6]*n.m[10]  + m[7]*n.m[14],   m[4]*n.m[3]  + m[5]*n.m[7]  + m[6]*n.m[11]  + m[7]*n.m[15],
+                   m[8]*n.m[0]  + m[9]*n.m[4]  + m[10]*n.m[8] + m[11]*n.m[12],  m[8]*n.m[1]  + m[9]*n.m[5]  + m[10]*n.m[9] + m[11]*n.m[13],  m[8]*n.m[2]  + m[9]*n.m[6]  + m[10]*n.m[10] + m[11]*n.m[14],  m[8]*n.m[3]  + m[9]*n.m[7]  + m[10]*n.m[11] + m[11]*n.m[15],
+                   m[12]*n.m[0] + m[13]*n.m[4] + m[14]*n.m[8] + m[15]*n.m[12],  m[12]*n.m[1] + m[13]*n.m[5] + m[14]*n.m[9] + m[15]*n.m[13],  m[12]*n.m[2] + m[13]*n.m[6] + m[14]*n.m[10] + m[15]*n.m[14],  m[12]*n.m[3] + m[13]*n.m[7] + m[14]*n.m[11] + m[15]*n.m[15]);
 }
 
 inline Matrix4& Matrix4::operator*=(const Matrix4& rhs)

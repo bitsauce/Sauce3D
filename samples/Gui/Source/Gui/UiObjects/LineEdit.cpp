@@ -188,7 +188,7 @@ void LineEdit::onDraw(DrawEvent *e)
 	}
 
 	// Draw selection rectangle
-	graphicsContext->enableScissor(rect.position.x + 8, graphicsContext->getHeight() - rect.position.y - rect.size.y, rect.size.x - 16, rect.size.y);
+	graphicsContext->enableScissor(rect.position.x + 8, rect.position.y + 8, rect.size.x - 16, rect.size.y - 16);
 	graphicsContext->drawRectangle(
 		rect.position.x + textOffset.x + m_font->getStringWidth(state->text.substr(0, state->cursor.getSelectionStart())),
 		rect.position.y + textOffset.y,

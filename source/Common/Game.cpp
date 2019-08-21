@@ -210,7 +210,7 @@ int Game::run(const GameDesc &desc)
 
 		// Setup game loop
 		m_timer->start();
-		const double dt = 1.0 / 30.0;
+		const double dt = desc.deltaTime;
 		double accumulator = 0.0;
 		double prevTime = m_timer->getElapsedTime();
 
@@ -454,7 +454,7 @@ int Game::run(const GameDesc &desc)
 			// Draw the game
 			const double alpha = accumulator / dt;
 			{
-				DrawEvent e(alpha, graphicsContext);
+				DrawEvent e(alpha, dt, graphicsContext);
 				onEvent(&e);
 			}
 			SDL_GL_SwapWindow(mainWindow->getSDLHandle());

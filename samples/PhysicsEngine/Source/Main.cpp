@@ -1,62 +1,97 @@
 #include <Sauce/Sauce.h>
+
+#include "Config.h"
+#include "Constants.h"
+#include "Body.h"
 #include "Shapes.h"
 #include "Manifold.h"
+#include "Collision.h"
+#include "Scenes.h"
+#include "PhysicsWorld.h"
 
 using namespace sauce;
 
 // TODO:
 // [x] Add static objects
-// [ ] Fix sinking
-// [ ] Verify that integration is implemented correctly (hint: delta time?)
+// [x] Fix sinking
+// [x] Verify that integration is implemented correctly (hint: delta time?)
+// [x] Should impulses be multiplied with delta (maybe not as an impulse is technically not the same as acceleration?)
 // [x] Add gravity
-// [ ] Add a gravity scale variable
+// [x] Add a gravity scale variable
+// [x] Add friction
+// [x] Add oriented boxes
+// [x] Fix the memory leak (generalize boxes as polygons)
+// [x] Add angle to Box class (maybe just rotate the box before init?)
+// [x] Add oriented polygons
+// [x] Add oriented circles
+// [x] Add AABB generation for circles
+// [x] Implement a real broadphase
+// [x] Fix sinking bug with polygon <-> circle
+// [x] Finetune CircleToCircle
+// [x] Finetune PolygonToPolygon
+// [x] Optimize the rendering
+// [x] Fix AABB generation
+// [x] Add a physics unit variable, to scale world values to a space that is better suited for physics updates
+// [ ] Implement "mass = volume * density" mass initialization
+// [x] Fix shaking boxes
+// [x] Add c.bias
+// [x] Add iterations
+// [x] Fix drifting with stacked boxes (maybe caused by low mass or floating point errors due to e.g. matrix multiplications in collision code?)
+// [ ] Fix objects going through other bodies (use RayCasting)
+// [ ] Add joints/contraints
+// [ ] Make the drag functionality drag from the clicked point (may require joints)
+// [ ] Add sleeping
+// [ ] Create test vehicle
+// [ ] Add grid to grid collision
 // [ ] Consider adding ImGui
-// [ ] Add friction
-// [ ] Add rotated boxes
-// [ ] Add rotated circles
-// [ ] Add rotated polygons
+
+/*
+	Rock       Density : 0.6  Restitution : 0.1
+	Wood       Density : 0.3  Restitution : 0.2
+	Metal      Density : 1.2  Restitution : 0.05
+	BouncyBall Density : 0.3  Restitution : 0.8
+	SuperBall  Density : 0.3  Restitution : 0.95
+	Pillow     Density : 0.1  Restitution : 0.2
+	Static     Density : 0.0  Restitution : 0.4
+*/
 
 class PhysicsEngineGame : public Game
 {
-	vector<Shape*> shapes;
-	Shape *selectedShape;
+	// Physics world
+	PhysicsWorld m_world;
+
+	// Handles setup of example scenes
+	SceneManager m_scene;
+
+	// Font rendering
+	SpriteBatch *m_spriteBatch;
+	Resource<Font> m_font;
+
+	// Selected body
+	Body *m_selectedBody;
 	Vector2F m_lastMousePosition;
 
 public:
 	void onStart(GameEvent *e)
 	{
-		selectedShape = nullptr;
+		// Load font rendering
+		m_spriteBatch = new SpriteBatch;
+		m_font = Resource<Font>("DebugFont");
+		
+		// Initialize physics world
+		m_world.initialize();
 
-		// Create test scene
-		{
-			Circle *circle1 = new Circle;
-			circle1->position.set(100.f, 100.f);
-			circle1->radius = 25.0f;
-			shapes.push_back(circle1);
+		// Setup example scene
+		m_scene.initialize(g_initialScene, m_world.getBodies(), m_world.getPhysicsGrid());
 
-			Circle *circle2 = new Circle;
-			circle2->position.set(350.f, 200.f);
-			circle2->radius = 15.0f;
-			shapes.push_back(circle2);
+		m_selectedBody = nullptr;
 
-			Box *box1 = new Box;
-			box1->min.set(200.0f, 200.0f);
-			box1->max.set(300.0f, 250.0f);
-			shapes.push_back(box1);
-
-			Box *box2 = new Box;
-			box2->min.set(400.0f, 400.0f);
-			box2->max.set(550.0f, 500.0f);
-			shapes.push_back(box2);
-
-			Vector2I size = getWindow()->getSize();
-
-			Box *ground = new Box;
-			ground->min.set(0.0f, size.y - 20);
-			ground->max.set(size.x, size.y);
-			ground->mass = 0.0f;
-			shapes.push_back(ground);
-		}
+#if RUN_AS_BENCHMARK == 1
+		new std::thread([]() {
+			std::this_thread::sleep_for(10s);
+			exit(0);
+		});
+#endif // RUN_AS_BENCHMARK == 1
 
 		Game::onStart(e);
 	}
@@ -66,31 +101,82 @@ public:
 		Game::onEnd(e);
 	}
 
+	void onTick(TickEvent *e)
+	{
+		// Apply velocity to selected shape
+		if(m_selectedBody)
+		{
+			InputManager *inputManager = Game::Get()->getInputManager();
+			m_selectedBody->setVelocity((Vector2FInPhysicsSpace(inputManager->getPosition()) - m_selectedBody->getPosition()) * 0.25f / e->getDelta());
+			m_selectedBody->setAngularVelocity(0.0f);
+		}
+
+		m_world.update(e->getDelta());
+
+		Game::onTick(e);
+	}
+
+	void onDraw(DrawEvent *e)
+	{
+		// Scale visualization of physics bodies
+		Matrix4 physicsUnitsToWorld;
+		physicsUnitsToWorld.scale(g_physicsUnit);
+		e->getGraphicsContext()->pushMatrix(physicsUnitsToWorld);
+
+		for(Body *body : m_world.getBodies())
+		{
+			Color color = body->m_isColliding ? COLLIDED_POLYGON_COLOR : Color::White;
+			
+			// Render shape
+			//Color color = Color::White;
+			body->draw(e->getGraphicsContext(), color, e->getAlpha());
+
+#if DRAW_VELOCITIES == 1
+			// Draw velocity arrow
+			e->getGraphicsContext()->drawArrow(body->getPosition(), body->getPosition() + body->getVelocity() * 0.1f, ValueInPhysicsSpace(10.0f), Color::Red);
+#endif // DRAW_VELOCITIES
+		}
+
+#if DRAW_IMPULSES == 1
+		for(ManifoldItr itr = m_manifolds.begin(); itr != m_manifolds.end(); ++itr)
+		{
+			const Manifold &m = itr->second;
+			for(int i = 0; i < m.numContacts; ++i)
+			{
+				const Contact &c = m.contacts[i];
+
+				Vertex v;
+				v.set2f(VERTEX_POSITION, c.position.x, c.position.y);
+				v.set4ub(VERTEX_COLOR, 255, 255, 0, 255);
+
+				e->getGraphicsContext()->drawPrimitives(GraphicsContext::PRIMITIVE_POINTS, &v, 1);
+				e->getGraphicsContext()->drawArrow(c.position, c.position + m.normal * ValueInPhysicsSpace(15.0f) * m.penetration * 2.0f, ValueInPhysicsSpace(10.0f), Color::Red);
+			}
+		}
+#endif // DRAW_IMPULSES
+
+		e->getGraphicsContext()->popMatrix();
+
+		stringstream debugStr;
+		debugStr << "FPS: " << getFPS() << "\n";
+		debugStr << "# Bodies: " << m_world.getBodies().size() << "\n";
+
+		m_spriteBatch->begin(e->getGraphicsContext());
+		m_font->draw(m_spriteBatch, Vector2F(30.0f, 30.0f), debugStr.str());
+		m_spriteBatch->end();
+
+		Game::onDraw(e);
+	}
+
 	void onMouseDown(MouseEvent *e)
 	{
-		Vector2F inputPos = e->getPosition();
-		for(Shape *shape : shapes)
+		const Vector2F inputPos = Vector2FInPhysicsSpace(e->getPosition());
+		for(Body *body : m_world.getBodies())
 		{
-			switch(shape->getType())
+			if(body->contains(inputPos))
 			{
-				case Shape::BOX:
-				{
-					Box *aabb = dynamic_cast<Box*>(shape);
-					if(inputPos.x >= aabb->min.x && inputPos.x <= aabb->max.x && inputPos.y >= aabb->min.y && inputPos.y <= aabb->max.y)
-					{
-						selectedShape = shape;
-					}
-				}
-				break;
-
-				case Shape::CIRCLE:
-				{
-					Circle *circle = dynamic_cast<Circle*>(shape);
-					if((circle->position - inputPos).lengthSquared() < circle->radius * circle->radius)
-					{
-						selectedShape = shape;
-					}
-				}
+				m_selectedBody = body;
+				m_selectedBody->setAngularVelocity(0.0f);
 				break;
 			}
 		}
@@ -98,321 +184,87 @@ public:
 
 	void onMouseUp(MouseEvent *e)
 	{
-		selectedShape = 0;
+		m_selectedBody = nullptr;
 	}
 
 	void onMouseMove(MouseEvent *e)
 	{
-		m_lastMousePosition = e->getPosition();
+		m_lastMousePosition = Vector2FInPhysicsSpace(e->getPosition());
 	}
 
-	void onTick(TickEvent *e)
+	void onMouseWheel(MouseEvent *e)
 	{
-		// Mouse drag movement
-		if(selectedShape)
+		if(m_selectedBody)
 		{
-			switch(selectedShape->getType())
+			const float rotationalSpeed = math::degToRad(5.0f);
+			m_selectedBody->setAngle(m_selectedBody->getAngle() + e->getWheelY() * rotationalSpeed);
+		}
+	}
+
+	void onKeyDown(KeyEvent *e)
+	{
+		switch(e->getKeycode())
+		{
+			case Keycode::SAUCE_KEY_1:
 			{
-			case Shape::BOX:
-			{
-				Box *aabb = dynamic_cast<Box*>(selectedShape);
-				aabb->velocity = (getInputManager()->getPosition() - aabb->getCentroid()) * 0.25f;
+				m_scene.initialize(SCENE_SINGLE_BOX, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
 			break;
 
-			case Shape::CIRCLE:
+			case Keycode::SAUCE_KEY_2:
 			{
-				Circle *circle = dynamic_cast<Circle*>(selectedShape);
-				circle->velocity = (getInputManager()->getPosition() - circle->position) * 0.25f;
-			}
-			break;
-			}
-		}
-
-		const float gravity = 1.0f;
-		for(Shape *shape : shapes)
-		{
-			if (shape->mass > 0)
-				shape->velocity.y += gravity;
-		}
-
-		for(Shape *shape : shapes)
-		{
-			bool colliding = false;
-			for(Shape *otherShape : shapes)
-			{
-				if(shape == otherShape) continue;
-
-				// Circle to circle collision
-				if(shape->getType() == Shape::CIRCLE && otherShape->getType() == Shape::CIRCLE)
-				{
-					Manifold manifold(shape, otherShape);
-					CircleToCircle(&manifold);
-					if(manifold.contactCount > 0)
-					{
-						ResolveCollision(&manifold, shape, otherShape);
-						colliding = true;
-						break;
-					}
-				}
-				// Box to circle collision
-				else if(shape->getType() == Shape::BOX && otherShape->getType() == Shape::CIRCLE)
-				{
-					Manifold manifold(shape, otherShape);
-					if(AABBToCircle(&manifold))
-					{
-						ResolveCollision(&manifold, shape, otherShape);
-						colliding = true;
-						break;
-					}
-				}
-				// Circle to box collision
-				else if(shape->getType() == Shape::CIRCLE && otherShape->getType() == Shape::BOX)
-				{
-					Manifold manifold(otherShape, shape);
-					if(AABBToCircle(&manifold))
-					{
-						ResolveCollision(&manifold, otherShape, shape);
-						colliding = true;
-						break;
-					}
-				}
-				// Box to box collision
-				else if(shape->getType() == Shape::BOX && otherShape->getType() == Shape::BOX)
-				{
-					Manifold manifold(shape, otherShape);
-					AABBToAABB(&manifold);
-					if(manifold.contactCount > 0)
-					{
-						ResolveCollision(&manifold, shape, otherShape);
-						colliding = true;
-						break;
-					}
-				}
-			}
-			shape->colliding = colliding;
-			
-			switch(shape->getType())
-			{
-			case Shape::BOX:
-			{
-				Box *aabb = dynamic_cast<Box*>(shape);
-				aabb->min += aabb->velocity;
-				aabb->max += aabb->velocity;
+				m_scene.initialize(SCENE_VERTICAL_STACK, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
 			break;
 
-			case Shape::CIRCLE:
+			case Keycode::SAUCE_KEY_3:
 			{
-				Circle *circle = dynamic_cast<Circle*>(shape);
-				circle->position += circle->velocity;
+				m_scene.initialize(SCENE_COMPOUND_BODIES, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
 			break;
-			}
-		}
-		Game::onTick(e);
-	}
 
-	void onDraw(DrawEvent *e)
-	{
-		for(Shape *shape : shapes)
-		{
-			//Color c = shape->colliding ? Color::Blue : Color::White;
-			Color c = Color::White;
-			switch(shape->getType())
+			case Keycode::SAUCE_KEY_4:
 			{
-				case Shape::BOX:
-				{
-					Box *aabb = dynamic_cast<Box*>(shape);
-					e->getGraphicsContext()->drawRectangle(aabb->min, aabb->max - aabb->min, c);
-				}
-				break;
-
-				case Shape::CIRCLE:
-				{
-					Circle *circle = dynamic_cast<Circle*>(shape);
-					e->getGraphicsContext()->drawCircle(circle->position, circle->radius, 32, c);
-				}
-				break;
+				m_scene.initialize(SCENE_POLYGON_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
-			e->getGraphicsContext()->drawArrow(shape->getCentroid(), shape->getCentroid() + shape->velocity, Color::Red);
-		}
-		Game::onDraw(e);
-	}
+			break;
 
-	void ResolveCollision(Manifold *m, Shape *a, Shape *b)
-	{
-		// Calculate relative velocity
-		Vector2F relativeVel = b->velocity - a->velocity;
-
-		// Calculate relative velocity in terms of the normal direction
-		float velAlongNormal = relativeVel.dot(m->normal);
-
-		// Do not resolve if velocities are separating
-		if(velAlongNormal > 0)
-			return;
-
-		// Calculate restitution
-		float e = min(a->restitution, b->restitution);
-
-		// Calculate impulse scalar
-		float j = -(1 + e) * velAlongNormal;
-
-		float massAInv = a->mass > 0.0f ? 1 / a->mass : 0.0f;
-		float massBInv = b->mass > 0.0f ? 1 / b->mass : 0.0f;
-
-		j /= massAInv + massBInv;
-
-		// Apply impulse
-		Vector2F impulse = m->normal * j;
-		a->velocity -= impulse * massAInv;
-		b->velocity += impulse * massBInv;
-	}
-
-	void CircleToCircle(Manifold *m)
-	{
-		Circle *a = dynamic_cast<Circle*>(m->a);
-		Circle *b = dynamic_cast<Circle*>(m->b);
-
-		// Calculate vector from a to b
-		Vector2F normal = b->position - a->position;
-		float lengthSquared = normal.lengthSquared();
-		float radius = a->radius + b->radius;
-
-		// If their combined radius is less than the distance between,
-		// there is no contact
-		if(lengthSquared >= radius * radius)
-		{
-			m->contactCount = 0;
-			return;
-		}
-
-		// There is contact, calculate the distance using sqrt
-		float distance = std::sqrt(lengthSquared);
-		m->contactCount = 1;
-		if(distance == 0.0f)
-		{
-			// If the circles are at the exact same point,
-			// just pick a pre-determined normal vector
-			m->penetration = a->radius;
-			m->normal = Vector2F(1, 0);
-		}
-		else
-		{
-			// Calculate the penetation and normal vector
-			m->penetration = radius - distance;
-			m->normal = normal / distance; // Normalize the vector from a to b
-			                               // (will be the collision normal)
-		}
-	}
-
-	bool AABBToCircle(Manifold *m)
-	{
-		Box *a = dynamic_cast<Box*>(m->a);
-		Circle *b = dynamic_cast<Circle*>(m->b);
-
-		// Vector from a to b
-		Vector2F delta = b->getCentroid() - a->getCentroid();
-
-		// Calculate half extents of box
-		float halfExtentX = (a->max.x - a->min.x) * 0.5f;
-		float halfExtentY = (a->max.y - a->min.y) * 0.5f;
-
-		// Closes point on a to the center of b
-		Vector2F closest;
-		closest.x = math::clamp(delta.x, -halfExtentX, halfExtentX);
-		closest.y = math::clamp(delta.y, -halfExtentY, halfExtentY);
-
-		// Delta did not change, meaning that the center of
-		// the circle is inside the box
-		bool inside = delta == closest;
-		if(inside)
-		{
-			// TODO
-		}
-
-		Vector2F normal = delta - closest;
-		float lengthSquared = normal.lengthSquared();
-		float radius = b->radius;
-
-		// Check if distance to the closest point is less than
-		// the circle radius
-		m->contactCount = 0;
-		if(lengthSquared > radius * radius && !inside)
-			return false;
-
-		float length = sqrt(lengthSquared);
-
-		if(inside)
-		{
-			// TODO
-		}
-		else
-		{
-			m->normal = normal / length;
-			m->penetration = radius - length;
-		}
-		m->contactCount = 1;
-		return true;
-	}
-
-	bool AABBToAABB(Manifold *m)
-	{
-		Box *a = dynamic_cast<Box*>(m->a);
-		Box *b = dynamic_cast<Box*>(m->b);
-
-		// Calculate vector from a to b
-		Vector2F d = b->getCentroid() - a->getCentroid();
-
-		// Calculate half extents along x-axis for each object
-		float widthOfA = a->max.x - a->min.x;
-		float widthOfB = b->max.x - b->min.x;
-
-		// Calculate overlap on x-axis
-		float overlapX = (widthOfA + widthOfB) * 0.5f - abs(d.x);
-
-		// SAT test on x-axis
-		if(overlapX > 0)
-		{
-			// Calculate half extents along y-axis for each object
-			float heightOfA = a->max.y - a->min.y;
-			float heightOfB = b->max.y - b->min.y;
-
-			// Calculate overlap on y-axis
-			float overlapY = (heightOfA + heightOfB) * 0.5f - abs(d.y);
-
-			// SAT test on y-axis
-			if(overlapY > 0)
+			case Keycode::SAUCE_KEY_5:
 			{
-				// Find out which axis is axis of least penetration
-				if(overlapX < overlapY)
-				{
-					// Create collision normal in the direction of B
-					if(d.x < 0)
-						m->normal = Vector2F(-1, 0);
-					else
-						m->normal = Vector2F(1, 0);
-					m->penetration = overlapX;
-					m->contactCount = 1;
-					return true;
-				}
-				else
-				{
-					// Create collision normal in the direction of B
-					if(d.y < 0)
-						m->normal = Vector2F(0, -1);
-					else
-						m->normal = Vector2F(0, 1);
-					m->penetration = overlapY;
-					m->contactCount = 1;
-					return true;
-				}
+				m_scene.initialize(SCENE_SHAPES_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
 			}
-		}
+			break;
 
-		// Exit with no intersection if found separated along an axis
-		m->contactCount = 0;
-		return false;
+			case Keycode::SAUCE_KEY_6:
+			{
+				m_scene.initialize(SCENE_RESTITUTION_TEST, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_7:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_CIRCLES, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_8:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_BOXES, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_9:
+			{
+				m_scene.initialize(SCENE_BENCHMARK_POLYGONS, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+
+			case Keycode::SAUCE_KEY_R:
+			{
+				m_scene.initialize(m_scene.m_currentScene, m_world.getBodies(), m_world.getPhysicsGrid());
+			}
+			break;
+		}
 	}
 };
 
@@ -423,6 +275,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	desc.workingDirectory = "../Data";
 	desc.flags = SAUCE_WINDOW_RESIZABLE;
 	desc.graphicsBackend = SAUCE_OPENGL_3;
+	desc.deltaTime = g_deltaTime;
 
 	PhysicsEngineGame game;
 	return game.run(desc);

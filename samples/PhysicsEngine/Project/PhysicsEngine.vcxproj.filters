@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\Source\Collision.cpp" />
+    <ClCompile Include="..\Source\Main.cpp" />
+    <ClCompile Include="..\Source\PhysicsGrid.cpp" />
+    <ClCompile Include="..\Source\Scenes.cpp" />
+    <ClCompile Include="..\Source\Shapes\Polygon.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Shapes\Shape.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Shapes\Box.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Shapes\Circle.cpp">
+      <Filter>Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Utils.cpp" />
+    <ClCompile Include="..\Source\Body.cpp" />
+    <ClCompile Include="..\Source\PhysicsWorld.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\Body.h" />
+    <ClInclude Include="..\Source\Collision.h" />
+    <ClInclude Include="..\Source\Config.h" />
+    <ClInclude Include="..\Source\Manifold.h" />
+    <ClInclude Include="..\Source\PhysicsGrid.h" />
+    <ClInclude Include="..\Source\Scenes.h" />
+    <ClInclude Include="..\Source\Shapes\Circle.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Shapes\Polygon.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Shapes\Shape.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Shapes\Box.h">
+      <Filter>Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils.h" />
+    <ClInclude Include="..\Source\Shapes.h" />
+    <ClInclude Include="..\Source\Constants.h" />
+    <ClInclude Include="..\Source\PhysicsWorld.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shapes">
+      <UniqueIdentifier>{404461de-d026-4748-a1c8-41c2faf199db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

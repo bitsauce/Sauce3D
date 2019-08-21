@@ -1,6 +1,6 @@
 <resources>
 	<font>
-		<name>Arial</name>
-		<path>Arial.fnt</path>
+		<name>DebugFont</name>
+		<path>DebugFont.fnt</path>
 	</font>
 </resources>

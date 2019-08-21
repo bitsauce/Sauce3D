@@ -43,7 +43,6 @@ OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, sha
 OpenGLRenderTarget2D::~OpenGLRenderTarget2D()
 {
 	glDeleteFramebuffers(1, &m_id);
-	delete[] m_textures;
 	delete[] m_buffers;
 }
 
