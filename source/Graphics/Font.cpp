@@ -542,7 +542,7 @@ void FontLoader::loadPage(int id, const char *pageFile, string fontFile)
 	fontFile += pageFile;
 
 	GraphicsContext *graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
-	m_font->m_pages[id] = shared_ptr<Texture2D>(graphicsContext->createTexture(Pixmap(fontFile)));
+	m_font->m_pages[id] = shared_ptr<Texture2D>(graphicsContext->createTexture(Pixmap::loadFromFile(fontFile)));
 }
 
 void FontLoader::SetFontInfo(int outlineThickness)

@@ -805,7 +805,7 @@ public:
 	 */
 
 	Exception(RetCode code, const char * msg, ...);
-	~Exception() throw() {}
+	~Exception() {}
 
 	RetCode errorCode() const
 	{

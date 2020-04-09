@@ -10,7 +10,7 @@ TextureAtlas::TextureAtlas(GraphicsContext *graphicsContext, const int width, co
 	m_height(height)
 {
 	// Create a texture for the atlas
-	m_texture = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height));
+	m_texture = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, PixelFormat(PixelFormat::RGBA, PixelFormat::BYTE)));
 	m_rectanglePacker.setMaxWidth(width);
 }
 
@@ -77,7 +77,7 @@ void TextureAtlas::create()
 		}
 	}
 	m_result = result;
-	m_texture->updatePixmap(Pixmap(m_width, m_height, pixels));
+	m_texture->updatePixmap(Pixmap(m_width, m_height, PixelFormat(PixelFormat::RGBA, PixelFormat::BYTE), pixels));
 }
 
 END_SAUCE_NAMESPACE

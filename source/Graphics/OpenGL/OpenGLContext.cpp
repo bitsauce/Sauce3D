@@ -138,7 +138,7 @@ void OpenGLContext::saveScreenshot(string path)
 	glReadBuffer(GL_BACK);
 
 	// NOTE: This function is not tested!
-	Pixmap pixmap(m_currentState->width, m_currentState->height, data);
+	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelFormat::RGBA, PixelFormat::BYTE), data);
 	pixmap.flipY();
 	pixmap.exportToFile(path);
 
@@ -307,7 +307,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	// Create blank texture
 	uchar pixel[4];
 	pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, pixel));
+	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, PixelFormat(PixelFormat::RGBA, PixelFormat::BYTE), pixel));
 
 	return m_window;
 }

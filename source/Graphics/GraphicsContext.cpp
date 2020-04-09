@@ -299,16 +299,9 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	drawPrimitives(PRIMITIVE_LINES, &m_vertices[0], 6);
 }
 
-Texture2D *GraphicsContext::createTexture(const uint width, const uint height, const void *data, const PixelFormat & format)
+Texture2D *GraphicsContext::createTexture(const uint width, const uint height, const PixelFormat& format, const uint8_t* data)
 {
-	Pixmap pixmap(width, height, format);
-	if(data) pixmap.fill(data);
-	return createTexture(pixmap);
-}
-
-Texture2D *GraphicsContext::createTexture(const PixelFormat &format)
-{
-	Pixmap pixmap(format);
+	Pixmap pixmap(width, height, format, data);
 	return createTexture(pixmap);
 }
 

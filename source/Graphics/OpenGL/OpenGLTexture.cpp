@@ -162,7 +162,7 @@ Pixmap OpenGLTexture2D::getPixmap() const
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Copy data to pixmap
-	Pixmap pixmap(m_width, m_height, data, m_pixelFormat);
+	Pixmap pixmap(m_width, m_height, m_pixelFormat, data);
 	delete[] data;
 	return pixmap;
 }

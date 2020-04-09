@@ -28,7 +28,7 @@ RenderTarget2D::RenderTarget2D(GraphicsContext *graphicsContext, const uint widt
 	m_textures = new shared_ptr<Texture2D>[m_textureCount];
 	for(uint i = 0; i < m_textureCount; ++i)
 	{
-		m_textures[i] = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, 0, fmt));
+		m_textures[i] = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, fmt));
 	}
 }
 

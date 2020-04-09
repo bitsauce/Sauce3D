@@ -107,7 +107,9 @@ void *TextureResourceDesc::create() const
 {
 	// Load texture from file
 	GraphicsContext *graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
-	return graphicsContext->createTexture(Pixmap(m_path, m_premultiplyAlpha));
+	Pixmap pixmap = Pixmap::loadFromFile(m_path);
+	pixmap.setPremultipliedAlpha(m_premultiplyAlpha);
+	return graphicsContext->createTexture(pixmap);
 }
 
 END_SAUCE_NAMESPACE

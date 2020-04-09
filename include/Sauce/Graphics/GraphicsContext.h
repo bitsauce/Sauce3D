@@ -417,8 +417,7 @@ public:
 	virtual void drawPrimitives(const PrimitiveType type, const VertexBuffer *vbo) = 0;
 
 	virtual Texture2D *createTexture(const Pixmap &pixmap) = 0;
-	Texture2D *createTexture(const uint width, const uint height, const void *data = 0, const PixelFormat &format = PixelFormat());
-	Texture2D *createTexture(const PixelFormat &format = PixelFormat());
+	Texture2D *createTexture(const uint width, const uint height, const PixelFormat &format, const uint8_t* data=0);
 	Texture2D *createTexture(const Texture2D &other);
 
 	virtual Shader *createShader(const string &vertexSource, const string &fragmentSource, const string &geometrySource) = 0;

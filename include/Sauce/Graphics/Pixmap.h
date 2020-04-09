@@ -13,7 +13,8 @@ public:
 		R,
 		RG,
 		RGB,
-		RGBA
+		RGBA,
+		INVALID_COMPONENTS
 	};
 
 	enum DataType
@@ -22,13 +23,20 @@ public:
 		UNSIGNED_INT,
 		BYTE,
 		UNSIGNED_BYTE,
-		FLOAT
+		FLOAT,
+		INVALID_DATA_TYPE
 	};
 
-	PixelFormat(Components components = RGBA, DataType dataType = UNSIGNED_BYTE)
+	PixelFormat()
+		: m_components(Components::INVALID_COMPONENTS)
+		, m_dataType(DataType::INVALID_DATA_TYPE)
 	{
-		m_components = components;
-		m_dataType = dataType;
+	}
+
+	PixelFormat(Components components, DataType dataType)
+		: m_components(components)
+		, m_dataType(dataType)
+	{
 	}
 
 	Components getComponents() const { return m_components; }
@@ -46,13 +54,10 @@ private:
 class SAUCE_API Pixmap
 {
 public:
-
-public:
-	Pixmap(const PixelFormat &format = PixelFormat());
-	Pixmap(const uint width, const uint height, const PixelFormat &format = PixelFormat());
-	Pixmap(const uint width, const uint height, const void *data, const PixelFormat &format = PixelFormat());
+	Pixmap();
+	Pixmap(const uint width, const uint height, const PixelFormat& format, const uint8_t* data=nullptr);
 	Pixmap(const Pixmap& other);
-	Pixmap(const string &imageFile, const bool premultiplyAlpha = false);
+	Pixmap(Pixmap&& other);
 	~Pixmap();
 
 	Pixmap &operator=(Pixmap &other);
@@ -60,6 +65,7 @@ public:
 	uint getWidth() const;
 	uint getHeight() const;
 	PixelFormat getFormat() const;
+	bool isValid() const;
 
 	void getPixel(const uint x, const uint y, void *data) const;
 	void setPixel(const uint x, const uint y, const void *data);
@@ -69,9 +75,12 @@ public:
 	void fill(const void *data);
 	void clear();
 
-	void exportToFile(string path) const;
-
 	const uchar *getData() const;
+
+	void setPremultipliedAlpha(const bool premultipliedAlpha);
+
+	void exportToFile(string path) const;
+	static Pixmap loadFromFile(const string& imageFile);
 
 private:
 	uchar *m_data;
