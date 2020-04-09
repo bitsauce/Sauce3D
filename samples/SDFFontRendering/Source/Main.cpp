@@ -2,7 +2,7 @@
 #include <Sauce/Sauce.h>
 using namespace sauce;
 
-class MinimalGame : public Game
+class SDFFontRenderingGame : public Game
 {
 public:
 	/** 
@@ -55,18 +55,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	 * This function should typically not require modification.
 	 */
 	GameDesc desc;
-	desc.name = "Minimal Sample";
+	desc.name = "SDFFontRendering Sample";
 	desc.workingDirectory = "../Assets";
 	desc.flags = SAUCE_WINDOW_RESIZABLE;
 	desc.graphicsBackend = SAUCE_OPENGL_3;
 
-	MinimalGame game;
+	SDFFontRenderingGame game;
 	return game.run(desc);
 }
 #else
 int main()
 {
-	MinimalGame game;
+	SDFFontRenderingGame game;
 	return game.run();
 }
 #endif

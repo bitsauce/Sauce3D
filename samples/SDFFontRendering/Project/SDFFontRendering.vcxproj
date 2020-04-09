@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7A44F0BC-017A-4954-AC15-4B357471983C}</ProjectGuid>
+    <ProjectGuid>{1695866F-28C3-44F6-96A0-4C3BFD79ED1A}</ProjectGuid>
     <RootNamespace>deferredlighting</RootNamespace>
-    <ProjectName>Minimal</ProjectName>
+    <ProjectName>SDFFontRendering</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,11 +42,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>Minimal</TargetName>
+    <TargetName>SDFFontRendering</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>Minimal</TargetName>
+    <TargetName>SDFFontRendering</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
