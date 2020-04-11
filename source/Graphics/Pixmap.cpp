@@ -59,11 +59,15 @@ Pixmap::Pixmap(const uint width, const uint height, const PixelFormat& format, c
 	if (numBytes > 0)
 	{
 		// Allocate pixel data
-		m_data = new uchar[numBytes];
+		m_data = new uint8[numBytes];
 		if (data)
 		{
 			// Copy pixel data
 			memcpy(m_data, data, numBytes);
+		}
+		else
+		{
+			memset(m_data, 0, numBytes);
 		}
 	}
 	else
@@ -218,21 +222,21 @@ void Pixmap::clear()
 	delete[] emptyPixel;
 }
 
-void Pixmap::exportToFile(string path) const
+void Pixmap::saveToFile(string path) const
 {
 	if(m_format.getDataType() != PixelFormat::BYTE && m_format.getDataType() != PixelFormat::UNSIGNED_BYTE)
 	{
-		LOG("Cannot export image with a pixel data type different from byte or unsigned byte");
+		LOG("Cannot export a pixmap with a pixel data type different from byte or unsigned byte");
 		return;
 	}
 
-	// Convert pixmap to surface and export as a PNG image
-	/*SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(m_data, m_width, m_height, 32, m_width * 4, R_MASK, G_MASK, B_MASK, A_MASK);
-	util::toAbsoluteFilePath(path);
-	IMG_SavePNG(surface, path.c_str());
-	SDL_FreeSurface(surface);*/
+	const uint32 numComponents = m_format.getComponentCount();
+	const int32  pitch         = numComponents * m_width;
+	const uint32 bpp           = numComponents * 8;
 
-	FIBITMAP *image = FreeImage_ConvertFromRawBits(m_data, m_width, m_height, m_width * 4, 32, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);
+	// Convert pixmap to bitmap and save to PNG
+	FIBITMAP *image = FreeImage_ConvertFromRawBits(m_data, m_width, m_height, pitch, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false);
+	FreeImage_FlipVertical(image);
 	FreeImage_Save(FIF_PNG, image, path.c_str(), PNG_DEFAULT);
 	FreeImage_Unload(image);
 }

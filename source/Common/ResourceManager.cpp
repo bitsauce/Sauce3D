@@ -1,7 +1,7 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Texture.h>
-#include <Sauce/Graphics/Font.h>
+#include <Sauce/Graphics/FontRendering.h>
 #include <Sauce/Graphics/Shader.h>
 
 BEGIN_SAUCE_NAMESPACE
@@ -52,19 +52,19 @@ ResourceManager::ResourceManager(const string &resourceFile)
 								);
 					}
 				}
-				else if(type == "font")
-				{
-					tinyxml2::XMLElement *path = resourceNode->FirstChildElement("path");
-					tinyxml2::XMLElement *premul = resourceNode->FirstChildElement("premultiplyAlpha");
-					if(path)
-					{
-						m_resourceDesc[name->GetText()] = new FontResourceDesc(
-							name->GetText(),
-							path->GetText(),
-							premul && string(premul->GetText()) == "true"
-							);
-					}
-				}
+				//else if(type == "font") // TODO: Fonts
+				//{
+				//	tinyxml2::XMLElement *path = resourceNode->FirstChildElement("path");
+				//	tinyxml2::XMLElement *premul = resourceNode->FirstChildElement("premultiplyAlpha");
+				//	if(path)
+				//	{
+				//		m_resourceDesc[name->GetText()] = new FontResourceDesc(
+				//			name->GetText(),
+				//			path->GetText(),
+				//			premul && string(premul->GetText()) == "true"
+				//			);
+				//	}
+				//}
 				else if(type == "shader")
 				{
 					tinyxml2::XMLElement *vertexFilePath = resourceNode->FirstChildElement("vertexFilePath");

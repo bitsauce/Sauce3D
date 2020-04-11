@@ -7,7 +7,7 @@
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/Animation.h>
 #include <Sauce/Graphics/SpriteBatch.h>
-#include <Sauce/Graphics/Font.h>
+#include <Sauce/Graphics/FontRendering.h>
 #include <Sauce/Graphics/RenderTarget.h>
 #include <Sauce/Graphics/Pixmap.h>
 #include <Sauce/Graphics/Shader.h>

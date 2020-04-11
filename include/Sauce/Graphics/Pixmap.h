@@ -79,7 +79,7 @@ public:
 
 	void setPremultipliedAlpha(const bool premultipliedAlpha);
 
-	void exportToFile(string path) const;
+	void saveToFile(string path) const;
 	static Pixmap loadFromFile(const string& imageFile);
 
 private:

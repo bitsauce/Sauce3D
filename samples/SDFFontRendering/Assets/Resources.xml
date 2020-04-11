@@ -1,6 +1,7 @@
 <resources>
-	<font>
-		<name>Arial</name>
-		<path>Arial.fnt</path>
-	</font>
+	<shader>
+		<name>Shader</name>
+		<vertexFilePath>Shader.vert</vertexFilePath>
+		<fragmentFilePath>Shader.frag</fragmentFilePath>
+	</shader>
 </resources>

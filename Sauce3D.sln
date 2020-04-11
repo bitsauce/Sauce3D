@@ -124,9 +124,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZLib", "3rdparty\FreeImage\Source\ZLib\ZLib.vcxproj", "{33134F61-C1AD-4B6F-9CEA-503A9F140C52}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDFFontRendering", "samples\SDFFontRendering\Project\SDFFontRendering.vcxproj", "{1695866F-28C3-44F6-96A0-4C3BFD79ED1A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F3F25B49-2C6B-4FF0-98FB-47695DF70B8A} = {F3F25B49-2C6B-4FF0-98FB-47695DF70B8A}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "3rdparty\freetype\builds\windows\visualstudio\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject

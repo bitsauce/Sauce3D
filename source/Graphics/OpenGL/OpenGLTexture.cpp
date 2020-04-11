@@ -25,7 +25,7 @@ GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 			{
 				case PixelFormat::INT: return GL_R32I;
 				case PixelFormat::UNSIGNED_INT: return GL_R32UI;
-				case PixelFormat::BYTE: return GL_R8I;
+				case PixelFormat::BYTE: return GL_R8_SNORM;
 				case PixelFormat::UNSIGNED_BYTE: return GL_R8;
 				case PixelFormat::FLOAT: return GL_R32F;
 			}
@@ -37,7 +37,7 @@ GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 			{
 				case PixelFormat::INT: return GL_RG32I;
 				case PixelFormat::UNSIGNED_INT: return GL_RG32UI;
-				case PixelFormat::BYTE: return GL_RG8I;
+				case PixelFormat::BYTE: return GL_RG8_SNORM;
 				case PixelFormat::UNSIGNED_BYTE: return GL_RG8;
 				case PixelFormat::FLOAT: return GL_RG32F;
 			}
@@ -49,7 +49,7 @@ GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 			{
 				case PixelFormat::INT: return GL_RGB32I;
 				case PixelFormat::UNSIGNED_INT: return GL_RGB32UI;
-				case PixelFormat::BYTE: return GL_RGB8I;
+				case PixelFormat::BYTE: return GL_RGB8_SNORM;
 				case PixelFormat::UNSIGNED_BYTE: return GL_RGB8;
 				case PixelFormat::FLOAT: return GL_RGB32F;
 			}
@@ -61,7 +61,7 @@ GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 			{
 				case PixelFormat::INT: return GL_RGBA32I;
 				case PixelFormat::UNSIGNED_INT: return GL_RGBA32UI;
-				case PixelFormat::BYTE: return GL_RGBA8I;
+				case PixelFormat::BYTE: return GL_RGBA8_SNORM;
 				case PixelFormat::UNSIGNED_BYTE: return GL_RGBA8;
 				case PixelFormat::FLOAT: return GL_RGBA32F;
 			}
@@ -135,13 +135,13 @@ OpenGLTexture2D::OpenGLTexture2D(const Pixmap &pixmap)
 
 OpenGLTexture2D::~OpenGLTexture2D()
 {
-	glDeleteTextures(1, &m_id);
+	GL_CALL(glDeleteTextures(1, &m_id));
 }
 
 void OpenGLTexture2D::initialize(const Pixmap &pixmap)
 {
 	// Create an empty texture
-	glGenTextures(1, &m_id);
+	GL_CALL(glGenTextures(1, &m_id));
 
 	// Set default values
 	m_filter = NEAREST; // Prefs::GetDefaultFilterMode();
@@ -157,9 +157,9 @@ Pixmap OpenGLTexture2D::getPixmap() const
 {
 	// Get texture data
 	uchar *data = new uchar[m_width * m_height * m_pixelFormat.getPixelSizeInBytes()];
-	glBindTexture(GL_TEXTURE_2D, m_id);
-	glGetTexImage(GL_TEXTURE_2D, 0, toFormat(m_pixelFormat.getComponents(), m_pixelFormat.getDataType()), toGLDataType(m_pixelFormat.getDataType()), (GLvoid*) data);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
+	GL_CALL(glGetTexImage(GL_TEXTURE_2D, 0, toFormat(m_pixelFormat.getComponents(), m_pixelFormat.getDataType()), toGLDataType(m_pixelFormat.getDataType()), (GLvoid*) data));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	// Copy data to pixmap
 	Pixmap pixmap(m_width, m_height, m_pixelFormat, data);
@@ -172,19 +172,25 @@ void OpenGLTexture2D::updatePixmap(const Pixmap &pixmap)
 	// Store dimensions
 	m_width = pixmap.getWidth();
 	m_height = pixmap.getHeight();
+	
+	const PixelFormat& fmt = pixmap.getFormat();
+	const int32 internalFormat = toInternalFormat(fmt.getComponents(), fmt.getDataType());
+	const int32 format = toFormat(fmt.getComponents(), fmt.getDataType());
+	const int32 datatype = toGLDataType(fmt.getDataType());
 
 	// Set default filtering
-	glBindTexture(GL_TEXTURE_2D, m_id);
-	glTexImage2D(GL_TEXTURE_2D,
-				 0,
-				 toInternalFormat(pixmap.getFormat().getComponents(), pixmap.getFormat().getDataType()),
-				 (GLsizei) m_width,
-				 (GLsizei) m_height,
-				 0,
-				 toFormat(pixmap.getFormat().getComponents(), pixmap.getFormat().getDataType()),
-				 toGLDataType(pixmap.getFormat().getDataType()),
-				 (const GLvoid*) pixmap.getData());
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D,
+		0,
+		internalFormat,
+		(GLsizei)m_width,
+		(GLsizei)m_height,
+		0,
+		format,
+		datatype,
+		(const GLvoid*) pixmap.getData())
+	);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	// Regenerate mipmaps
 	m_mipmapsGenerated = false;
@@ -203,9 +209,18 @@ void OpenGLTexture2D::updatePixmap(const uint x, const uint y, const Pixmap &pix
 	}
 
 	// Set default filtering
-	glBindTexture(GL_TEXTURE_2D, m_id);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, (GLint) x, (GLint) y, (GLsizei) pixmap.getWidth(), (GLsizei) pixmap.getHeight(), toFormat(pixmap.getFormat().getComponents(), pixmap.getFormat().getDataType()), toGLDataType(pixmap.getFormat().getDataType()), (const GLvoid*) pixmap.getData());
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
+	GL_CALL(glTexSubImage2D(GL_TEXTURE_2D,
+		0,
+		(GLint)x,
+		(GLint)y,
+		(GLsizei)pixmap.getWidth(),
+		(GLsizei)pixmap.getHeight(),
+		toFormat(pixmap.getFormat().getComponents(), pixmap.getFormat().getDataType()),
+		toGLDataType(pixmap.getFormat().getDataType()),
+		(const GLvoid*) pixmap.getData())
+	);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	// Regenerate mipmaps
 	m_mipmapsGenerated = false;
@@ -217,24 +232,25 @@ void OpenGLTexture2D::updatePixmap(const uint x, const uint y, const Pixmap &pix
 
 void OpenGLTexture2D::clear()
 {
-	glBindTexture(GL_TEXTURE_2D, m_id);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, vector<GLubyte>(m_width*m_height * 4, 0).data());
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
+	GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, vector<GLubyte>(m_width*m_height * 4, 0).data()));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 void OpenGLTexture2D::updateFiltering()
 {
+	// TODO: These calls should be queued up
 	if(m_mipmaps && !m_mipmapsGenerated)
 	{
-		glGenerateMipmap(GL_TEXTURE_2D);
+		GL_CALL(glGenerateMipmap(GL_TEXTURE_2D));
 		m_mipmapsGenerated = true;
 	}
-	glBindTexture(GL_TEXTURE_2D, m_id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_mipmaps ? (m_filter == GL_NEAREST ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : m_filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrapping);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrapping);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_mipmaps ? (m_filter == GL_NEAREST ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : m_filter));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrapping));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrapping));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 END_SAUCE_NAMESPACE

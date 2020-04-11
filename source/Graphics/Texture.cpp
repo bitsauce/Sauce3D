@@ -100,7 +100,7 @@ uint Texture2D::getHeight() const
 void Texture2D::exportToFile(string path)
 {
 	// TODO: This function might be redundant?
-	getPixmap().exportToFile(path);
+	getPixmap().saveToFile(path);
 }
 
 void *TextureResourceDesc::create() const

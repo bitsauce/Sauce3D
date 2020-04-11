@@ -4,11 +4,14 @@ using namespace sauce;
 
 class SDFFontRenderingGame : public Game
 {
+	Resource<Shader> m_fontShader;
+	FontRenderer* m_fontRenderer;
+
 public:
 	void onStart(GameEvent* e)
 	{
-		Pixmap pixmap = Pixmap::loadFromFile("Arial_0.png");
-
+		m_fontShader = Resource<Shader>("Shader");
+		m_fontRenderer = FontRenderingSystem::createFontRenderer("C:/Windows/Fonts/Arial.ttf");
 		Game::onStart(e);
 	}
 
@@ -23,6 +26,9 @@ public:
 	}
 	void onDraw(DrawEvent* e)
 	{
+		e->getGraphicsContext()->setShader(m_fontShader);
+		m_fontRenderer->drawString(e->getGraphicsContext(), "");
+		e->getGraphicsContext()->setShader(nullptr);
 		Game::onDraw(e);
 	}
 };

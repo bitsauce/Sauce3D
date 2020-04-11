@@ -66,18 +66,19 @@ void SpriteBatch::drawSprite(const Sprite &sprite)
 	m_sprites[m_spriteCount++] = sprite;
 }
 
-void SpriteBatch::drawText(const Vector2F &pos, const string &text, Font *font)
-{
-	if(!m_graphicsContext)
-	{
-		LOG("SpriteBatch::drawText(): Called before begin()");
-		return;
-	}
-
-	if(!font) return;
-
-	font->draw(this, pos, text);
-}
+// TODO: Fonts
+//void SpriteBatch::drawText(const Vector2F &pos, const string &text, Font *font)
+//{
+//	if(!m_graphicsContext)
+//	{
+//		LOG("SpriteBatch::drawText(): Called before begin()");
+//		return;
+//	}
+//
+//	if(!font) return;
+//
+//	font->draw(this, pos, text);
+//}
 
 void SpriteBatch::end()
 {

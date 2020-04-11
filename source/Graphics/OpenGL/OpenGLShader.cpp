@@ -34,9 +34,9 @@ OpenGLShader::OpenGLShader(const string &vertexSource, const string &fragmentSou
 void OpenGLShader::compileShader(const string &vertexSource, const string &fragmentSource, const string &geometrySource)
 {
 	// Create vertex and fragment shaders
-	m_vertShaderID = glCreateShader(GL_VERTEX_SHADER);
-	m_fragShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	if(!geometrySource.empty()) m_geomShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+	m_vertShaderID = GL_CALL(glCreateShader(GL_VERTEX_SHADER));
+	m_fragShaderID = GL_CALL(glCreateShader(GL_FRAGMENT_SHADER));
+	if(!geometrySource.empty()) m_geomShaderID = GL_CALL(glCreateShader(GL_GEOMETRY_SHADER));
 
 	// Result variables
 	GLint success;
@@ -51,21 +51,21 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	// Compile vertex shader
 	const char *data = vertexSourceModified.c_str();
 	int len = vertexSourceModified.length();
-	glShaderSource(m_vertShaderID, 1, &data, &len);
-	glCompileShader(m_vertShaderID);
+	GL_CALL(glShaderSource(m_vertShaderID, 1, &data, &len));
+	GL_CALL(glCompileShader(m_vertShaderID));
 
 	// Validate vertex shader
-	glGetShaderiv(m_vertShaderID, GL_COMPILE_STATUS, &success);
+	GL_CALL(glGetShaderiv(m_vertShaderID, GL_COMPILE_STATUS, &success));
 	if(!success)
 	{
 		// Get log length
 		GLint logLength;
-		glGetShaderiv(m_vertShaderID, GL_INFO_LOG_LENGTH, &logLength);
+		GL_CALL(glGetShaderiv(m_vertShaderID, GL_INFO_LOG_LENGTH, &logLength));
 
 		// Get compilation log
 		string compileLog;
 		compileLog.resize(logLength);
-		glGetShaderInfoLog(m_vertShaderID, logLength, NULL, &compileLog[0]);
+		GL_CALL(glGetShaderInfoLog(m_vertShaderID, logLength, NULL, &compileLog[0]));
 
 		// Throw exception
 		THROW(compileLog.c_str());
@@ -76,21 +76,21 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	// Compile fragment shader
 	data = fragmentSourceModified.c_str();
 	len = fragmentSourceModified.length();
-	glShaderSource(m_fragShaderID, 1, &data, &len);
-	glCompileShader(m_fragShaderID);
+	GL_CALL(glShaderSource(m_fragShaderID, 1, &data, &len));
+	GL_CALL(glCompileShader(m_fragShaderID));
 
 	// Validate fragment shader
-	glGetShaderiv(m_fragShaderID, GL_COMPILE_STATUS, &success);
+	GL_CALL(glGetShaderiv(m_fragShaderID, GL_COMPILE_STATUS, &success));
 	if(!success)
 	{
 		// Get log length
 		GLint logLength;
-		glGetShaderiv(m_fragShaderID, GL_INFO_LOG_LENGTH, &logLength);
+		GL_CALL(glGetShaderiv(m_fragShaderID, GL_INFO_LOG_LENGTH, &logLength));
 
 		// Get compilation log
 		string compileLog;
 		compileLog.resize(logLength);
-		glGetShaderInfoLog(m_fragShaderID, logLength, NULL, &compileLog[0]);
+		GL_CALL(glGetShaderInfoLog(m_fragShaderID, logLength, NULL, &compileLog[0]));
 
 		// Throw exception
 		THROW(compileLog.c_str());
@@ -101,21 +101,21 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 		// Compile geometry shader
 		data = geometrySourceModified.c_str();
 		len = geometrySourceModified.length();
-		glShaderSource(m_geomShaderID, 1, &data, &len);
-		glCompileShader(m_geomShaderID);
+		GL_CALL(glShaderSource(m_geomShaderID, 1, &data, &len));
+		GL_CALL(glCompileShader(m_geomShaderID));
 
 		// Validate geometry shader
-		glGetShaderiv(m_geomShaderID, GL_COMPILE_STATUS, &success);
+		GL_CALL(glGetShaderiv(m_geomShaderID, GL_COMPILE_STATUS, &success));
 		if(!success)
 		{
 			// Get log length
 			GLint logLength;
-			glGetShaderiv(m_geomShaderID, GL_INFO_LOG_LENGTH, &logLength);
+			GL_CALL(glGetShaderiv(m_geomShaderID, GL_INFO_LOG_LENGTH, &logLength));
 
 			// Get compilation log
 			string compileLog;
 			compileLog.resize(logLength);
-			glGetShaderInfoLog(m_geomShaderID, logLength, NULL, &compileLog[0]);
+			GL_CALL(glGetShaderInfoLog(m_geomShaderID, logLength, NULL, &compileLog[0]));
 
 			// Throw exception
 			THROW(compileLog.c_str());
@@ -123,35 +123,35 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	}
 
 	// Create shader program
-	m_id = glCreateProgram();
-	glAttachShader(m_id, m_vertShaderID);
-	glAttachShader(m_id, m_fragShaderID);
+	m_id = GL_CALL(glCreateProgram());
+	GL_CALL(glAttachShader(m_id, m_vertShaderID));
+	GL_CALL(glAttachShader(m_id, m_fragShaderID));
 	if(m_geomShaderID != 0) glAttachShader(m_id, m_geomShaderID);
 
-	glBindAttribLocation(m_id, 0, "in_Position");
-	glBindAttribLocation(m_id, 1, "in_VertexColor");
-	glBindAttribLocation(m_id, 2, "in_TexCoord");
-	glBindAttribLocation(m_id, 3, "in_Normal");
-	glBindFragDataLocation(m_id, 0, "out_FragColor");
+	GL_CALL(glBindAttribLocation(m_id, 0, "in_Position"));
+	GL_CALL(glBindAttribLocation(m_id, 1, "in_VertexColor"));
+	GL_CALL(glBindAttribLocation(m_id, 2, "in_TexCoord"));
+	GL_CALL(glBindAttribLocation(m_id, 3, "in_Normal"));
+	GL_CALL(glBindFragDataLocation(m_id, 0, "out_FragColor"));
 
 	link();
 
 	// Setup uniform variables
 	GLint count;
-	glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &count);
+	GL_CALL(glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &count));
 	GLint length, size;
 	GLenum type;
 	GLchar name[256];
 	for(int i = 0; i < count; i++)
 	{
-		glGetActiveUniform(m_id, i, 256, &length, &size, &type, name);
+		GL_CALL(glGetActiveUniform(m_id, i, 256, &length, &size, &type, name));
 
 		if(strncmp(name, "gl_", 3) == 0) // Skip gl_ uniforms
 			continue;
 
 		Uniform *uniform = new Uniform;
 		uniform->type = type;
-		uniform->loc = glGetUniformLocation(m_id, name);
+		uniform->loc = GL_CALL(glGetUniformLocation(m_id, name));
 		uniform->count = size;
 
 		size_t dataSize = 0;
@@ -192,8 +192,8 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 OpenGLShader::~OpenGLShader()
 {
 	// Delete shader buffers as they are loaded into the shader program
-	glDeleteShader(m_vertShaderID);
-	glDeleteShader(m_fragShaderID);
+	GL_CALL(glDeleteShader(m_vertShaderID));
+	GL_CALL(glDeleteShader(m_fragShaderID));
 	for(map<string, Uniform*>::iterator itr = m_uniforms.begin(); itr != m_uniforms.end(); ++itr)
 	{
 		delete itr->second;
@@ -202,7 +202,7 @@ OpenGLShader::~OpenGLShader()
 
 void OpenGLShader::bindFragLocation(const uint location, const string &name)
 {
-	glBindFragDataLocation(m_id, location, name.c_str());
+	GL_CALL(glBindFragDataLocation(m_id, location, name.c_str()));
 }
 
 void OpenGLShader::link()
@@ -210,21 +210,21 @@ void OpenGLShader::link()
 	LOG("Linking shader program...");
 
 	// Link program
-	glLinkProgram(m_id);
+	GL_CALL(glLinkProgram(m_id));
 
 	// Check if link was successful 
 	GLint success;
-	glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+	GL_CALL(glGetProgramiv(m_id, GL_LINK_STATUS, &success));
 	if(!success)
 	{
 		// Get log length
 		int logLength = 0;
-		glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &logLength);
+		GL_CALL(glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &logLength));
 
 		// Get compilation log
 		string compileLog;
 		compileLog.resize(logLength);
-		glGetProgramInfoLog(m_id, logLength, NULL, &compileLog[0]);
+		GL_CALL(glGetProgramInfoLog(m_id, logLength, NULL, &compileLog[0]));
 
 		// Throw exception
 		THROW(compileLog.c_str());
@@ -772,7 +772,7 @@ void OpenGLShader::exportAssembly(const string & fileName)
 	char *binary = new char[MAX_SIZE];
 	GLenum format;
 	GLint length;
-	glGetProgramBinary(m_id, MAX_SIZE, &length, &format, binary);
+	GL_CALL(glGetProgramBinary(m_id, MAX_SIZE, &length, &format, binary));
 
 	// Copy to string
 	string content;

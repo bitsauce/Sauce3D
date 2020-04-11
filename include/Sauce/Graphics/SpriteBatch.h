@@ -7,7 +7,7 @@
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/Texture.h>
 #include <Sauce/Graphics/Shader.h>
-#include <Sauce/Graphics/Font.h>
+#include <Sauce/Graphics/FontRendering.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -49,7 +49,7 @@ public:
 
 	void begin(GraphicsContext *graphicsContext, const State &state = State());
 	void drawSprite(const Sprite &sprite);
-	void drawText(const Vector2F &pos, const string &text, Font *font);
+	//void drawText(const Vector2F &pos, const string &text, Font *font); // TODO: Fonts
 	void end();
 	void flush();
 

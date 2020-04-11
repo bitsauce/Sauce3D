@@ -28,7 +28,7 @@ BEGIN_SAUCE_NAMESPACE
    }
 #endif
 
-Exception::Exception(RetCode code, const char * msg, ...) :
+Exception::Exception(RetCode code, const char* msg, ...) :
 	m_errorCode(code)
 #ifdef SAUCE_COMPILE_WINDOWS
 	, m_callstack()
@@ -51,6 +51,15 @@ Exception::Exception(RetCode code, const char * msg, ...) :
 #endif
 
 	va_end(args);
+
+#ifdef SAUCE_COMPILE_WINDOWS
+	// Break if debugger is present
+	if (IsDebuggerPresent())
+	{
+		LOG("%s", m_message.c_str());
+		DebugBreak();
+}
+#endif
 }
 
 Keycode KeyEvent::getKeycode() const
@@ -153,12 +162,15 @@ int Game::run(const GameDesc &desc)
 		// Initialize SDL
 		THROW_IF(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Unable to initialize SDL");
 
-		// In your main program …
-		FreeImage_SetOutputMessage(FreeImageErrorHandler);
-
 		SDL_version sdlver;
 		SDL_GetVersion(&sdlver);
 		LOG("** SDL %i.%i.%i initialized **", sdlver.major, sdlver.minor, sdlver.patch);
+
+		// Set FreeImage message callback
+		FreeImage_SetOutputMessage(FreeImageErrorHandler);
+
+		// Initialize font rendering system
+		FontRenderingSystem::initialize();
 
 		// Initialize resource manager
 		m_resourceManager = new ResourceManager("Resources.xml");
@@ -502,6 +514,10 @@ gameloopend:
 		LOG("An exception occured: %s", ss.str().c_str());
 		return e.errorCode();
 	}
+
+	// Free font rendering system
+	FontRenderingSystem::free();
+
 	return SAUCE_OK;
 }
 

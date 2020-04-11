@@ -38,6 +38,8 @@ namespace math
 	SAUCE_API Vector2F sqrt(const Vector2F &v);
 	SAUCE_API float pow(const float a, const float b);
 	SAUCE_API Vector2F pow(const Vector2F &v);
+
+	SAUCE_API uint32 ceilPow2(const uint32& number);
 	
 	template<typename T> T lerp(const T &v0, const T &v1, float t)
 	{

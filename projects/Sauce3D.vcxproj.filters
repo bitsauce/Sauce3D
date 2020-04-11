@@ -69,9 +69,6 @@
     <ClCompile Include="$(SolutionDir)source\Graphics\BlendState.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Graphics\Font.cpp">
-      <Filter>Source\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -156,6 +153,9 @@
     <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLRenderTarget.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Graphics\FontRendering.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\Matrix.h">
@@ -210,12 +210,6 @@
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\BlendState.h">
-      <Filter>Include\Sauce\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Font.h">
-      <Filter>Include\Sauce\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Font_Old.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h">
@@ -292,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h">
+      <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,7 +20,7 @@ OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, con
 	RenderTarget2D(graphicsContext, width, height, count, fmt)
 {
 	// Generate framebuffer
-	glGenFramebuffers(1, &m_id);
+	GL_CALL(glGenFramebuffers(1, &m_id));
 
 	// Allocate textures
 	m_buffers = new GLenum[m_textureCount];
@@ -34,7 +34,7 @@ OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, sha
 	RenderTarget2D(graphicsContext, target)
 {
 	// Generate framebuffer
-	glGenFramebuffers(1, &m_id);
+	GL_CALL(glGenFramebuffers(1, &m_id));
 
 	// Set texture variables
 	(m_buffers = new GLenum[1])[0] = GL_COLOR_ATTACHMENT0;
@@ -42,7 +42,7 @@ OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, sha
 
 OpenGLRenderTarget2D::~OpenGLRenderTarget2D()
 {
-	glDeleteFramebuffers(1, &m_id);
+	GL_CALL(glDeleteFramebuffers(1, &m_id));
 	delete[] m_textures;
 	delete[] m_buffers;
 }
@@ -50,17 +50,17 @@ OpenGLRenderTarget2D::~OpenGLRenderTarget2D()
 void OpenGLRenderTarget2D::bind()
 {
 	// Bind framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+	GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, m_id));
 	for(uint i = 0; i < m_textureCount; ++i)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, dynamic_cast<OpenGLTexture2D*>(m_textures[i].get())->getID(), 0);
+		GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, dynamic_cast<OpenGLTexture2D*>(m_textures[i].get())->getID(), 0));
 	}
-	glDrawBuffers(m_textureCount, m_buffers);
+	GL_CALL(glDrawBuffers(m_textureCount, m_buffers));
 }
 
 void OpenGLRenderTarget2D::unbind()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 END_SAUCE_NAMESPACE
