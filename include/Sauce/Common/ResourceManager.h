@@ -2,7 +2,7 @@
 #define SAUCE_RESOURCE_MANAGER_H
 
 #include <Sauce/Config.h>
-#include <Sauce/Common/Game.h>
+#include <Sauce/Common/Engine.h>
 
 /*********************************************************************
 **	Resource manager												**

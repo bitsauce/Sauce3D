@@ -40,6 +40,12 @@
     <Filter Include="Include\Sauce\Graphics\OpenGL">
       <UniqueIdentifier>{af7f8e82-3777-400c-9017-a54dd4e8ebb3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\ImGui">
+      <UniqueIdentifier>{d4ccf252-9510-487f-a39e-c08a23af69c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Sauce\ImGui">
+      <UniqueIdentifier>{1c26517b-582f-4956-b230-662f709ade01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)source\Common\Window.cpp">
@@ -123,9 +129,6 @@
     <ClCompile Include="$(SolutionDir)source\Math\Vector.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Common\Game.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Input\InputManager.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
@@ -155,6 +158,27 @@
     </ClCompile>
     <ClCompile Include="..\source\Graphics\FontRendering.cpp">
       <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImGui\imgui_demo.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImGui\imgui_draw.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImGui\imgui_widgets.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImGui\ImGuiSystem.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImGui\imgui_library.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Common\Engine.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Common\Exception.cpp">
+      <Filter>Source\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,9 +219,6 @@
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\EventHandler.h">
-      <Filter>Include\Sauce\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Common\Game.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\IniParser.h">
@@ -290,5 +311,46 @@
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Sauce\Common\ImGui.h">
+      <Filter>Include\Sauce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\ImGui.h">
+      <Filter>Include\Sauce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImGui\imgui_internal.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\ImGui\imconfig.h">
+      <Filter>Include\Sauce\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImGui\imstb_textedit.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImGui\imstb_truetype.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImGui\imstb_rectpack.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\ImGui\imgui_library.h">
+      <Filter>Include\Sauce\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Common\Engine.h">
+      <Filter>Include\Sauce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Common\Exception.h">
+      <Filter>Include\Sauce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImGui\ImGuiSystem.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\include\Sauce\ImGui\LICENSE.txt">
+      <Filter>Include\Sauce\ImGui</Filter>
+    </Text>
+    <Text Include="..\source\ImGui\LICENSE.txt">
+      <Filter>Source\ImGui</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -13,7 +13,7 @@
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)source\Common\Callstack.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Console.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Common\Game.cpp" />
+    <ClCompile Include="..\source\Common\Engine.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\FileSystem.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Math.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\ResourceManager.cpp" />
@@ -23,6 +23,7 @@
     <ClCompile Include="$(SolutionDir)source\Common\Window.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Animation.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\BlendState.cpp" />
+    <ClCompile Include="..\source\Common\Exception.cpp" />
     <ClCompile Include="..\source\Graphics\FontRendering.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\GraphicsContext.cpp" />
@@ -49,6 +50,11 @@
     <ClCompile Include="$(SolutionDir)source\Math\Rectangle.cpp" />
     <ClCompile Include="$(SolutionDir)source\Math\RectanglePacker.cpp" />
     <ClCompile Include="$(SolutionDir)source\Math\Vector.cpp" />
+    <ClCompile Include="..\source\ImGui\imgui_library.cpp" />
+    <ClCompile Include="..\source\ImGui\ImGuiSystem.cpp" />
+    <ClCompile Include="..\source\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\source\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\source\ImGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)include\Sauce\Audio.h" />
@@ -56,7 +62,7 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\Callstack.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\Event.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\EventHandler.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Common\Game.h" />
+    <ClInclude Include="..\include\Sauce\Common\Engine.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\IniParser.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\ResourceManager.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Common\SceneObject.h" />
@@ -65,6 +71,8 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Animation.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\BlendState.h" />
+    <ClInclude Include="..\include\Sauce\Common\Exception.h" />
+    <ClInclude Include="..\include\Sauce\Common\ImGui.h" />
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h" />
@@ -95,6 +103,18 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\RectanglePacker.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\Vector.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Sauce.h" />
+    <ClInclude Include="..\include\Sauce\ImGui.h" />
+    <ClInclude Include="..\include\Sauce\ImGui\imconfig.h" />
+    <ClInclude Include="..\include\Sauce\ImGui\imgui_library.h" />
+    <ClInclude Include="..\source\ImGui\ImGuiSystem.h" />
+    <ClInclude Include="..\source\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\source\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\source\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\source\ImGui\imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\include\Sauce\ImGui\LICENSE.txt" />
+    <Text Include="..\source\ImGui\LICENSE.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F3F25B49-2C6B-4FF0-98FB-47695DF70B8A}</ProjectGuid>

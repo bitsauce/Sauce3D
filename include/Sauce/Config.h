@@ -97,6 +97,7 @@ using namespace std;
 /*********************************************************************
 **	Set typedefs													**
 **********************************************************************/
+// TODO: Should get rid of these old typedefs
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -136,7 +137,7 @@ enum RetCode
 /*********************************************************************
 **	Engine run flags												**
 **********************************************************************/
-enum EngineFlag
+enum class EngineFlag : uint32
 {
 	SAUCE_EXPORT_LOG				= 1 << 0, ///< Export the output log to a log file.
 	SAUCE_RUN_IN_BACKGROUND			= 1 << 1, ///< This will allow the program to run while not focused.
@@ -153,6 +154,17 @@ enum MessageType
 	SAUCE_INFO_MSG,
 	SAUCE_WARN_MSG,
 	SAUCE_ERR_MSG
+};
+
+/*********************************************************************
+**	List of supported graphics backends								**
+**********************************************************************/
+enum class GraphicsBackend : uint32
+{
+	SAUCE_OPENGL_3,
+	SAUCE_OPENGL_4,
+	SAUCE_DIRECTX,
+	SAUCE_VULKAN
 };
 
 /*********************************************************************

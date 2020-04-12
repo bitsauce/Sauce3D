@@ -20,7 +20,7 @@
 BEGIN_SAUCE_NAMESPACE
 
 FT_Library   g_library;
-const uint32 g_defaultFontSize = 128;//48;//16;
+const uint32 g_defaultFontSize = 128;
 
 //--------------------------------------------------------------
 // FontRenderingSystem::initialize()
@@ -255,7 +255,7 @@ private:
 								const uint32 x = sdfMapX * m_subdivisionsPerSDFPixel + subPixelX;
 								const uint32 y = sdfMapY * m_subdivisionsPerSDFPixel + subPixelY;
 
-								// Check if we are starting from the inside (negative) or the outside (positive)
+								// Check if we are starting from the inside or the outside
 								const bool isSubPixelInside = glyphAtlasData[x + y * extents.x] != 0;
 								float distanceSq = m_sdfRadius * m_sdfRadius;
 
@@ -290,12 +290,14 @@ private:
 								// current min signed distance squared
 								if (distanceSq < abs(signedDistanceSqMin))
 								{
-									signedDistanceSqMin = distanceSq * (isSubPixelInside ? -1 : 1);
+									signedDistanceSqMin = distanceSq * (isSubPixelInside ? 1 : -1);
 								}
 							}
 						}
 
-						const uint8 sdfPixelValue = (((signedDistanceSqMin / float(m_sdfRadius * m_sdfRadius)) + 1.0f) / 2.0f) * 255.5f;
+						const float signedDistanceNorm = signedDistanceSqMin / float(m_sdfRadius * m_sdfRadius); // [-1, +1]
+						const float distanceNorm       = ((signedDistanceNorm + 1.0f) / 2.0f);                   // [+0, +1]
+						const uint8 sdfPixelValue      = distanceNorm * 255.5f;                                  // [+0, +255]
 						m_sdfAtlas->setPixel(sdfMapX, sdfMapY, &sdfPixelValue);
 					}
 				}
@@ -303,7 +305,7 @@ private:
 		}
 		m_sdfAtlasTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(*m_sdfAtlas));
 		m_sdfAtlasTexture->setFiltering(Texture2D::LINEAR);
-		m_sdfAtlasTexture->setWrapping(Texture2D::CLAMP_TO_EDGE);
+		//m_sdfAtlasTexture->setWrapping(Texture2D::CLAMP_TO_EDGE);
 
 		delete[] glyphAtlasData;
 	}

@@ -145,6 +145,8 @@ InputManager::InputManager(string contextFile) :
 	m_strToKey["lmb"] = SAUCE_MOUSE_BUTTON_LEFT;
 	m_strToKey["rmb"] = SAUCE_MOUSE_BUTTON_RIGHT;
 	m_strToKey["wheel"] = SAUCE_MOUSE_BUTTON_MIDDLE;
+	m_strToKey["x1"] = SAUCE_MOUSE_BUTTON_X1;
+	m_strToKey["x2"] = SAUCE_MOUSE_BUTTON_X2;
 
 	m_strToKey["controller_a"] = SAUCE_CONTROLLER_BUTTON_A;
 	m_strToKey["controller_b"] = SAUCE_CONTROLLER_BUTTON_B;

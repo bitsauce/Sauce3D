@@ -41,10 +41,31 @@ void OpenGLShader::compileShader(const string &vertexSource, const string &fragm
 	// Result variables
 	GLint success;
 
+	auto prependVersionString = [](string& sourceStr)
+	{
+		// Removing existing #version
+		// This assumes that #version is the first thing that appears in the file,
+		// and that #version is followed by 4 characters
+		if (sourceStr.size() > 12)
+		{
+			if (sourceStr.substr(0, 8) == "#version")
+			{
+				sourceStr = sourceStr.substr(12);
+			}
+		}
+
+		// Prepend correct version string
+		sourceStr = "#version " + s_glslVersion + "\n" + sourceStr;
+	};
+
+
 	// Create modified shader code
-	string vertexSourceModified = "#version " + s_glslVersion +"\n" + string(vertexSource);
-	string fragmentSourceModified = "#version " + s_glslVersion + "\n"  + string(fragmentSource);
-	string geometrySourceModified = "#version " + s_glslVersion + "\n"  + string(geometrySource);
+	string vertexSourceModified = vertexSource;
+	prependVersionString(vertexSourceModified);
+	string fragmentSourceModified = fragmentSource;
+	prependVersionString(fragmentSourceModified);
+	string geometrySourceModified = geometrySource;
+	prependVersionString(geometrySourceModified);
 
 	LOG("Compiling vertex shader...");
 

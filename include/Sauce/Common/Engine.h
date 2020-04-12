@@ -787,59 +787,8 @@ private:
 };
 
 /*********************************************************************
-**	Exception class													**
+**	Scene class													**
 **********************************************************************/
-
-class SAUCE_API Exception : public exception
-{
-public:
-
-	/**
-	 * \fn	Exception::Exception(RetCode code, const char * msg, ...);
-	 *
-	 * \brief	Constructor.
-	 *
-	 * \param	code	The code.
-	 * \param	msg 	The message.
-	 * \param	... 	Variable arguments providing additional information.
-	 */
-
-	Exception(RetCode code, const char * msg, ...);
-	~Exception() {}
-
-	RetCode errorCode() const
-	{
-		return m_errorCode;
-	}
-
-	string message() const
-	{
-		return m_message;
-	}
-
-	const char *what() const noexcept override { return m_message.c_str(); }
-
-	string callstack() const
-	{
-#ifdef SAUCE_COMPILE_WINDOWS
-		return m_callstack.toString();
-#else
-		return "Missing";
-#endif
-	}
-
-private:
-	/** \brief	The message. */
-	string m_message;
-
-	/** \brief	The error code. */
-	RetCode m_errorCode;
-
-#ifdef SAUCE_COMPILE_WINDOWS
-	/** \brief Callstack of point of error */
-	Callstack m_callstack;
-#endif
-};
 
 class SAUCE_API Scene
 {
@@ -859,25 +808,16 @@ private:
 	SceneObject *m_root;
 };
 
-class SpriteBatch;
-class ResourceManager;
-
-enum GraphicsBackend
-{
-	SAUCE_OPENGL_3,
-	SAUCE_OPENGL_4,
-	SAUCE_DIRECTX,
-	SAUCE_VULKAN
-};
-
 struct SAUCE_API GameDesc
 {
 	string name                     = "DefaultGame";
 	string workingDirectory         = ".";
 	string organization             = "Sauce3D";
 	uint32_t flags                  = 0;
-	GraphicsBackend graphicsBackend = SAUCE_OPENGL_3;
+	GraphicsBackend graphicsBackend = GraphicsBackend::SAUCE_OPENGL_3;
 };
+
+class ResourceManager;
 
 class SAUCE_API Game : public SceneObject
 {
@@ -978,8 +918,6 @@ private:
 	InputManager *m_inputManager;
 
 	Scene *m_scene;
-
-	//SpriteBatch *m_spriteBatch;
 	
 	/** \brief	The timer. */
 	Timer			*m_timer;

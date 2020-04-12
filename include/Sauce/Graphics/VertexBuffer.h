@@ -14,6 +14,8 @@ class SAUCE_API VertexBuffer
 {
 	friend class OpenGLContext;
 public:
+	virtual ~VertexBuffer();
+
 	// Add vertices and indices to the batch
 	void setData(const Vertex *vertices, const uint vertexCount);
 	char *getData() const;
@@ -31,7 +33,6 @@ protected:
 	};
 
 	VertexBuffer(const BufferType type);
-	~VertexBuffer();
 
 	// Buffer ID
 	GLuint m_id;
@@ -70,6 +71,8 @@ class SAUCE_API IndexBuffer
 {
 	friend class OpenGLContext;
 public:
+	virtual ~IndexBuffer();
+
 	// Add vertices and indices to the batch
 	void setData(const uint *indices, const uint indexCount);
 	char *getData() const;
@@ -86,7 +89,6 @@ protected:
 	};
 
 	IndexBuffer(const BufferType type);
-	~IndexBuffer();
 
 	// Buffer ID
 	GLuint m_id;

@@ -92,7 +92,8 @@ void OpenGLContext::disable(const Capability cap)
 
 bool OpenGLContext::isEnabled(const Capability cap)
 {
-	return (bool)GL_CALL(glIsEnabled(cap));
+	const bool enabled = (bool)GL_CALL(glIsEnabled(cap));
+	return enabled;
 }
 
 void OpenGLContext::setPointSize(const float pointSize)
@@ -273,7 +274,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
 	// Create passthrough shader
-	string vertexShader =
+	const string vertexShader =
 		"\n"
 		"in vec2 in_Position;\n"
 		"in vec2 in_TexCoord;\n"
@@ -291,7 +292,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 		"	v_VertexColor = in_VertexColor;\n"
 		"}\n";
 
-	string fragmentShader =
+	const string fragmentShader =
 		"\n"
 		"in vec2 v_TexCoord;\n"
 		"in vec4 v_VertexColor;\n"
