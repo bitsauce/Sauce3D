@@ -1,3 +1,15 @@
+//     _____                        ______             _            
+//    / ____|                      |  ____|           (_)           
+//   | (___   __ _ _   _  ___ ___  | |__   _ __   __ _ _ _ __   ___ 
+//    \___ \ / _` | | | |/ __/ _ \ |  __| | '_ \ / _` | | '_ \ / _ \
+//    ____) | (_| | |_| | (_|  __/ | |____| | | | (_| | | | | |  __/
+//   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
+//                                                __/ |             
+//                                               |___/              
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
@@ -18,6 +30,8 @@ Vertex *GraphicsContext::getVertices(const uint vertexCount)
 }
 
 GraphicsContext::GraphicsContext()
+	: m_context(nullptr)
+	, m_window(nullptr)
 {
 	State state;
 	m_stateStack.push(state);
@@ -168,22 +182,22 @@ void GraphicsContext::drawRectangle(const float x, const float y, const float wi
 		m_vertices.resize(4);
 	}
 
-	m_vertices[0].set2f(VERTEX_POSITION, x, y);
-	m_vertices[1].set2f(VERTEX_POSITION, x, y + height);
-	m_vertices[2].set2f(VERTEX_POSITION, x + width, y);
-	m_vertices[3].set2f(VERTEX_POSITION, x + width, y + height);
+	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
+	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
+	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
+	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
 
-	m_vertices[0].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[1].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[2].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[3].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+	m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+	m_vertices[1].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+	m_vertices[2].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+	m_vertices[3].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
 
-	m_vertices[0].set2f(VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv0.y);
-	m_vertices[1].set2f(VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv1.y);
-	m_vertices[2].set2f(VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv0.y);
-	m_vertices[3].set2f(VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv1.y);
+	m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv0.y);
+	m_vertices[1].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv1.y);
+	m_vertices[2].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv0.y);
+	m_vertices[3].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv1.y);
 
-	drawPrimitives(PRIMITIVE_TRIANGLE_STRIP, &m_vertices[0], 4);
+	drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLE_STRIP, &m_vertices[0], 4);
 }
 
 void GraphicsContext::drawRectangle(const Vector2F &pos, const Vector2F &size, const Color &color, const TextureRegion &textureRegion)
@@ -204,25 +218,25 @@ void GraphicsContext::drawRectangleOutline(const float x, const float y, const f
 		m_vertices.resize(8);
 	}
 
-	m_vertices[0].set2f(VERTEX_POSITION, x, y);
-	m_vertices[1].set2f(VERTEX_POSITION, x, y + height);
+	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
+	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
 
-	m_vertices[2].set2f(VERTEX_POSITION, x, y + height);
-	m_vertices[3].set2f(VERTEX_POSITION, x + width, y + height);
+	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
+	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
 	
-	m_vertices[4].set2f(VERTEX_POSITION, x + width, y + height);
-	m_vertices[5].set2f(VERTEX_POSITION, x + width, y);
+	m_vertices[4].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
+	m_vertices[5].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
 
-	m_vertices[6].set2f(VERTEX_POSITION, x + width, y);
-	m_vertices[7].set2f(VERTEX_POSITION, x, y);
+	m_vertices[6].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
+	m_vertices[7].set2f(VertexAttribute::VERTEX_POSITION, x, y);
 
 	for(int i = 0; i < 8; i++)
 	{
-		m_vertices[i].set4ub(VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-		m_vertices[i].set2f(VERTEX_TEX_COORD, 0.0f, 0.0f);
+		m_vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+		m_vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.0f, 0.0f);
 	}
 
-	drawPrimitives(PRIMITIVE_LINES, &m_vertices[0], 8);
+	drawPrimitives(PrimitiveType::PRIMITIVE_LINES, &m_vertices[0], 8);
 }
 
 void GraphicsContext::drawRectangleOutline(const Vector2F &pos, const Vector2F &size, const Color &color, const TextureRegion &textureRegion)
@@ -243,19 +257,19 @@ void GraphicsContext::drawCircleGradient(const float x, const float y, const flo
 		m_vertices.resize(segments + 2);
 	}
 
-	m_vertices[0].set2f(VERTEX_POSITION, x, y);
-	m_vertices[0].set4ub(VERTEX_COLOR, center.getR(), center.getG(), center.getB(), center.getA());
-	m_vertices[0].set2f(VERTEX_TEX_COORD, 0.5f, 0.5f);
+	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
+	m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, center.getR(), center.getG(), center.getB(), center.getA());
+	m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.5f, 0.5f);
 
 	for(uint i = 1; i < segments + 2; ++i)
 	{
 		float r = (2.0f * PI * i) / segments;
-		m_vertices[i].set2f(VERTEX_POSITION, x + cos(r) * radius, y + sin(r) * radius);
-		m_vertices[i].set4ub(VERTEX_COLOR, outer.getR(), outer.getG(), outer.getB(), outer.getA());
-		m_vertices[i].set2f(VERTEX_TEX_COORD, (1.0f + cos(r)) / 2.0f, (1.0f + sin(r)) / 2.0f);
+		m_vertices[i].set2f(VertexAttribute::VERTEX_POSITION, x + cos(r) * radius, y + sin(r) * radius);
+		m_vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, outer.getR(), outer.getG(), outer.getB(), outer.getA());
+		m_vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, (1.0f + cos(r)) / 2.0f, (1.0f + sin(r)) / 2.0f);
 	}
 
-	drawPrimitives(PRIMITIVE_TRIANGLE_FAN, &m_vertices[0], segments + 2);
+	drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLE_FAN, &m_vertices[0], segments + 2);
 }
 
 void GraphicsContext::drawCircleGradient(const Vector2F &pos, const float radius, const uint segments, const Color &center, const Color &outer)
@@ -278,8 +292,8 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	// Make sure we have enough vertices
 	if(m_vertices.size() < 6) m_vertices.resize(6);
 
-	m_vertices[0].set2f(VERTEX_POSITION, x0, y0); m_vertices[0].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[0].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[1].set2f(VERTEX_POSITION, x1, y1); m_vertices[1].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[1].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x0, y0); m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[1].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[1].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
 
 	Vector2F p0 = (Vector2F(x0, y0) - Vector2F(x1, y1)).normalized() * 10;
 	Vector2F p1 = p0;
@@ -290,13 +304,13 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	p0 += Vector2F(x1, y1);
 	p1 += Vector2F(x1, y1);
 
-	m_vertices[2].set2f(VERTEX_POSITION, x1, y1); m_vertices[2].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[2].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[3].set2f(VERTEX_POSITION, p0.x, p0.y); m_vertices[3].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[3].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[2].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[2].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, p0.x, p0.y); m_vertices[3].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[3].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
 
-	m_vertices[4].set2f(VERTEX_POSITION, x1, y1); m_vertices[4].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[4].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[5].set2f(VERTEX_POSITION, p1.x, p1.y); m_vertices[5].set4ub(VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[5].set2f(VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[4].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[4].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[4].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	m_vertices[5].set2f(VertexAttribute::VERTEX_POSITION, p1.x, p1.y); m_vertices[5].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[5].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
 
-	drawPrimitives(PRIMITIVE_LINES, &m_vertices[0], 6);
+	drawPrimitives(PrimitiveType::PRIMITIVE_LINES, &m_vertices[0], 6);
 }
 
 Texture2D *GraphicsContext::createTexture(const uint width, const uint height, const PixelFormat& format, const uint8_t* data)

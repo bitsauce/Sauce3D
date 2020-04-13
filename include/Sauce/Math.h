@@ -1,5 +1,8 @@
-#ifndef SAUCE_MATH_H
-#define SAUCE_MATH_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Math/Vector.h>
 #include <Sauce/Math/Matrix.h>
@@ -78,5 +81,3 @@ namespace math
 }
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_MATH_H

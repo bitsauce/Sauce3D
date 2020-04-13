@@ -1,5 +1,8 @@
-#ifndef SAUCE_SCENE_OBJECT_H
-#define SAUCE_SCENE_OBJECT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Common/Event.h>
@@ -449,5 +452,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_SCENE_OBJECT_H

@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 // Public headers
 #include <Sauce/Common.h>
@@ -20,8 +21,7 @@
 
 // Additional headers
 #include <FreeImage.h>
-#include <SDL.h>
-#undef WIN32_LEAN_AND_MEAN // Warning C4005: macro redefinition fix
+#undef WIN32_LEAN_AND_MEAN // "warning C4005: macro redefinition" fix
 #include <SDL_syswm.h>
 
 BEGIN_SAUCE_NAMESPACE
@@ -32,11 +32,12 @@ Keycode KeyEvent::getKeycode() const
 }
 
 /**
-FreeImage error handler
-@param fif Format / Plugin responsible for the error
-@param message Error message
-*/
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+ * FreeImage error handler
+ * @param fif Format / Plugin responsible for the error
+ * @param message Error message
+ */
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message)
+{
 	LOG("\n*** ");
 	if(fif != FIF_UNKNOWN) {
 		LOG("%s Format\n", FreeImage_GetFormatFromFIF(fif));
@@ -47,10 +48,17 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
 
 Game *Game::s_this = 0;
 
-Game::Game() :
-	m_initialized(false),
-	m_paused(false),
-	m_running(false)
+Game::Game()
+	: m_initialized(false)
+	, m_paused(false)
+	, m_running(false)
+	, m_console(nullptr)
+	, m_fileSystem(nullptr)
+	, m_framesPerSecond(0.0)
+	, m_inputManager(nullptr)
+	, m_resourceManager(nullptr)
+	, m_scene(nullptr)
+	, m_timer(nullptr)
 {
 	THROW_IF(s_this != nullptr, "Game instance already exists!");
 	s_this = this;
@@ -155,9 +163,9 @@ int Game::run(const GameDesc &desc)
 		m_windows.push_back(mainWindow);
 
 		// Setup default vertex format
-		VertexFormat::s_vct.set(VERTEX_POSITION, 2, SAUCE_FLOAT);
-		VertexFormat::s_vct.set(VERTEX_COLOR, 4, SAUCE_UBYTE);
-		VertexFormat::s_vct.set(VERTEX_TEX_COORD, 2, SAUCE_FLOAT);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
 
 		// Initialize input handler
 		m_inputManager = new InputManager("InputConfig.xml");
@@ -500,13 +508,13 @@ gameloopend:
 		ss << "Callstack: " << endl << e.callstack();
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "An error occured", ss.str().c_str(), m_windows.front()->getSDLHandle());
 		LOG("An exception occured: %s", ss.str().c_str());
-		return e.errorCode();
+		return (uint32)e.errorCode();
 	}
 
 	// Free font rendering system
 	FontRenderingSystem::free();
 
-	return SAUCE_OK;
+	return (uint32)RetCode::SAUCE_OK;
 }
 
 void Game::end()

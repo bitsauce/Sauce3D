@@ -1,5 +1,8 @@
-#ifndef SAUCE_RECTANGLE_H
-#define SAUCE_RECTANGLE_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Math/Vector.h>
@@ -187,5 +190,3 @@ typedef Rect<float> RectF;
 typedef Rect<double> RectD;
 typedef Rect<int> RectI;
 typedef Rect<uint> RectU;
-
-#endif // SAUCE_RECTANGLE_H

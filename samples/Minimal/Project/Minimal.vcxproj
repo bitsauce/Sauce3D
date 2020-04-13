@@ -44,11 +44,13 @@
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Minimal</TargetName>
     <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
+    <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Minimal</TargetName>
     <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
+    <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,6 +115,9 @@
       <Project>{f3f25b49-2c6b-4ff0-98fb-47695df70b8a}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\projects\Sauce3D.ruleset" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

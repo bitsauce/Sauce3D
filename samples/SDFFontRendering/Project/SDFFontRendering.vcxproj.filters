@@ -15,5 +15,6 @@
     <None Include="..\Assets\Shader.vert">
       <Filter>Assets</Filter>
     </None>
+    <None Include="..\..\..\projects\Sauce3D.ruleset" />
   </ItemGroup>
 </Project>

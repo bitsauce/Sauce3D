@@ -1,3 +1,7 @@
+// Copied and modified file from SDL2
+// This file contains SDL keycodes that have been renamed to
+// to make it easier to use for the end user
+
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -24,8 +28,8 @@
  *
  *  Defines constants which identify keyboard keys and modifiers.
  */
-#ifndef SAUCE_KEYCODES_H
-#define SAUCE_KEYCODES_H
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include "Scancodes.h"
@@ -383,5 +387,3 @@ END_SAUCE_NAMESPACE
 #define KMOD_SHIFT  (KMOD_LSHIFT|KMOD_RSHIFT)
 #define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
 #define KMOD_GUI    (KMOD_LGUI|KMOD_RGUI)*/
-
-#endif /* SAUCE_KEYCODES_H */

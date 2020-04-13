@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
@@ -206,9 +207,9 @@ void ImGuiSystem::render()
         IndexBuffer* ibo = new StaticIndexBuffer();
 
         VertexFormat fmt;
-        fmt.set(VertexAttribute::VERTEX_POSITION, 2, DataType::SAUCE_FLOAT);
-        fmt.set(VertexAttribute::VERTEX_COLOR, 4, DataType::SAUCE_UBYTE);
-        fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, DataType::SAUCE_FLOAT);
+        fmt.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
+        fmt.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+        fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
 
         // Setup desired GL state
         // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
@@ -299,7 +300,7 @@ void ImGuiSystem::render()
 //                    }
 
                     g_ImGuiShader->setSampler2D("u_Texture", *(shared_ptr<Texture2D>*)pcmd->TextureId);
-                    graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, vbo, ibo);
+                    graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vbo, ibo);
                 }
             }
         }
@@ -357,7 +358,7 @@ bool createFontsTexture()
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
-    g_FontTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(width, height, PixelFormat(PixelFormat::RGBA, PixelFormat::UNSIGNED_BYTE), pixels));
+    g_FontTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels));
 
     // Store our identifier
     io.Fonts->TexID = (ImTextureID)&g_FontTexture;

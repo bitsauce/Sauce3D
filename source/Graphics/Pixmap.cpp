@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
@@ -17,22 +18,23 @@ BEGIN_SAUCE_NAMESPACE
 
 uint PixelFormat::getComponentCount() const
 {
-	switch (m_components) {
-	case R: return 1;
-	case RG: return 2;
-	case RGB: return 3;
-	case RGBA: return 4;
+	switch (m_components)
+	{
+		case PixelComponents::R: return 1;
+		case PixelComponents::RG: return 2;
+		case PixelComponents::RGB: return 3;
+		case PixelComponents::RGBA: return 4;
 	}
 	return 0;
 }
 
 uint PixelFormat::getDataTypeSizeInBytes() const
 {
-	switch (m_dataType)
+	switch (m_datatype)
 	{
-	case UNSIGNED_INT: case INT: return sizeof(GLint);
-	case UNSIGNED_BYTE: case BYTE: return sizeof(GLbyte);
-	case FLOAT: return sizeof(GLfloat);
+		case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return sizeof(GLint);
+		case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: return sizeof(GLbyte);
+		case PixelDatatype::FLOAT: return sizeof(GLfloat);
 	}
 	return 0;
 }
@@ -92,7 +94,7 @@ Pixmap::Pixmap(const Pixmap& other)
 	}
 }
 
-Pixmap::Pixmap(Pixmap&& other)
+Pixmap::Pixmap(Pixmap&& other) noexcept
 {
 	// Copy over values (shallow copy)
 	m_width = other.m_width;
@@ -165,8 +167,8 @@ PixelFormat Pixmap::getFormat() const
 bool Pixmap::isValid() const
 {
 	return m_data != nullptr && m_width > 0 && m_height > 0 &&
-		m_format.getDataType() != PixelFormat::INVALID_DATA_TYPE &&
-		m_format.getComponents() != PixelFormat::INVALID_COMPONENTS;
+		m_format.getDataType() != PixelDatatype::INVALID_DATA_TYPE &&
+		m_format.getComponents() != PixelComponents::INVALID_COMPONENTS;
 }
 
 void Pixmap::getPixel(const uint x, const uint y, void *data) const
@@ -224,7 +226,7 @@ void Pixmap::clear()
 
 void Pixmap::saveToFile(string path) const
 {
-	if(m_format.getDataType() != PixelFormat::BYTE && m_format.getDataType() != PixelFormat::UNSIGNED_BYTE)
+	if(m_format.getDataType() != PixelDatatype::BYTE && m_format.getDataType() != PixelDatatype::UNSIGNED_BYTE)
 	{
 		LOG("Cannot export a pixmap with a pixel data type different from byte or unsigned byte");
 		return;
@@ -280,7 +282,7 @@ Pixmap Pixmap::loadFromFile(const string& imageFile)
 		FreeImage_FlipVertical(bitmap);
 
 		// Create pixmap data
-		newPixmap.m_format = PixelFormat(PixelFormat::RGBA, PixelFormat::UNSIGNED_BYTE);
+		newPixmap.m_format = PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE);
 		newPixmap.m_width = FreeImage_GetWidth(bitmap);
 		newPixmap.m_height = FreeImage_GetHeight(bitmap);
 		assert(newPixmap.m_width >= 0 && newPixmap.m_height >= 0);

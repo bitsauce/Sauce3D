@@ -6,17 +6,18 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-VertexBuffer::VertexBuffer(const BufferType type) :
+VertexBuffer::VertexBuffer(const BufferUsage usage) :
 	m_format(),
-	m_type(type),
+	m_usage(usage),
 	m_size(0)
 {
 	glGenBuffers(1, &m_id);
@@ -41,7 +42,7 @@ void VertexBuffer::setData(const Vertex *vertices, const uint vertexCount)
 	{
 		// Upload vertex data
 		glBindBuffer(GL_ARRAY_BUFFER, m_id);
-		glBufferData(GL_ARRAY_BUFFER, vertexCount * m_format.getVertexSizeInBytes(), vertexData, m_type);
+		glBufferData(GL_ARRAY_BUFFER, vertexCount * m_format.getVertexSizeInBytes(), vertexData, (uint32)m_usage);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -56,12 +57,12 @@ VertexFormat VertexBuffer::getVertexFormat() const
 }
 
 DynamicVertexBuffer::DynamicVertexBuffer() :
-	VertexBuffer(DYNAMIC_BUFFER)
+	VertexBuffer(BufferUsage::Dynamic)
 {
 }
 
 DynamicVertexBuffer::DynamicVertexBuffer(const Vertex *vertices, const uint vertexCount) :
-	VertexBuffer(DYNAMIC_BUFFER)
+	VertexBuffer(BufferUsage::Dynamic)
 {
 	setData(vertices, vertexCount);
 }
@@ -85,12 +86,12 @@ void DynamicVertexBuffer::modifyData(const uint startIdx, Vertex *vertices, cons
 }
 
 StaticVertexBuffer::StaticVertexBuffer() :
-	VertexBuffer(STATIC_BUFFER)
+	VertexBuffer(BufferUsage::Static)
 {
 }
 
 StaticVertexBuffer::StaticVertexBuffer(const Vertex *vertices, const uint vertexCount) :
-	VertexBuffer(STATIC_BUFFER)
+	VertexBuffer(BufferUsage::Static)
 {
 	setData(vertices, vertexCount);
 }
@@ -98,9 +99,9 @@ StaticVertexBuffer::StaticVertexBuffer(const Vertex *vertices, const uint vertex
 
 // -------------------------------------------------------------------------------------
 
-IndexBuffer::IndexBuffer(const BufferType type) :
-	m_type(type),
-	m_size(0)
+IndexBuffer::IndexBuffer(const BufferUsage usage)
+	: m_usage(usage)
+	, m_size(0)
 {
 	glGenBuffers(1, &m_id);
 }
@@ -116,7 +117,7 @@ void IndexBuffer::setData(const uint *indices, const uint indexCount)
 	{
 		// Upload index data
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, m_type);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, (uint32)m_usage);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
@@ -124,12 +125,12 @@ void IndexBuffer::setData(const uint *indices, const uint indexCount)
 }
 
 DynamicIndexBuffer::DynamicIndexBuffer() :
-	IndexBuffer(DYNAMIC_BUFFER)
+	IndexBuffer(BufferUsage::Dynamic)
 {
 }
 
 DynamicIndexBuffer::DynamicIndexBuffer(const uint *indices, const uint indexCount) :
-	IndexBuffer(DYNAMIC_BUFFER)
+	IndexBuffer(BufferUsage::Dynamic)
 {
 	setData(indices, indexCount);
 }
@@ -142,12 +143,12 @@ void DynamicIndexBuffer::modifyData(const uint startIdx, uint *indices, const ui
 }
 
 StaticIndexBuffer::StaticIndexBuffer() :
-	IndexBuffer(STATIC_BUFFER)
+	IndexBuffer(BufferUsage::Static)
 {
 }
 
 StaticIndexBuffer::StaticIndexBuffer(const uint *indices, const uint indexCount) :
-	IndexBuffer(STATIC_BUFFER)
+	IndexBuffer(BufferUsage::Static)
 {
 	setData(indices, indexCount);
 }

@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 
@@ -38,7 +39,7 @@ Exception::Exception(RetCode code, const char* msg, ...) :
 	va_start(args, msg);
 
 	// Get string length
-	int size = _vscprintf(msg, args);
+	const size_t size = _vscprintf(msg, args);
 
 	// Create out string
 	m_message.resize(size);

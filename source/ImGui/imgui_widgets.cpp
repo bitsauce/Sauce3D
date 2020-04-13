@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // dear imgui, v1.75
 // (widgets code)
 
@@ -51,6 +54,11 @@ Index of this file:
 #ifdef _MSC_VER
 #pragma warning (disable: 4127)     // condition expression is constant
 #pragma warning (disable: 4996)     // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#pragma warning (disable: 26812)    // @bitsauce: ignore "Prefer 'enum class' over 'enum'" warning
+#pragma warning (disable: 26451)    // @bitsauce: ignore "Arithmetric overflow" warning
+#pragma warning (disable: 6031)     // @bitsauce: ignore "Return value ignored" warning
+#pragma warning (disable: 6011)     // @bitsauce: ignore "Dereferencing NULL pointer" warning
+#pragma warning (disable: 6385)     // @bitsauce: ignore "Reading invalid data" warning
 #if defined(_MSC_VER) && _MSC_VER >= 1922 // MSVC 2019 16.2 or later
 #pragma warning (disable: 5054)     // operator '|': deprecated between enumerations of different types
 #endif

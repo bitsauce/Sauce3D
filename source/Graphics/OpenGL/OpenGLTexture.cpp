@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
@@ -15,55 +16,55 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
+GLint toInternalFormat(const PixelComponents& fmt, const PixelDatatype& dt)
 {
 	switch(fmt)
 	{
-		case PixelFormat::R:
+		case PixelComponents::R:
 		{
 			switch(dt)
 			{
-				case PixelFormat::INT: return GL_R32I;
-				case PixelFormat::UNSIGNED_INT: return GL_R32UI;
-				case PixelFormat::BYTE: return GL_R8_SNORM;
-				case PixelFormat::UNSIGNED_BYTE: return GL_R8;
-				case PixelFormat::FLOAT: return GL_R32F;
+				case PixelDatatype::INT: return GL_R32I;
+				case PixelDatatype::UNSIGNED_INT: return GL_R32UI;
+				case PixelDatatype::BYTE: return GL_R8_SNORM;
+				case PixelDatatype::UNSIGNED_BYTE: return GL_R8;
+				case PixelDatatype::FLOAT: return GL_R32F;
 			}
 		}
 		break;
-		case PixelFormat::RG:
+		case PixelComponents::RG:
 		{
 			switch(dt)
 			{
-				case PixelFormat::INT: return GL_RG32I;
-				case PixelFormat::UNSIGNED_INT: return GL_RG32UI;
-				case PixelFormat::BYTE: return GL_RG8_SNORM;
-				case PixelFormat::UNSIGNED_BYTE: return GL_RG8;
-				case PixelFormat::FLOAT: return GL_RG32F;
+				case PixelDatatype::INT: return GL_RG32I;
+				case PixelDatatype::UNSIGNED_INT: return GL_RG32UI;
+				case PixelDatatype::BYTE: return GL_RG8_SNORM;
+				case PixelDatatype::UNSIGNED_BYTE: return GL_RG8;
+				case PixelDatatype::FLOAT: return GL_RG32F;
 			}
 		}
 		break;
-		case PixelFormat::RGB:
+		case PixelComponents::RGB:
 		{
 			switch(dt)
 			{
-				case PixelFormat::INT: return GL_RGB32I;
-				case PixelFormat::UNSIGNED_INT: return GL_RGB32UI;
-				case PixelFormat::BYTE: return GL_RGB8_SNORM;
-				case PixelFormat::UNSIGNED_BYTE: return GL_RGB8;
-				case PixelFormat::FLOAT: return GL_RGB32F;
+				case PixelDatatype::INT: return GL_RGB32I;
+				case PixelDatatype::UNSIGNED_INT: return GL_RGB32UI;
+				case PixelDatatype::BYTE: return GL_RGB8_SNORM;
+				case PixelDatatype::UNSIGNED_BYTE: return GL_RGB8;
+				case PixelDatatype::FLOAT: return GL_RGB32F;
 			}
 		}
 		break;
-		case PixelFormat::RGBA:
+		case PixelComponents::RGBA:
 		{
 			switch(dt)
 			{
-				case PixelFormat::INT: return GL_RGBA32I;
-				case PixelFormat::UNSIGNED_INT: return GL_RGBA32UI;
-				case PixelFormat::BYTE: return GL_RGBA8_SNORM;
-				case PixelFormat::UNSIGNED_BYTE: return GL_RGBA8;
-				case PixelFormat::FLOAT: return GL_RGBA32F;
+				case PixelDatatype::INT: return GL_RGBA32I;
+				case PixelDatatype::UNSIGNED_INT: return GL_RGBA32UI;
+				case PixelDatatype::BYTE: return GL_RGBA8_SNORM;
+				case PixelDatatype::UNSIGNED_BYTE: return GL_RGBA8;
+				case PixelDatatype::FLOAT: return GL_RGBA32F;
 			}
 		}
 		break;
@@ -71,43 +72,43 @@ GLint toInternalFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 	return 0;
 }
 
-GLint toFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
+GLint toFormat(const PixelComponents& fmt, const PixelDatatype& dt)
 {
 	switch(fmt)
 	{
-		case PixelFormat::R:
+		case PixelComponents::R:
 		{
 			switch(dt)
 			{
-				case PixelFormat::UNSIGNED_BYTE: case PixelFormat::BYTE: case PixelFormat::FLOAT: return GL_RED;
-				case PixelFormat::UNSIGNED_INT: case PixelFormat::INT: return GL_RED_INTEGER;
+				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RED;
+				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RED_INTEGER;
 			}
 		}
 		break;
-		case PixelFormat::RG:
+		case PixelComponents::RG:
 		{
 			switch(dt)
 			{
-				case PixelFormat::UNSIGNED_BYTE: case PixelFormat::BYTE: case PixelFormat::FLOAT: return GL_RG;
-				case PixelFormat::UNSIGNED_INT: case PixelFormat::INT: return GL_RG_INTEGER;
+				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RG;
+				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RG_INTEGER;
 			}
 		}
 		break;
-		case PixelFormat::RGB:
+		case PixelComponents::RGB:
 		{
 			switch(dt)
 			{
-				case PixelFormat::UNSIGNED_BYTE: case PixelFormat::BYTE: case PixelFormat::FLOAT: return GL_RGB;
-				case PixelFormat::UNSIGNED_INT: case PixelFormat::INT: return GL_RGB_INTEGER;
+				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RGB;
+				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RGB_INTEGER;
 			}
 		}
 		break;
-		case PixelFormat::RGBA:
+		case PixelComponents::RGBA:
 		{
 			switch(dt)
 			{
-				case PixelFormat::UNSIGNED_BYTE: case PixelFormat::BYTE: case PixelFormat::FLOAT: return GL_RGBA;
-				case PixelFormat::UNSIGNED_INT: case PixelFormat::INT: return GL_RGBA_INTEGER;
+				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RGBA;
+				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RGBA_INTEGER;
 			}
 		}
 		break;
@@ -115,15 +116,15 @@ GLint toFormat(PixelFormat::Components fmt, PixelFormat::DataType dt)
 	return 0;
 }
 
-GLint toGLDataType(PixelFormat::DataType dt)
+GLint toGLDataType(const PixelDatatype& dt)
 {
 	switch(dt)
 	{
-		case PixelFormat::INT: return GL_INT;
-		case PixelFormat::UNSIGNED_INT: return GL_UNSIGNED_INT;
-		case PixelFormat::BYTE: return GL_BYTE;
-		case PixelFormat::UNSIGNED_BYTE: return GL_UNSIGNED_BYTE;
-		case PixelFormat::FLOAT: return GL_FLOAT;
+		case PixelDatatype::INT: return GL_INT;
+		case PixelDatatype::UNSIGNED_INT: return GL_UNSIGNED_INT;
+		case PixelDatatype::BYTE: return GL_BYTE;
+		case PixelDatatype::UNSIGNED_BYTE: return GL_UNSIGNED_BYTE;
+		case PixelDatatype::FLOAT: return GL_FLOAT;
 	}
 	return 0;
 }
@@ -144,8 +145,8 @@ void OpenGLTexture2D::initialize(const Pixmap &pixmap)
 	GL_CALL(glGenTextures(1, &m_id));
 
 	// Set default values
-	m_filter = NEAREST; // Prefs::GetDefaultFilterMode();
-	m_wrapping = CLAMP_TO_BORDER;
+	m_filter = TextureFiltering::NEAREST; // Prefs::GetDefaultFilterMode();
+	m_wrapping = TextureWrapping::CLAMP_TO_BORDER;
 	m_mipmaps = false; // Prefs::UseMipmaps()
 	m_pixelFormat = pixmap.getFormat();
 
@@ -233,7 +234,7 @@ void OpenGLTexture2D::updatePixmap(const uint x, const uint y, const Pixmap &pix
 void OpenGLTexture2D::clear()
 {
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
-	GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, vector<GLubyte>(m_width*m_height * 4, 0).data()));
+	GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, vector<GLubyte>(m_width * m_height * 4, 0).data()));
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
@@ -246,10 +247,10 @@ void OpenGLTexture2D::updateFiltering()
 		m_mipmapsGenerated = true;
 	}
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_id));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_mipmaps ? (m_filter == GL_NEAREST ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : m_filter));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrapping));
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrapping));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_mipmaps ? (uint32(m_filter) == GL_NEAREST ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : uint32(m_filter)));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (uint32)m_filter));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (uint32)m_wrapping));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (uint32)m_wrapping));
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 

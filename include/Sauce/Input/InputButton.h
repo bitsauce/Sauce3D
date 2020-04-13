@@ -1,3 +1,7 @@
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #pragma once
 
 #include <Sauce/Config.h>
@@ -7,18 +11,18 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+enum class InputButtonType : uint32
+{
+	NONE,
+	KEYBOARD,
+	MOUSE,
+	CONTROLLER_BUTTON,
+	CONTROLLER_AXIS
+};
+
 class SAUCE_API InputButton
 {
 public:
-	enum Type
-	{
-		NONE,
-		KEYBOARD,
-		MOUSE,
-		CONTROLLER_BUTTON,
-		CONTROLLER_AXIS
-	};
-
 	InputButton();
 	InputButton(const Keycode keycode);
 	InputButton(const Scancode scancode);
@@ -39,12 +43,12 @@ public:
 	bool operator==(const ControllerButton controllerButton);
 	bool operator==(const ControllerAxis axis);
 
-	Type getType() const;
+	InputButtonType getType() const;
 	uint getCode() const;
 
 private:
 	uint code;
-	Type type;
+	InputButtonType type;
 };
 
 END_SAUCE_NAMESPACE

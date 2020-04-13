@@ -1,3 +1,15 @@
+//     _____                        ______             _            
+//    / ____|                      |  ____|           (_)           
+//   | (___   __ _ _   _  ___ ___  | |__   _ __   __ _ _ _ __   ___ 
+//    \___ \ / _` | | | |/ __/ _ \ |  __| | '_ \ / _` | | '_ \ / _ \
+//    ____) | (_| | |_| | (_|  __/ | |____| | | | (_| | | | | |  __/
+//   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
+//                                                __/ |             
+//                                               |___/              
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #include <Sauce/Graphics.h>
 #include <Sauce/Graphics/OpenGL/OpenGLRenderTarget.h>
 #include <Sauce/Graphics/OpenGL/OpenGLTexture.h>
@@ -50,19 +62,19 @@ void OpenGLContext::enable(const Capability cap)
 {
 	switch(cap)
 	{
-		case BLEND:          GL_CALL(glEnable(GL_BLEND)); break;
-		case DEPTH_TEST:     GL_CALL(glEnable(GL_DEPTH_TEST)); break;
-		case FACE_CULLING:   GL_CALL(glEnable(GL_CULL_FACE)); break;
-		case LINE_SMOOTH:    GL_CALL(glEnable(GL_LINE_SMOOTH)); break;
-		case POLYGON_SMOOTH: GL_CALL(glEnable(GL_POLYGON_SMOOTH)); break;
-		case MULTISAMPLE:    GL_CALL(glEnable(GL_MULTISAMPLE)); break;
-		case TEXTURE_1D:     GL_CALL(glEnable(GL_TEXTURE_1D)); break;
-		case TEXTURE_2D:     GL_CALL(glEnable(GL_TEXTURE_2D)); break;
-		case TEXTURE_3D:     GL_CALL(glEnable(GL_TEXTURE_3D)); break;
-		case VSYNC:
+		case Capability::BLEND:          GL_CALL(glEnable(GL_BLEND)); break;
+		case Capability::DEPTH_TEST:     GL_CALL(glEnable(GL_DEPTH_TEST)); break;
+		case Capability::FACE_CULLING:   GL_CALL(glEnable(GL_CULL_FACE)); break;
+		case Capability::LINE_SMOOTH:    GL_CALL(glEnable(GL_LINE_SMOOTH)); break;
+		case Capability::POLYGON_SMOOTH: GL_CALL(glEnable(GL_POLYGON_SMOOTH)); break;
+		case Capability::MULTISAMPLE:    GL_CALL(glEnable(GL_MULTISAMPLE)); break;
+		case Capability::TEXTURE_1D:     GL_CALL(glEnable(GL_TEXTURE_1D)); break;
+		case Capability::TEXTURE_2D:     GL_CALL(glEnable(GL_TEXTURE_2D)); break;
+		case Capability::TEXTURE_3D:     GL_CALL(glEnable(GL_TEXTURE_3D)); break;
+		case Capability::VSYNC:
 			SDL_GL_SetSwapInterval(1);
 			break;
-		case WIREFRAME:
+		case Capability::WIREFRAME:
 			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 			break;
 	}
@@ -72,19 +84,19 @@ void OpenGLContext::disable(const Capability cap)
 {
 	switch(cap)
 	{
-		case BLEND:          GL_CALL(glDisable(GL_BLEND)); break;
-		case DEPTH_TEST:     GL_CALL(glDisable(GL_DEPTH_TEST)); break;
-		case FACE_CULLING:   GL_CALL(glDisable(GL_CULL_FACE)); break;
-		case LINE_SMOOTH:    GL_CALL(glDisable(GL_LINE_SMOOTH)); break;
-		case POLYGON_SMOOTH: GL_CALL(glDisable(GL_POLYGON_SMOOTH)); break;
-		case MULTISAMPLE:    GL_CALL(glDisable(GL_MULTISAMPLE)); break;
-		case TEXTURE_1D:     GL_CALL(glDisable(GL_TEXTURE_1D)); break;
-		case TEXTURE_2D:     GL_CALL(glDisable(GL_TEXTURE_2D)); break;
-		case TEXTURE_3D:     GL_CALL(glDisable(GL_TEXTURE_3D)); break;
-		case VSYNC:
+		case Capability::BLEND:          GL_CALL(glDisable(GL_BLEND)); break;
+		case Capability::DEPTH_TEST:     GL_CALL(glDisable(GL_DEPTH_TEST)); break;
+		case Capability::FACE_CULLING:   GL_CALL(glDisable(GL_CULL_FACE)); break;
+		case Capability::LINE_SMOOTH:    GL_CALL(glDisable(GL_LINE_SMOOTH)); break;
+		case Capability::POLYGON_SMOOTH: GL_CALL(glDisable(GL_POLYGON_SMOOTH)); break;
+		case Capability::MULTISAMPLE:    GL_CALL(glDisable(GL_MULTISAMPLE)); break;
+		case Capability::TEXTURE_1D:     GL_CALL(glDisable(GL_TEXTURE_1D)); break;
+		case Capability::TEXTURE_2D:     GL_CALL(glDisable(GL_TEXTURE_2D)); break;
+		case Capability::TEXTURE_3D:     GL_CALL(glDisable(GL_TEXTURE_3D)); break;
+		case Capability::VSYNC:
 			SDL_GL_SetSwapInterval(0);
 			break;
-		case WIREFRAME:
+		case Capability::WIREFRAME:
 			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 			break;
 	}
@@ -92,7 +104,7 @@ void OpenGLContext::disable(const Capability cap)
 
 bool OpenGLContext::isEnabled(const Capability cap)
 {
-	const bool enabled = (bool)GL_CALL(glIsEnabled(cap));
+	const bool enabled = (bool)GL_CALL(glIsEnabled((uint32)cap));
 	return enabled;
 }
 
@@ -137,7 +149,7 @@ void OpenGLContext::saveScreenshot(string path)
 	GL_CALL(glReadBuffer(GL_BACK));
 
 	// NOTE: This function is not tested!
-	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelFormat::RGBA, PixelFormat::BYTE), data);
+	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE), data);
 	pixmap.flipY();
 	pixmap.saveToFile(path);
 
@@ -312,7 +324,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	// Create blank texture
 	uint8 pixel[4];
 	pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, PixelFormat(PixelFormat::RGBA, PixelFormat::UNSIGNED_BYTE), pixel));
+	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixel));
 
 	return m_window;
 }
@@ -321,10 +333,10 @@ void OpenGLContext::setupContext()
 {
 	// Set blend func
 	GL_CALL(glBlendFuncSeparate(
-			m_currentState->blendState.m_src,
-			m_currentState->blendState.m_dst,
-			m_currentState->blendState.m_alphaSrc,
-			m_currentState->blendState.m_alphaDst)
+		(uint32)m_currentState->blendState.m_src,
+		(uint32)m_currentState->blendState.m_dst,
+		(uint32)m_currentState->blendState.m_alphaSrc,
+		(uint32)m_currentState->blendState.m_alphaDst)
 	);
 
 	shared_ptr<Shader> shader = m_currentState->shader;
@@ -396,17 +408,18 @@ void OpenGLContext::setupContext()
 void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 {
 	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	for (int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+	for (uint32 i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
+		const uint64 attribOffset = fmt.getAttributeOffset(attrib);
 		switch (attrib)
 		{
-			case VERTEX_POSITION:
+			case VertexAttribute::VERTEX_POSITION:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
 					GL_CALL(glEnableVertexAttribArray(0));
-					GL_CALL(glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)));
+					GL_CALL(glVertexAttribPointer(0, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_TRUE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
 				}
 				else
 				{
@@ -415,12 +428,12 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VERTEX_COLOR:
+			case VertexAttribute::VERTEX_COLOR:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
 					GL_CALL(glEnableVertexAttribArray(1));
-					GL_CALL(glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)));
+					GL_CALL(glVertexAttribPointer(1, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_TRUE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
 				}
 				else
 				{
@@ -429,12 +442,12 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VERTEX_TEX_COORD:
+			case VertexAttribute::VERTEX_TEX_COORD:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
 					GL_CALL(glEnableVertexAttribArray(2));
-					GL_CALL(glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)));
+					GL_CALL(glVertexAttribPointer(2, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_FALSE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
 				}
 				else
 				{
@@ -443,12 +456,12 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VERTEX_NORMAL:
+			case VertexAttribute::VERTEX_NORMAL:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
 					GL_CALL(glEnableVertexAttribArray(3));
-					GL_CALL(glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)));
+					GL_CALL(glVertexAttribPointer(3, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_FALSE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
 				}
 				else
 				{
@@ -486,7 +499,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 	setupVertexAttributePointers(fmt);
 
 	// Draw primitives
-	GL_CALL(glDrawElements(type, indexCount, GL_UNSIGNED_INT, 0));
+	GL_CALL(glDrawElements((uint32)type, indexCount, GL_UNSIGNED_INT, 0));
 
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -512,7 +525,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 	setupVertexAttributePointers(fmt);
 
 	// Draw vbo
-	GL_CALL(glDrawElements(type, ibo->getSize(), GL_UNSIGNED_INT, 0));
+	GL_CALL(glDrawElements((uint32)type, ibo->getSize(), GL_UNSIGNED_INT, 0));
 
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -543,7 +556,7 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const Vertex *verti
 	setupVertexAttributePointers(fmt);
 
 	// Draw primitives
-	GL_CALL(glDrawArrays(type, 0, vertexCount));
+	GL_CALL(glDrawArrays((uint32)type, 0, vertexCount));
 
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -567,7 +580,7 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const VertexBuffer 
 	setupVertexAttributePointers(fmt);
 
 	// Draw vbo
-	GL_CALL(glDrawArrays(type, 0, vbo->getSize()));
+	GL_CALL(glDrawArrays((uint32)type, 0, vbo->getSize()));
 
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));

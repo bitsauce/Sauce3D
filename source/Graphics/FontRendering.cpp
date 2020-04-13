@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Math.h>
 #include <Sauce/Math/Vector.h>
@@ -196,7 +197,7 @@ private:
 		// Create sdf map
 		const int32 sdfMapSizeX = extents.x / m_subdivisionsPerSDFPixel;
 		const int32 sdfMapSizeY = extents.y / m_subdivisionsPerSDFPixel;
-		m_sdfAtlas = new Pixmap(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelFormat::R, PixelFormat::UNSIGNED_BYTE));
+		m_sdfAtlas = new Pixmap(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelComponents::R, PixelDatatype::UNSIGNED_BYTE));
 		{
 			for (int32 sdfMapY = 0; sdfMapY < sdfMapSizeY; ++sdfMapY)
 			{
@@ -304,8 +305,7 @@ private:
 			}
 		}
 		m_sdfAtlasTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(*m_sdfAtlas));
-		m_sdfAtlasTexture->setFiltering(Texture2D::LINEAR);
-		//m_sdfAtlasTexture->setWrapping(Texture2D::CLAMP_TO_EDGE);
+		m_sdfAtlasTexture->setFiltering(TextureFiltering::LINEAR);
 
 		delete[] glyphAtlasData;
 	}

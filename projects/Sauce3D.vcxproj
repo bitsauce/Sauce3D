@@ -116,6 +116,12 @@
     <Text Include="..\include\Sauce\ImGui\LICENSE.txt" />
     <Text Include="..\source\ImGui\LICENSE.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore" />
+    <None Include="..\LICENSE" />
+    <None Include=".licenseheader" />
+    <None Include="Sauce3D.ruleset" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F3F25B49-2C6B-4FF0-98FB-47695DF70B8A}</ProjectGuid>
     <RootNamespace>sanangeles</RootNamespace>
@@ -146,11 +152,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)</TargetName>
     <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -212,4 +220,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <PropertyGroup Condition="'$(Language)'=='C++'">
+    <IncludePath>$(SolutionDir)3rdparty;$(IncludePath)</IncludePath>
+    <CAExcludePath>$(SolutionDir)3rdparty;$(CAExcludePath)</CAExcludePath>
+  </PropertyGroup>
 </Project>

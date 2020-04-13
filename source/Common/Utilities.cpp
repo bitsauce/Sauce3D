@@ -6,12 +6,21 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <sstream>
 #include <fstream>
+
+// TODO: This will only work on windows i think
+#ifdef SAUCE_COMPILE_WINDOWS
+#include <direct.h>
+#else
+#include <unistd.h>
+#define MAX_PATH 1024
+#endif
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -137,18 +146,10 @@ void util::toDirectoryPath(string &path)
 	}
 }
 
-// TODO: This will only work on windows i think
-#ifdef SAUCE_COMPILE_WINDOWS
-#include <direct.h>
-#else
-#include <unistd.h>
-#define MAX_PATH 1024
-#endif
-
 string util::getWorkingDirectory()
 {
 	char cwd[MAX_PATH];
-	getcwd(cwd, MAX_PATH);
+	assert(getcwd(cwd, MAX_PATH) != nullptr);
 	return cwd;
 }
 
@@ -262,7 +263,7 @@ int util::decodeUTF16(const char *encodedBuffer, unsigned int *outLength, util::
 {
 	const unsigned char *buf = (const unsigned char *) encodedBuffer;
 	int value = 0;
-	if(byteOrder == util::DECODE_LITTLE_ENDIAN)
+	if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
 	{
 		value += buf[0];
 		value += (unsigned int) (buf[1]) << 8;
@@ -285,7 +286,7 @@ int util::decodeUTF16(const char *encodedBuffer, unsigned int *outLength, util::
 
 		// Read the second surrogate word
 		int value2 = 0;
-		if(byteOrder == util::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
 		{
 			value2 += buf[2];
 			value2 += (unsigned int) (buf[3]) << 8;
@@ -313,7 +314,7 @@ int util::encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *
 {
 	if(value < 0x10000)
 	{
-		if(byteOrder == util::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
 		{
 			outEncodedBuffer[0] = (value & 0xFF);
 			outEncodedBuffer[1] = ((value >> 8) & 0xFF);
@@ -333,7 +334,7 @@ int util::encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *
 		int surrogate1 = ((value >> 10) & 0x3FF) + 0xD800;
 		int surrogate2 = (value & 0x3FF) + 0xDC00;
 
-		if(byteOrder == util::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
 		{
 			outEncodedBuffer[0] = (surrogate1 & 0xFF);
 			outEncodedBuffer[1] = ((surrogate1 >> 8) & 0xFF);

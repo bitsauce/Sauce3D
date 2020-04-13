@@ -1,5 +1,8 @@
-#ifndef SAUCE_COMMON_H
-#define SAUCE_COMMON_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common/Engine.h>
 #include <Sauce/Common/Exception.h>
@@ -7,5 +10,3 @@
 #include <Sauce/Common/Event.h>
 #include <Sauce/Common/ResourceManager.h>
 #include <Sauce/Common/tinyxml2.h>
-
-#endif // SAUCE_COMMON_H

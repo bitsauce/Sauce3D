@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // dear imgui, v1.75
 // (demo code)
 
@@ -79,7 +82,8 @@ Index of this file:
 #endif
 
 #ifdef _MSC_VER
-#pragma warning (disable: 4996) // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#pragma warning (disable: 4996)  // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#pragma warning (disable: 26451) // @bitsauce: ignore "Arithmetric overflow" warning
 #endif
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wold-style-cast"             // warning : use of old-style cast                              // yes, they are more terse.

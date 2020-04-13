@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 //-----------------------------------------------------------------------------
 // COMPILE-TIME OPTIONS FOR DEAR IMGUI
 // Runtime options (clipboard callbacks, enabling various features, etc.) can generally be set via the ImGuiIO structure.

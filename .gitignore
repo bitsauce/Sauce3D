@@ -287,8 +287,5 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-# Custom
-!3rdparty/SDL_image/VisualC/Win32/Debug/lib*.dll
-!3rdparty/SDL_image/VisualC/Win32/Debug/zlib*.dll
-
+# Exclude Sauce3D build directory
 build/

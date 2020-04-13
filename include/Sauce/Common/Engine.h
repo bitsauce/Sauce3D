@@ -1,5 +1,8 @@
-#ifndef SAUCE_ENGINE_H
-#define SAUCE_ENGINE_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Math.h>
@@ -141,8 +144,8 @@ private:
  * \param	...	Variable argument list to format \p message with
  */
 
-#define THROW(str, ...)                   throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
-#define THROW_IF(cond, str, ...) if(cond) throw Exception(SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
+#define THROW(str, ...)                   throw Exception(RetCode::SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
+#define THROW_IF(cond, str, ...) if(cond) throw Exception(RetCode::SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
 
 END_SAUCE_NAMESPACE
 
@@ -940,5 +943,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_ENGINE_H

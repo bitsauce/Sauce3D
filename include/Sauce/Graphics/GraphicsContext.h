@@ -1,5 +1,8 @@
-#ifndef GRAPHICS_CONTEXT_H
-#define GRAPHICS_CONTEXT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Shader.h>
@@ -14,6 +17,22 @@ class VertexBuffer;
 class IndexBuffer;
 
 /**
+ * Primitive types.
+ * For rendering different kinds of primitives.
+ */
+enum class PrimitiveType : uint32
+{
+	// TODO: Remove OpenGL dependency
+	PRIMITIVE_POINTS = GL_POINTS,					///< Points. 1 vertex per primitive.
+	PRIMITIVE_LINES = GL_LINES,						///< Lines. 2 vertex per primitive.
+	PRIMITIVE_LINE_STRIP = GL_LINE_STRIP,			///< Line strip. 2 vertex for the first primitive, 1 for the next.
+	PRIMITIVE_LINE_LOOP = GL_LINE_LOOP,				///< Line loop. n lines
+	PRIMITIVE_TRIANGLES = GL_TRIANGLES,				///< Triangles. 3 vertex per primitive.
+	PRIMITIVE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP,	///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
+	PRIMITIVE_TRIANGLE_FAN = GL_TRIANGLE_FAN		///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
+};
+
+/**
  * \brief Handles primitive rendering to the screen.
  */
 class SAUCE_API GraphicsContext
@@ -25,13 +44,13 @@ public:
 	// State
 	struct State
 	{
-		State() :
-			width(0),
-			height(0),
-			texture(nullptr),
-			shader(nullptr),
-			blendState(BlendState::PRESET_ALPHA_BLEND),
-			renderTarget(nullptr)
+		State()
+			: width(0)
+			, height(0)
+			, texture(nullptr)
+			, shader(nullptr)
+			, blendState(BlendPreset::PRESET_ALPHA_BLEND)
+			, renderTarget(nullptr)
 		{
 			transformationMatrixStack.push(Matrix4());
 		}
@@ -49,21 +68,6 @@ public:
 	// TODO: For every set*, add a push*/pop* which uses the state stack
 	void pushState();
 	void popState();
-
-	/**
-	 * Primitive types.
-	 * For rendering different kinds of primitives.
-	 */
-	enum PrimitiveType
-	{
-		PRIMITIVE_POINTS = GL_POINTS,					///< Points. 1 vertex per primitive.
-		PRIMITIVE_LINES = GL_LINES,						///< Lines. 2 vertex per primitive.
-		PRIMITIVE_LINE_STRIP = GL_LINE_STRIP,			///< Line strip. 2 vertex for the first primitive, 1 for the next.
-		PRIMITIVE_LINE_LOOP = GL_LINE_LOOP,				///< Line loop. n lines
-		PRIMITIVE_TRIANGLES = GL_TRIANGLES,				///< Triangles. 3 vertex per primitive.
-		PRIMITIVE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP,	///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
-		PRIMITIVE_TRIANGLE_FAN = GL_TRIANGLE_FAN		///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
-	};
 
 	/**
 	 * Clearing buffer mask.
@@ -306,7 +310,7 @@ public:
 	  * Graphics capabilites.
 	  * For enabling and disabling certain rendering options.
 	  */
-	enum Capability
+	enum class Capability : uint32
 	{
 		BLEND,					///< Back buffer blending
 		DEPTH_TEST,				///< Depth testing
@@ -428,5 +432,3 @@ protected:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // GRAPHICS_CONTEXT_H

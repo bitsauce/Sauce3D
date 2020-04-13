@@ -1,5 +1,8 @@
-#ifndef SAUCE_GRAPHICS_H
-#define SAUCE_GRAPHICS_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Math.h>
 #include <Sauce/Graphics/GraphicsContext.h>
@@ -26,5 +29,3 @@ SAUCE_API extern Vector4F QUAD_VERTICES[4];
 SAUCE_API extern Vector2F QUAD_TEXCOORD[4];
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_GRAPHICS_H

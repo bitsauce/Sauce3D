@@ -1,54 +1,57 @@
-#ifndef SAUCE_PIXMAP_H
-#define SAUCE_PIXMAP_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
 BEGIN_SAUCE_NAMESPACE
 
+enum class PixelComponents : uint32
+{
+	R,
+	RG,
+	RGB,
+	RGBA,
+	INVALID_COMPONENTS
+};
+
+enum class PixelDatatype : uint32
+{
+	INT,
+	UNSIGNED_INT,
+	BYTE,
+	UNSIGNED_BYTE,
+	FLOAT,
+	INVALID_DATA_TYPE
+};
+
 class SAUCE_API PixelFormat
 {
 public:
-	enum Components
-	{
-		R,
-		RG,
-		RGB,
-		RGBA,
-		INVALID_COMPONENTS
-	};
-
-	enum DataType
-	{
-		INT,
-		UNSIGNED_INT,
-		BYTE,
-		UNSIGNED_BYTE,
-		FLOAT,
-		INVALID_DATA_TYPE
-	};
-
 	PixelFormat()
-		: m_components(Components::INVALID_COMPONENTS)
-		, m_dataType(DataType::INVALID_DATA_TYPE)
+		: m_components(PixelComponents::INVALID_COMPONENTS)
+		, m_datatype(PixelDatatype::INVALID_DATA_TYPE)
 	{
 	}
 
-	PixelFormat(Components components, DataType dataType)
+	PixelFormat(PixelComponents components, PixelDatatype datatype)
 		: m_components(components)
-		, m_dataType(dataType)
+		, m_datatype(datatype)
 	{
 	}
 
-	Components getComponents() const { return m_components; }
-	DataType getDataType() const { return m_dataType; }
+	PixelComponents getComponents() const { return m_components; }
+	PixelDatatype getDataType() const { return m_datatype; }
 
 	uint getComponentCount() const;
 	uint getDataTypeSizeInBytes() const;
 	uint getPixelSizeInBytes() const;
 
 private:
-	Components m_components;
-	DataType m_dataType;
+	PixelComponents m_components;
+	PixelDatatype m_datatype;
 };
 
 class SAUCE_API Pixmap
@@ -57,7 +60,7 @@ public:
 	Pixmap();
 	Pixmap(const uint width, const uint height, const PixelFormat& format, const uint8_t* data=nullptr);
 	Pixmap(const Pixmap& other);
-	Pixmap(Pixmap&& other);
+	Pixmap(Pixmap&& other) noexcept;
 	~Pixmap();
 
 	Pixmap &operator=(Pixmap &other);
@@ -72,10 +75,10 @@ public:
 
 	void flipY();
 
-	void fill(const void *data);
+	void fill(const void* data);
 	void clear();
 
-	const uchar *getData() const;
+	const uchar* getData() const;
 
 	void setPremultipliedAlpha(const bool premultipliedAlpha);
 
@@ -83,12 +86,10 @@ public:
 	static Pixmap loadFromFile(const string& imageFile);
 
 private:
-	uchar *m_data;
-	uint m_width;
-	uint m_height;
+	uchar* m_data;
+	uint   m_width;
+	uint   m_height;
 	PixelFormat m_format;
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_PIXMAP_H

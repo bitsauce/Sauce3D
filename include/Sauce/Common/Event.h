@@ -1,5 +1,8 @@
-#ifndef SAUCE_EVENT_H
-#define SAUCE_EVENT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 
@@ -383,5 +386,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_EVENT_H

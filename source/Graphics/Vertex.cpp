@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
@@ -25,39 +26,39 @@ VertexFormat::VertexFormat() :
 
 VertexFormat::VertexFormat(const VertexFormat &other)
 {
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+	for(uint32 i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 	{
 		m_attributes[i] = other.m_attributes[i];
 	}
 	m_vertexByteSize = other.m_vertexByteSize;
 }
 
-void VertexFormat::set(const VertexAttribute attrib, const int size, const DataType dataType)
+void VertexFormat::set(const VertexAttribute attrib, const int size, const Datatype datatype)
 {
 	if(size >= 0 && size <= 4)
 	{
-		m_attributes[attrib].elementCount = size;
-		m_attributes[attrib].dataType = dataType;
+		m_attributes[(uint32)attrib].elementCount = size;
+		m_attributes[(uint32)attrib].datatype = datatype;
 
 		m_vertexByteSize = 0;
-		for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+		for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 		{
 			VertexAttribute at = VertexAttribute(i);
 			if(isAttributeEnabled(at))
 			{
-				m_attributes[at].offset = m_vertexByteSize;
-				switch(getDataType(at))
+				m_attributes[(uint32)at].offset = m_vertexByteSize;
+				switch(getDatatype(at))
 				{
-				case SAUCE_FLOAT:
+				case Datatype::SAUCE_FLOAT:
 					m_vertexByteSize += sizeof(float)*getElementCount(at); break;
-				case SAUCE_UINT:
-				case SAUCE_INT:
+				case Datatype::SAUCE_UINT:
+				case Datatype::SAUCE_INT:
 					m_vertexByteSize += sizeof(int)*getElementCount(at); break;
-				case SAUCE_USHORT:
-				case SAUCE_SHORT:
+				case Datatype::SAUCE_USHORT:
+				case Datatype::SAUCE_SHORT:
 					m_vertexByteSize += sizeof(short)*getElementCount(at); break;
-				case SAUCE_UBYTE:
-				case SAUCE_BYTE:
+				case Datatype::SAUCE_UBYTE:
+				case Datatype::SAUCE_BYTE:
 					m_vertexByteSize += sizeof(char)*getElementCount(at); break;
 				}
 			}
@@ -71,12 +72,12 @@ void VertexFormat::set(const VertexAttribute attrib, const int size, const DataT
 
 int VertexFormat::getElementCount(const VertexAttribute attrib) const
 {
-	return m_attributes[attrib].elementCount;
+	return m_attributes[(uint32)attrib].elementCount;
 }
 
-DataType VertexFormat::getDataType(const VertexAttribute attrib) const
+Datatype VertexFormat::getDatatype(const VertexAttribute attrib) const
 {
-	return m_attributes[attrib].dataType;
+	return m_attributes[(uint32)attrib].datatype;
 }
 
 uint VertexFormat::getVertexSizeInBytes() const
@@ -86,18 +87,18 @@ uint VertexFormat::getVertexSizeInBytes() const
 
 uint VertexFormat::getAttributeOffset(const VertexAttribute attrib) const
 {
-	return m_attributes[attrib].offset;
+	return m_attributes[(uint32)attrib].offset;
 }
 
 bool VertexFormat::isAttributeEnabled(const VertexAttribute attrib) const
 {
-	return m_attributes[attrib].elementCount != 0;
+	return m_attributes[(uint32)attrib].elementCount != 0;
 }
 
-Vertex *VertexFormat::createVertices(const int count) const
+Vertex *VertexFormat::createVertices(const uint32 count) const
 {
 	Vertex *vertices = new Vertex[count];
-	for(int i = 0; i < count; i++)
+	for(uint32 i = 0; i < count; ++i)
 	{
 		vertices[i].setFormat(*this);
 	}
@@ -106,7 +107,7 @@ Vertex *VertexFormat::createVertices(const int count) const
 
 VertexFormat &VertexFormat::operator=(const VertexFormat &other)
 {
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+	for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 	{
 		m_attributes[i] = other.m_attributes[i];
 	}
@@ -116,7 +117,7 @@ VertexFormat &VertexFormat::operator=(const VertexFormat &other)
 
 bool VertexFormat::operator==(const VertexFormat &other)
 {
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+	for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 	{
 		if(m_attributes[i] != other.m_attributes[i])
 			return false;
@@ -128,14 +129,14 @@ bool VertexFormat::operator==(const VertexFormat &other)
 **	Vertex															**
 **********************************************************************/
 
-Vertex::Vertex() :
-	m_data(0)
+Vertex::Vertex()
+	: m_data(nullptr)
 {
 	setFormat(VertexFormat::s_vct);
 }
 
-Vertex::Vertex(const Vertex &other) :
-	m_data(0)
+Vertex::Vertex(const Vertex &other)
+	: m_data(nullptr)
 {
 	setFormat(other.m_format);
 	memcpy(m_data, other.m_data, m_format.getVertexSizeInBytes());
@@ -567,7 +568,7 @@ Vertex &Vertex::operator=(const Vertex &other)
 
 void Vertex::print()
 {
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
+	for (int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
 		if(m_format.isAttributeEnabled(attrib))
@@ -576,29 +577,29 @@ void Vertex::print()
 			ss << "Attrib: ";
 			switch(attrib)
 			{
-				case VERTEX_POSITION: ss << "Position: "; break;
-				case VERTEX_COLOR: ss << "Color: "; break;
-				case VERTEX_TEX_COORD: ss << "Tex Coord: "; break;
-				case VERTEX_NORMAL: ss << "Normal: "; break;
+				case VertexAttribute::VERTEX_POSITION: ss << "Position: "; break;
+				case VertexAttribute::VERTEX_COLOR: ss << "Color: "; break;
+				case VertexAttribute::VERTEX_TEX_COORD: ss << "Tex Coord: "; break;
+				case VertexAttribute::VERTEX_NORMAL: ss << "Normal: "; break;
 			}
 
 			for(int j = 0; j < m_format.getElementCount(attrib); j++)
 			{
-				switch(m_format.getDataType(attrib))
+				switch(m_format.getDatatype(attrib))
 				{
-				case SAUCE_FLOAT:
+				case Datatype::SAUCE_FLOAT:
 					ss << ((float*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case SAUCE_UINT:
-				case SAUCE_INT:
+				case Datatype::SAUCE_UINT:
+				case Datatype::SAUCE_INT:
 					ss << ((int*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case SAUCE_USHORT:
-				case SAUCE_SHORT:
+				case Datatype::SAUCE_USHORT:
+				case Datatype::SAUCE_SHORT:
 					ss << ((short*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case SAUCE_UBYTE:
-				case SAUCE_BYTE:
+				case Datatype::SAUCE_UBYTE:
+				case Datatype::SAUCE_BYTE:
 					ss << (int)((char*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
 				}

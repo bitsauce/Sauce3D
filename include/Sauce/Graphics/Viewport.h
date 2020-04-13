@@ -1,5 +1,8 @@
-#ifndef SAUCE_VIEWPORT_H
-#define SAUCE_VIEWPORT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
@@ -18,5 +21,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_VIEWPORT_H

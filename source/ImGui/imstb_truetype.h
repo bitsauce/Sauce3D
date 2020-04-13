@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // [DEAR IMGUI]
 // This is a slightly modified version of stb_truetype.h 1.20.
 // Mostly fixing for compiler and static analyzer warnings.
@@ -268,6 +271,13 @@
 //   Pool allocations:  7.72 s     6.34 s
 //   Inline sort     :  6.54 s     5.65 s
 //   New rasterizer  :  5.63 s     5.00 s
+
+// Visual Studio warnings
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable: 26451)    // @bitsauce: ignore "Arithmetric overflow" warning
+#pragma warning (disable: 6385)     // @bitsauce: ignore "Reading invalid data" warning
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////

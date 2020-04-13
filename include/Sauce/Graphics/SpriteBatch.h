@@ -1,5 +1,8 @@
-#ifndef SAUCE_BATCH_H
-#define SAUCE_BATCH_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Vertex.h>
@@ -22,7 +25,7 @@ public:
 	SpriteBatch(const uint maxSprites = 2048);
 	~SpriteBatch();
 
-	enum SpriteSortMode
+	enum class SpriteSortMode : uint32
 	{
 		BACK_TO_FRONT,
 		DEFERRED,
@@ -33,7 +36,7 @@ public:
 
 	struct State
 	{
-		State(const SpriteSortMode mode = DEFERRED, const BlendState blendState = BlendState::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix = Matrix4(), shared_ptr<Shader> shader = nullptr) :
+		State(const SpriteSortMode mode=SpriteSortMode::DEFERRED, const BlendState blendState=BlendPreset::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix=Matrix4(), shared_ptr<Shader> shader=nullptr) :
 			mode(mode),
 			blendState(blendState),
 			transformationMatix(transformationMatix),
@@ -71,5 +74,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_BATCH_H

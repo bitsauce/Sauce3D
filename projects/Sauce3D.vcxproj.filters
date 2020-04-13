@@ -353,4 +353,10 @@
       <Filter>Source\ImGui</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Sauce3D.ruleset" />
+    <None Include="..\LICENSE" />
+    <None Include="..\.gitignore" />
+    <None Include=".licenseheader" />
+  </ItemGroup>
 </Project>

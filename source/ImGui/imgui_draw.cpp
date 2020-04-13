@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // dear imgui, v1.75
 // (drawing and font code)
 
@@ -53,6 +56,10 @@ Index of this file:
 #pragma warning (disable: 4127) // condition expression is constant
 #pragma warning (disable: 4505) // unreferenced local function has been removed (stb stuff)
 #pragma warning (disable: 4996) // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#pragma warning (disable: 6255) // @bitsauce: ignore "_alloca" warning
+#pragma warning (disable: 26451) // @bitsauce: ignore "Arithmetric overflow" warning
+#pragma warning (disable: 26495) // @bitsauce: ignore "Uninitialized member variable" warning
+#pragma warning (disable: 6011) // @bitsauce: ignore "Dereferencing NULL pointer" warning
 #endif
 
 // Clang/GCC warnings with -Weverything

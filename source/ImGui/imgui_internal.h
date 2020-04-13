@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // dear imgui, v1.75
 // (internal structures/api)
 
@@ -41,6 +44,8 @@ Index of this file:
 #ifdef _MSC_VER
 #pragma warning (push)
 #pragma warning (disable: 4251) // class 'xxx' needs to have dll-interface to be used by clients of struct 'xxx' // when IMGUI_API is set to__declspec(dllexport)
+#pragma warning (disable: 26812) // @bitsauce: ignore "Prefer 'enum class' over 'enum'" warning
+#pragma warning (disable: 26495) // @bitsauce: ignore "Uninitialize member variable" warning
 #endif
 
 // Clang/GCC warnings with -Weverything

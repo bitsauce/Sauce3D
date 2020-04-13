@@ -1,3 +1,6 @@
+// Copied from: https://github.com/ocornut/imgui
+// File may have been modified for use in Sauce3D
+
 // dear imgui, v1.75
 // (headers)
 
@@ -106,6 +109,13 @@ Index of this file:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"                  // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wclass-memaccess"          // [__GNUC__ >= 8] warning: 'memset/memcpy' clearing/writing an object of type 'xxxx' with no trivial copy-assignment; use assignment or value-initialization instead
+#endif
+
+// Visual Studio warnings
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable: 26495) // @bitsauce: ignore "Uninitialize member variable" warning
+#pragma warning (disable: 6011)  // @bitsauce: ignore "Dereferencing NULL pointer" warning
 #endif
 
 //-----------------------------------------------------------------------------
@@ -2271,6 +2281,10 @@ struct ImFont
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning (pop)
 #endif
 
 // Include imgui_user.h at the end of imgui.h (convenient for user to only explicitly include vanilla imgui.h)
