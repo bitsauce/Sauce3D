@@ -1,3 +1,6 @@
+// Copied from: https://github.com/leethomason/tinyxml2
+// File may have been modified for use in Sauce3D
+
 /*
 Original code by Lee Thomason (www.grinninglizard.com)
 
@@ -21,8 +24,7 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#ifndef TINYXML2_INCLUDED
-#define TINYXML2_INCLUDED
+#pragma once
 
 #if defined(ANDROID_NDK) || defined(__BORLANDC__) || defined(__QNXNTO__)
 #   include <ctype.h>
@@ -58,6 +60,9 @@ distribution.
 #ifdef _MSC_VER
 #   pragma warning(push)
 #   pragma warning(disable: 4251)
+#   pragma warning(disable: 6319)  // @bitsauce: ignore "Use of the comma-operator in a tested expression" warning
+#   pragma warning(disable: 26495) // @bitsauce: ignore "Uninitialize member variable" warning
+#   pragma warning(disable: 26812) // @bitsauce: ignore "Prefer 'enum class' over 'enum'" warning
 #endif
 
 #ifdef _WIN32
@@ -2108,5 +2113,3 @@ private:
 #if defined(_MSC_VER)
 #   pragma warning(pop)
 #endif
-
-#endif // TINYXML2_INCLUDED

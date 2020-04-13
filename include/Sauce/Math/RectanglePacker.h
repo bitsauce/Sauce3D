@@ -1,5 +1,8 @@
-#ifndef SAUCE_RECTANGLE_PACKER_H
-#define SAUCE_RECTANGLE_PACKER_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 
@@ -27,17 +30,19 @@ public:
 	{
 		friend class RectanglePacker;
 	public:
-		Entry() : 
-			valid(false)
+		Entry()
+			: Rect(0, 0, 0, 0)
+			, valid(false)
+			, key("")
+			, data(nullptr)
 		{
-
 		}
 
-		Entry(const string key, const uint width, const uint height, void *data) :
-			Rect(0, 0, width, height),
-			valid(true),
-			key(key),
-			data(data)
+		Entry(const string key, const uint width, const uint height, void *data)
+			: Rect(0, 0, width, height)
+			, valid(true)
+			, key(key)
+			, data(data)
 		{
 		}
 
@@ -96,5 +101,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_RECTANGLE_PACKER_H

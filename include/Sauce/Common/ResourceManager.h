@@ -1,8 +1,11 @@
-#ifndef SAUCE_RESOURCE_MANAGER_H
-#define SAUCE_RESOURCE_MANAGER_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
-#include <Sauce/Common/Game.h>
+#include <Sauce/Common/Engine.h>
 
 /*********************************************************************
 **	Resource manager												**
@@ -24,7 +27,7 @@ public:
 template<typename T>
 using ResourceGuard = weak_ptr<T>;
 
-enum ResourceType
+enum class ResourceType : uint32
 {
 	RESOURCE_TYPE_TEXTURE,
 	RESOURCE_TYPE_SHADER,
@@ -139,5 +142,3 @@ Resource<T>::Resource(const string &name) :
 }
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_RESOURCE_MANAGER_H

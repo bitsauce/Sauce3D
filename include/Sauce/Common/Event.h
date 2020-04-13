@@ -1,50 +1,113 @@
-#ifndef SAUCE_EVENT_H
-#define SAUCE_EVENT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-enum EventType
+/*********************************************************************
+**	Event types														**
+**********************************************************************/
+#define START_EVENT_ENUM PREV_MAX_EVENT_ID = (uint32)LAST_DEFINED_EVENT_ENUM::MAX_EVENT_ID
+#define END_EVENT_ENUM MAX_EVENT_ID
+
+enum class InvalidEventType : int32
 {
-	EVENT_START,
-	EVENT_END,
-
-	EVENT_TICK,
-	EVENT_DRAW,
-	EVENT_STEP_BEGIN,
-	EVENT_STEP_END,
-	EVENT_WINDOW_SIZE_CHANGED,
-	EVENT_TEXT_INPUT,
-
-	EVENT_KEY_DOWN,
-	EVENT_KEY_UP,
-	EVENT_KEY_REPEAT,
-
-	EVENT_MOUSE_UP,
-	EVENT_MOUSE_DOWN,
-	EVENT_MOUSE_MOVE,
-	EVENT_MOUSE_WHEEL,
-
-	EVENT_CONTROLLER_BUTTON_DOWN,
-	EVENT_CONTROLLER_BUTTON_UP,
-	EVENT_CONTROLLER_BUTTON_REPEAT,
-	EVENT_CONTROLLER_AXIS,
-
-	EVENT_CUSTOM
+	INVALID      = -1,
+	MAX_EVENT_ID = 0
 };
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM InvalidEventType
+
+enum class CoreEventType : int32
+{
+	START_EVENT_ENUM,
+	TICK,
+	DRAW,
+	TEXT_INPUT,
+	CONTROLLER_AXIS,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM CoreEventType
+
+enum class WindowEventType : int32
+{
+	START_EVENT_ENUM,
+	SIZE_CHANGED,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM WindowEventType
+
+enum class GameEventType : int32
+{
+	START_EVENT_ENUM,
+	START,
+	END,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM GameEventType
+
+enum class StepEventType : int32
+{
+	START_EVENT_ENUM,
+	BEGIN,
+	END,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM StepEventType
+
+enum class KeyEventType : int32
+{
+	START_EVENT_ENUM,
+	DOWN,
+	UP,
+	REPEAT,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM KeyEventType
+
+enum class MouseEventType : int32
+{
+	START_EVENT_ENUM,
+	MOVE,
+	DOWN,
+	UP,
+	WHEEL,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM MouseEventType
+
+enum class ControllerButtonEventType : int32
+{
+	START_EVENT_ENUM,
+	DOWN,
+	UP,
+	REPEAT,
+	END_EVENT_ENUM
+};
+#undef LAST_DEFINED_EVENT_ENUM
+#define LAST_DEFINED_EVENT_ENUM ControllerButtonEventType
 
 class SAUCE_API Event
 {
 protected:
-	Event(const uint type) :
+	Event(const int32 type) :
 		m_type(type),
 		m_userData(0)
 	{
 	}
 
 public:
-	uint getType() const
+	int32 getType() const
 	{
 		return m_type;
 	}
@@ -60,15 +123,15 @@ public:
 	}
 
 private:
-	const uint m_type;
-	void *m_userData;
+	const int32 m_type;
+	void*       m_userData;
 };
 
 class SAUCE_API TextEvent : public Event
 {
 public:
 	TextEvent(const char c) :
-		Event(EVENT_TEXT_INPUT),
+		Event((int32)CoreEventType::TEXT_INPUT),
 		m_char(c)
 	{
 	}
@@ -82,14 +145,11 @@ private:
 	const char m_char;
 };
 
-class GraphicsContext;
-class SpriteBatch;
-
 class SAUCE_API DrawEvent : public Event
 {
 public:
-	DrawEvent(const float alpha, const float delta, GraphicsContext *graphicsContext) :
-		Event(EVENT_DRAW),
+	DrawEvent(const float alpha, const float delta, class GraphicsContext *graphicsContext) :
+		Event((int32)CoreEventType::DRAW),
 		m_alpha(alpha),
 		m_delta(delta),
 		m_graphicsContext(graphicsContext)
@@ -106,21 +166,21 @@ public:
 		return m_delta;
 	}
 
-	GraphicsContext *getGraphicsContext() const
+	class GraphicsContext *getGraphicsContext() const
 	{
 		return m_graphicsContext;
 	}
 
 private:
 	const float m_alpha, m_delta;
-	GraphicsContext *m_graphicsContext;
+	class GraphicsContext *m_graphicsContext;
 };
 
 class SAUCE_API TickEvent : public Event
 {
 public:
 	TickEvent(const float delta) :
-		Event(EVENT_TICK),
+		Event((int32)CoreEventType::TICK),
 		m_delta(delta)
 	{
 	}
@@ -134,55 +194,42 @@ private:
 	const float m_delta;
 };
 
-class Window;
-
 class SAUCE_API WindowEvent : public Event
 {
 public:
-	enum WindowEventType
-	{
-		SIZE_CHANGED = EVENT_WINDOW_SIZE_CHANGED
-	};
-
-	WindowEvent(const WindowEventType type, Window *window, const Sint32 width, const Sint32 height) :
-		Event(type),
+	WindowEvent(const WindowEventType type, class Window *window, const int32 width, const int32 height) :
+		Event((int32)type),
 		m_window(window),
 		m_width(width),
 		m_height(height)
 	{
 	}
 
-	Window *getWindow() const
+	class Window *getWindow() const
 	{
 		return m_window;
 	}
 
-	Sint32 getWidth() const
+	int32 getWidth() const
 	{
 		return m_width;
 	}
 
-	Sint32 getHeight() const
+	int32 getHeight() const
 	{
 		return m_height;
 	}
 
 private:
-	Window *m_window;
-	Sint32 m_width, m_height;
+	class Window *m_window;
+	int32 m_width, m_height;
 };
 
 class SAUCE_API GameEvent : public Event
 {
 public:
-	enum GameEventType
-	{
-		START = EVENT_START,
-		END = EVENT_END
-	};
-
 	GameEvent(const GameEventType type) :
-		Event(type)
+		Event((int32)type)
 	{
 	}
 };
@@ -190,14 +237,8 @@ public:
 class SAUCE_API StepEvent : public Event
 {
 public:
-	enum StepEventType
-	{
-		BEGIN = EVENT_STEP_BEGIN,
-		END = EVENT_STEP_END
-	};
-
 	StepEvent(const StepEventType type) :
-		Event(type)
+		Event((int32)type)
 	{
 	}
 };
@@ -206,14 +247,14 @@ class SAUCE_API InputEvent : public Event
 {
 protected:
 	InputEvent(const uint type, InputManager *inputManager, const InputButton button) :
-		Event(type),
+		Event((int32)type),
 		m_inputManager(inputManager),
 		m_inputButton(button)
 	{
 	}
 
 	InputEvent(const uint type, InputManager *inputManager) :
-		Event(type),
+		Event((int32)type),
 		m_inputManager(inputManager),
 		m_inputButton()
 	{
@@ -254,15 +295,8 @@ public:
 		ALT = KMOD_ALT
 	};
 
-	enum KeyEventType
-	{
-		DOWN = EVENT_KEY_DOWN,
-		UP = EVENT_KEY_UP,
-		REPEAT = EVENT_KEY_REPEAT
-	};
-
 	KeyEvent(const KeyEventType type, InputManager *inputManager, const InputButton inputButton, const Uint16 modifiers) :
-		InputEvent(type, inputManager, inputButton),
+		InputEvent((int32)type, inputManager, inputButton),
 		m_modifiers(modifiers)
 	{
 	}
@@ -286,16 +320,8 @@ private:
 class SAUCE_API MouseEvent : public InputEvent
 {
 public:
-	enum MouseEventType
-	{
-		MOVE = EVENT_MOUSE_MOVE,
-		DOWN = EVENT_MOUSE_DOWN,
-		UP = EVENT_MOUSE_UP,
-		WHEEL = EVENT_MOUSE_WHEEL
-	};
-
-	MouseEvent(const MouseEventType type, InputManager *inputManager, const Sint32 x, const Sint32 y, const MouseButton button, const Sint32 wheelX, const Sint32 wheelY) :
-		InputEvent(type, inputManager, button),
+	MouseEvent(const MouseEventType type, InputManager *inputManager, const int32 x, const int32 y, const MouseButton button, const int32 wheelX, const int32 wheelY) :
+		InputEvent((int32)type, inputManager, button),
 		m_x(x),
 		m_y(y),
 		m_wheelX(wheelX),
@@ -308,48 +334,41 @@ public:
 		return (MouseButton) getInputButton().getCode();
 	}
 
-	Sint32 getX() const
+	int32 getX() const
 	{
 		return m_x;
 	}
 
-	Sint32 getY() const
+	int32 getY() const
 	{
 		return m_y;
 	}
 
-	Vector2<Sint32> getPosition() const
+	Vector2<int32> getPosition() const
 	{
-		return Vector2<Sint32>(m_x, m_y);
+		return Vector2<int32>(m_x, m_y);
 	}
 
-	Sint32 getWheelX() const
+	int32 getWheelX() const
 	{
 		return m_wheelX;
 	}
 
-	Sint32 getWheelY() const
+	int32 getWheelY() const
 	{
 		return m_wheelY;
 	}
 
 private:
-	const Sint32 m_x, m_y;
-	const Sint32 m_wheelX, m_wheelY;
+	const int32 m_x, m_y;
+	const int32 m_wheelX, m_wheelY;
 };
 
 class SAUCE_API ControllerButtonEvent : public InputEvent
 {
 public:
-	enum ControllerButtonEventType
-	{
-		DOWN = EVENT_CONTROLLER_BUTTON_DOWN,
-		UP = EVENT_CONTROLLER_BUTTON_UP,
-		REPEAT = EVENT_CONTROLLER_BUTTON_REPEAT
-	};
-
 	ControllerButtonEvent(const ControllerButtonEventType type, InputManager *inputManager, const ControllerButton controllerButton) :
-		InputEvent(type, inputManager, controllerButton)
+		InputEvent((int32)type, inputManager, controllerButton)
 	{
 	}
 };
@@ -358,7 +377,7 @@ class SAUCE_API ControllerAxisEvent : public InputEvent
 {
 public:
 	ControllerAxisEvent(InputManager *inputManager, const ControllerAxis axis, const short value) :
-		InputEvent(EVENT_CONTROLLER_AXIS, inputManager),
+		InputEvent((int32)CoreEventType::CONTROLLER_AXIS, inputManager),
 		m_axis(axis),
 		m_value(value)
 	{
@@ -373,5 +392,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_EVENT_H

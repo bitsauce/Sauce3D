@@ -6,9 +6,9 @@ class MinimalGame : public Game
 {
 public:
 	/** 
-	 * onStart() event.
-	 * This event called once the framework has initialized, but before the first tick.
-	 * Load resources and setup the window here.
+	 * onStart():
+	 * This event is called after the framework has initialized and before the first tick.
+	 * Load resources and set up the game window here.
 	 */
 	void onStart(GameEvent *e)
 	{
@@ -16,9 +16,9 @@ public:
 	}
 
 	/**
-	 * onEnd() event.
-	 * This event is called when the game is closing.
-	 * Free all resources and save game state here.
+	 * onEnd():
+	 * This event is called before the framework has fully closed.
+	 * Free all resources and save the game state here.
 	 */
 	void onEnd(GameEvent *e)
 	{
@@ -26,9 +26,9 @@ public:
 	}
 
 	/**
-	 * onTick() event.
+	 * onTick():
 	 * This event is called when the framework should update the game state.
-	 * Things like physics and other simulations should go here.
+	 * Things like physics and gameplay code should go here.
 	 */
 	void onTick(TickEvent *e)
 	{
@@ -36,9 +36,9 @@ public:
 	}
 
 	/**
-	 * onDraw event.
-	 * This event is called then the framework should draw the current game state to the screen.
-	 * Using the graphics context provided by e->getGraphicsContext() is generally how we draw to the screen. 
+	 * onDraw():
+	 * This event is called when the framework is drawing the current state to the screen.
+	 * Use the graphics context provided by e->getGraphicsContext() to draw to the screen. 
 	 */
 	void onDraw(DrawEvent *e)
 	{
@@ -56,7 +56,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	 */
 	GameDesc desc;
 	desc.name = "Minimal Sample";
-	desc.workingDirectory = "../Data";
+	desc.workingDirectory = "../Assets";
 	desc.flags = SAUCE_WINDOW_RESIZABLE;
 	desc.graphicsBackend = SAUCE_OPENGL_3;
 

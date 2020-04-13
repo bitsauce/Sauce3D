@@ -1,33 +1,46 @@
-IF YOU ARE HAVING AN ISSUE COMPILING/LINKING/RUNNING/DISPLAYING/ADDING FONTS/WIRING INPUTS, please post on the "Getting Started" Discourse forum:
-https://discourse.dearimgui.org/c/getting-started
+(Click "Preview" above ^ to turn URL into clickable links)
 
-Otherwise, you may use this Issue Tracker to ask for help and submit bug reports, feature requests or suggestions. PLEASE CAREFULLY READ THIS DOCUMENT before submitting any issue:
-https://github.com/ocornut/imgui/blob/master/.github/CONTRIBUTING.md
-(Click "Preview" to turn the URL above into a clickable link)
+1. PLEASE CAREFULLY READ: [FAQ](https://github.com/ocornut/imgui/blob/master/docs/FAQ.md)
 
-PLEASE MAKE SURE that you have: read the FAQ in imgui.cpp; explored the contents of ShowDemoWindow() including the Examples menu; searched among Issues; used your IDE to search for keywords in all sources and text files; and read the CONTRIBUTING.md file linked above.
+2. PLEASE CAREFULLY READ: [Issue Submitting Guidelines](https://github.com/ocornut/imgui/issues/2261)
 
-(Delete everything above this section before submitting your issue.)
+3. FOR FIRST-TIME USERS ISSUES COMPILING/LINKING/RUNNING/LOADING FONTS,  please use the [Discord server](http://discord.dearimgui.org).
+
+4. PLEASE MAKE SURE that you have: read the FAQ; explored the contents of `ShowDemoWindow()` including the Examples menu; searched among Issues; used your IDE to search for keywords in all sources and text files; and read the link provided in (1) (2).
+
+5. Be mindful that messages are being sent to the e-mail box of "Watching" users. Try to proof-read your messages before sending them. Edits are not seen by those users.
+
+6. Delete points 1-6 and PLEASE FILL THE TEMPLATE BELOW before submitting your issue.
+
+Thank you!
 
 ----
 
+_(you may also go to Demo>About Window, and click "Config/Build Information" to obtain a bunch of detailed information that you can paste here)_
+
 **Version/Branch of Dear ImGui:**
 
-XXX
+Version: XXX
+Branch: XXX _(master/viewport/docking/etc.)_
 
-**Back-end file/Renderer/OS:** _(or specify if you are using a custom engine back-end)_
+**Back-end/Renderer/Compiler/OS**
 
-Back-ends: imgui_impl_XXX.cpp + imgui_impl_XXX.cpp
-OS: XXX 
-Compiler: XXX _(if the question is related to building)_
+Back-ends: imgui_impl_XXX.cpp + imgui_impl_XXX.cpp _(or specify if using a custom engine/back-end)_
+Compiler: XXX _(if the question is related to building or platform specific features)_
+Operating System: XXX
 
-**My Issue/Question:** _(please provide context)_
+**My Issue/Question:**
 
-**Standalone, minimal, complete and verifiable example:** _(see CONTRIBUTING.md)_
+XXX _(please provide as much context as possible)_
+
+**Screenshots/Video**
+
+XXX _(you can drag files here)_
+
+**Standalone, minimal, complete and verifiable example:** _(see https://github.com/ocornut/imgui/issues/2261)_
 ```
+// Here's some code anyone can copy and paste to reproduce your issue
 ImGui::Begin("Example Bug");
 MoreCodeToExplainMyIssue();
 ImGui::End();
 ```
-
-**Screenshots/Video** _(you can drag files here)_

@@ -1,3 +1,6 @@
+// Copied from: https://github.com/leethomason/tinyxml2
+// File may have been modified for use in Sauce3D
+
 /*
 Original code by Lee Thomason (www.grinninglizard.com)
 
@@ -34,6 +37,14 @@ This code has been altered to fit the needs of the Sauce3D.
 #else
 #   include <cstddef>
 #   include <cstdarg>
+#endif
+
+#ifdef _MSC_VER
+#   pragma warning (disable: 26812) // @bitsauce: ignore "Prefer 'enum class' over 'enum'" warning
+#   pragma warning (disable: 26451) // @bitsauce: ignore "Arithmetric overflow" warning
+#   pragma warning (disable: 6011)  // @bitsauce: ignore "Dereferencing NULL pointer" warning
+#   pragma warning (disable: 26495) // @bitsauce: ignore "Uninitialize member variable" warning
+#   pragma warning (disable: 6319)  // @bitsauce: ignore "Use of the comma-operator in a tested expression..." warning
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)
@@ -2445,4 +2456,3 @@ bool XMLPrinter::Visit( const XMLUnknown& unknown )
 }
 
 }   // namespace tinyxml2
-

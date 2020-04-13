@@ -1,3 +1,15 @@
+//     _____                        ______             _            
+//    / ____|                      |  ____|           (_)           
+//   | (___   __ _ _   _  ___ ___  | |__   _ __   __ _ _ _ __   ___ 
+//    \___ \ / _` | | | |/ __/ _ \ |  __| | '_ \ / _` | | '_ \ / _ \
+//    ____) | (_| | |_| | (_|  __/ | |____| | | | (_| | | | | |  __/
+//   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
+//                                                __/ |             
+//                                               |___/              
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #include <Sauce/Graphics.h>
 #include <Sauce/Graphics/OpenGL/OpenGLRenderTarget.h>
 #include <Sauce/Graphics/OpenGL/OpenGLTexture.h>
@@ -6,7 +18,7 @@
 BEGIN_SAUCE_NAMESPACE
 
 #ifdef SAUCE_DEBUG
-void checkError(const string &info)
+void checkOpenGLError(const string &info)
 {
 	GLenum error;
 	if((error = glGetError()) != GL_NO_ERROR)
@@ -26,10 +38,6 @@ void checkError(const string &info)
 		THROW("glGetError() returned 0x%X (%s) from function %s", error, errorType.c_str(), info.c_str());
 	}
 }
-
-#define GL_CHECK_ERROR(info) checkError(#info)
-#else
-#define GL_CHECK_ERROR(info)
 #endif
 
 // Global GL objects for easy rendering
@@ -45,102 +53,105 @@ OpenGLContext::OpenGLContext(const int major, const int minor) :
 
 OpenGLContext::~OpenGLContext()
 {
-	glDeleteBuffers(1, &s_vbo);
-	glDeleteVertexArrays(1, &s_vao);
+	GL_CALL(glDeleteBuffers(1, &s_vbo));
+	GL_CALL(glDeleteVertexArrays(1, &s_vao));
 	SDL_GL_DeleteContext(m_context);
 }
 
 void OpenGLContext::enable(const Capability cap)
 {
-	switch(cap) {
-		case BLEND: glEnable(GL_BLEND); break;
-		case DEPTH_TEST: glEnable(GL_DEPTH_TEST); break;
-		case FACE_CULLING: glEnable(GL_CULL_FACE); break;
-		case LINE_SMOOTH: glEnable(GL_LINE_SMOOTH); break;
-		case POLYGON_SMOOTH: glEnable(GL_POLYGON_SMOOTH); break;
-		case MULTISAMPLE: glEnable(GL_MULTISAMPLE); break;
-		case TEXTURE_1D: glEnable(GL_TEXTURE_1D); break;
-		case TEXTURE_2D: glEnable(GL_TEXTURE_2D); break;
-		case TEXTURE_3D: glEnable(GL_TEXTURE_3D); break;
-		case VSYNC:
+	switch(cap)
+	{
+		case Capability::BLEND:          GL_CALL(glEnable(GL_BLEND)); break;
+		case Capability::DEPTH_TEST:     GL_CALL(glEnable(GL_DEPTH_TEST)); break;
+		case Capability::FACE_CULLING:   GL_CALL(glEnable(GL_CULL_FACE)); break;
+		case Capability::LINE_SMOOTH:    GL_CALL(glEnable(GL_LINE_SMOOTH)); break;
+		case Capability::POLYGON_SMOOTH: GL_CALL(glEnable(GL_POLYGON_SMOOTH)); break;
+		case Capability::MULTISAMPLE:    GL_CALL(glEnable(GL_MULTISAMPLE)); break;
+		case Capability::TEXTURE_1D:     GL_CALL(glEnable(GL_TEXTURE_1D)); break;
+		case Capability::TEXTURE_2D:     GL_CALL(glEnable(GL_TEXTURE_2D)); break;
+		case Capability::TEXTURE_3D:     GL_CALL(glEnable(GL_TEXTURE_3D)); break;
+		case Capability::VSYNC:
 			SDL_GL_SetSwapInterval(1);
 			break;
-		case WIREFRAME:
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		case Capability::WIREFRAME:
+			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 			break;
 	}
 }
 
 void OpenGLContext::disable(const Capability cap)
 {
-	switch(cap) {
-		case BLEND: glDisable(GL_BLEND); break;
-		case DEPTH_TEST: glDisable(GL_DEPTH_TEST); break;
-		case FACE_CULLING: glDisable(GL_CULL_FACE); break;
-		case LINE_SMOOTH: glDisable(GL_LINE_SMOOTH); break;
-		case POLYGON_SMOOTH: glDisable(GL_POLYGON_SMOOTH); break;
-		case MULTISAMPLE: glDisable(GL_MULTISAMPLE); break;
-		case TEXTURE_1D: glDisable(GL_TEXTURE_1D); break;
-		case TEXTURE_2D: glDisable(GL_TEXTURE_2D); break;
-		case TEXTURE_3D: glDisable(GL_TEXTURE_3D); break;
-		case VSYNC:
+	switch(cap)
+	{
+		case Capability::BLEND:          GL_CALL(glDisable(GL_BLEND)); break;
+		case Capability::DEPTH_TEST:     GL_CALL(glDisable(GL_DEPTH_TEST)); break;
+		case Capability::FACE_CULLING:   GL_CALL(glDisable(GL_CULL_FACE)); break;
+		case Capability::LINE_SMOOTH:    GL_CALL(glDisable(GL_LINE_SMOOTH)); break;
+		case Capability::POLYGON_SMOOTH: GL_CALL(glDisable(GL_POLYGON_SMOOTH)); break;
+		case Capability::MULTISAMPLE:    GL_CALL(glDisable(GL_MULTISAMPLE)); break;
+		case Capability::TEXTURE_1D:     GL_CALL(glDisable(GL_TEXTURE_1D)); break;
+		case Capability::TEXTURE_2D:     GL_CALL(glDisable(GL_TEXTURE_2D)); break;
+		case Capability::TEXTURE_3D:     GL_CALL(glDisable(GL_TEXTURE_3D)); break;
+		case Capability::VSYNC:
 			SDL_GL_SetSwapInterval(0);
 			break;
-		case WIREFRAME:
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		case Capability::WIREFRAME:
+			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 			break;
 	}
 }
 
 bool OpenGLContext::isEnabled(const Capability cap)
 {
-	return (bool)glIsEnabled(cap);
+	const bool enabled = (bool)GL_CALL(glIsEnabled((uint32)cap));
+	return enabled;
 }
 
 void OpenGLContext::setPointSize(const float pointSize)
 {
-	glPointSize(pointSize);
+	GL_CALL(glPointSize(pointSize));
 }
 
 void OpenGLContext::setLineWidth(const float lineWidth)
 {
-	glLineWidth(lineWidth);
+	GL_CALL(glLineWidth(lineWidth));
 }
 
 void OpenGLContext::clear(const uint mask, const Color &fillColor)
 {
-	if(mask & COLOR_BUFFER) glClearColor(fillColor.getR() / 255.0f, fillColor.getG() / 255.0f, fillColor.getB() / 255.0f, fillColor.getA() / 255.0f);
-	if(mask & DEPTH_BUFFER) glClearDepth(fillColor.getR() / 255.0f);
-	if(mask & STENCIL_BUFFER) glClearStencil(fillColor.getR() / 255.0f);
-	glClear(mask);
-	if(mask & COLOR_BUFFER) glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	if(mask & DEPTH_BUFFER) glClearDepth(0.0f);
-	if(mask & STENCIL_BUFFER) glClearStencil(0.0f);
+	if(mask & COLOR_BUFFER)   GL_CALL(glClearColor(fillColor.getR() / 255.0f, fillColor.getG() / 255.0f, fillColor.getB() / 255.0f, fillColor.getA() / 255.0f));
+	if(mask & DEPTH_BUFFER)   GL_CALL(glClearDepth(fillColor.getR() / 255.0f));
+	if(mask & STENCIL_BUFFER) GL_CALL(glClearStencil(fillColor.getR() / 255.0f));
+	                          GL_CALL(glClear(mask));
+	if(mask & COLOR_BUFFER)   GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+	if(mask & DEPTH_BUFFER)   GL_CALL(glClearDepth(0.0f));
+	if(mask & STENCIL_BUFFER) GL_CALL(glClearStencil(0.0f));
 }
 
 void OpenGLContext::enableScissor(const int x, const int y, const int w, const int h)
 {
-	glEnable(GL_SCISSOR_TEST);
-	glScissor(x, y, w, h);
+	GL_CALL(glEnable(GL_SCISSOR_TEST));
+	GL_CALL(glScissor(x, y, w, h));
 }
 
 void OpenGLContext::disableScissor()
 {
-	glDisable(GL_SCISSOR_TEST);
+	GL_CALL(glDisable(GL_SCISSOR_TEST));
 }
 
 void OpenGLContext::saveScreenshot(string path)
 {
 	// Get frame buffer data
 	uchar *data = new uchar[m_currentState->width * m_currentState->height * 4];
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, m_currentState->width, m_currentState->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glReadBuffer(GL_BACK);
+	GL_CALL(glReadBuffer(GL_FRONT));
+	GL_CALL(glReadPixels(0, 0, m_currentState->width, m_currentState->height, GL_RGBA, GL_UNSIGNED_BYTE, data));
+	GL_CALL(glReadBuffer(GL_BACK));
 
 	// NOTE: This function is not tested!
-	Pixmap pixmap(m_currentState->width, m_currentState->height, data);
+	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE), data);
 	pixmap.flipY();
-	pixmap.exportToFile(path);
+	pixmap.saveToFile(path);
 
 	delete[] data;
 }
@@ -149,7 +160,7 @@ void OpenGLContext::saveScreenshot(string path)
 void OpenGLContext::setViewportSize(const uint w, const uint h)
 {
 	// Set viewport
-	glViewport(0, 0, w, h);
+	GL_CALL(glViewport(0, 0, w, h));
 }
 
 Matrix4 OpenGLContext::createOrtographicMatrix(const float l, const float r, const float t, const float b, const float n, const float f) const
@@ -227,7 +238,11 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 #endif
 
 	// Print GPU info
-	LOG("** Using GPU: %s (OpenGL %s) **", glGetString(GL_VENDOR), glGetString(GL_VERSION));
+	{
+		const uchar* vendorString = GL_CALL(glGetString(GL_VENDOR));
+		const uchar* versionString = GL_CALL(glGetString(GL_VERSION));
+		LOG("** Using GPU: %s (OpenGL %s) **", vendorString, versionString);
+	}
 
 #ifdef SAUCE_COMPILE_WINDOWS
 	// Check OpenGL support
@@ -246,30 +261,32 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	setProjectionMatrix(createOrtographicMatrix(0, size.x, 0, size.y));
 
 	// Init graphics
-	glGenVertexArrays(1, &s_vao);
-	glBindVertexArray(s_vao);
-	glGenBuffers(1, &s_vbo);
-	glGenBuffers(1, &s_ibo);
+	GL_CALL(glGenVertexArrays(1, &s_vao));
+	GL_CALL(glBindVertexArray(s_vao));
+	GL_CALL(glGenBuffers(1, &s_vbo));
+	GL_CALL(glGenBuffers(1, &s_ibo));
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// Enable blending
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_CALL(glEnable(GL_BLEND));
+	GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 	// Set smooth lines
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	GL_CALL(glEnable(GL_LINE_SMOOTH));
+	GL_CALL(glHint(GL_LINE_SMOOTH_HINT, GL_NICEST));
 	//glEnable(GL_POLYGON_SMOOTH);
 	//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
 	// Set some gl state variables
-	glDepthFunc(GL_LESS);
-	glCullFace(GL_BACK);
-	glPointSize(4);
+	GL_CALL(glDepthFunc(GL_LESS));
+	GL_CALL(glCullFace(GL_BACK));
+	GL_CALL(glPointSize(4));
+	GL_CALL(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+	GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
 	// Create passthrough shader
-	string vertexShader =
+	const string vertexShader =
 		"\n"
 		"in vec2 in_Position;\n"
 		"in vec2 in_TexCoord;\n"
@@ -287,14 +304,14 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 		"	v_VertexColor = in_VertexColor;\n"
 		"}\n";
 
-	string fragmentShader =
+	const string fragmentShader =
 		"\n"
 		"in vec2 v_TexCoord;\n"
 		"in vec4 v_VertexColor;\n"
 		"\n"
 		"out vec4 out_FragColor;\n"
 		"\n"
-		"uniform sampler2D u_Texture;"
+		"uniform sampler2D u_Texture;\n"
 		"\n"
 		"void main()\n"
 		"{\n"
@@ -305,9 +322,9 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	s_defaultShader = shared_ptr<Shader>(new OpenGLShader(vertexShader, fragmentShader, ""));
 
 	// Create blank texture
-	uchar pixel[4];
+	uint8 pixel[4];
 	pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, pixel));
+	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixel));
 
 	return m_window;
 }
@@ -315,21 +332,36 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 void OpenGLContext::setupContext()
 {
 	// Set blend func
-	glBlendFuncSeparate(m_currentState->blendState.m_src, m_currentState->blendState.m_dst, m_currentState->blendState.m_alphaSrc, m_currentState->blendState.m_alphaDst);
-	GL_CHECK_ERROR(glBlendFuncSeparate);
+	GL_CALL(glBlendFuncSeparate(
+		(uint32)m_currentState->blendState.m_src,
+		(uint32)m_currentState->blendState.m_dst,
+		(uint32)m_currentState->blendState.m_alphaSrc,
+		(uint32)m_currentState->blendState.m_alphaDst)
+	);
 
 	shared_ptr<Shader> shader = m_currentState->shader;
 	if(!shader)
 	{
 		shader = s_defaultShader;
-		shader->setSampler2D("u_Texture", m_currentState->texture == 0 ? s_defaultTexture : m_currentState->texture);
+	}
+
+	if (m_currentState->texture)
+	{
+		shader->setSampler2D("u_Texture", m_currentState->texture);
+	}
+	else if (!shader)
+	{
+		shader->setSampler2D("u_Texture", s_defaultTexture);
+	}
+
+	{
+		// TODO: Check if all samplers are bound on the shader
 	}
 
 	OpenGLShader *glShader = dynamic_cast<OpenGLShader*>(shader.get());
 
 	// Enable shader
-	glUseProgram(glShader->m_id);
-	GL_CHECK_ERROR(glUseProgram);
+	GL_CALL(glUseProgram(glShader->m_id));
 
 	// Set projection matrix
 	Matrix4 modelViewProjection = m_currentState->projectionMatrix * m_currentState->transformationMatrixStack.top();
@@ -343,34 +375,101 @@ void OpenGLContext::setupContext()
 		const OpenGLShader::Uniform *uniform = itr->second;
 		switch(uniform->type)
 		{
-			case GL_INT: case GL_BOOL: glUniform1iv(uniform->loc, uniform->count, (const GLint*) uniform->data); break;
-			case GL_INT_VEC2: case GL_BOOL_VEC2: glUniform2i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1]); break;
-			case GL_INT_VEC3: case GL_BOOL_VEC3: glUniform3i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2]); break;
-			case GL_INT_VEC4: case GL_BOOL_VEC4: glUniform4i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2], ((GLint*) uniform->data)[3]); break;
+			case GL_INT: case GL_BOOL: GL_CALL(glUniform1iv(uniform->loc, uniform->count, (const GLint*) uniform->data)); break;
+			case GL_INT_VEC2: case GL_BOOL_VEC2: GL_CALL(glUniform2i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1])); break;
+			case GL_INT_VEC3: case GL_BOOL_VEC3: GL_CALL(glUniform3i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2])); break;
+			case GL_INT_VEC4: case GL_BOOL_VEC4: GL_CALL(glUniform4i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2], ((GLint*) uniform->data)[3])); break;
 
-			case GL_UNSIGNED_INT: glUniform1ui(uniform->loc, ((GLuint*) uniform->data)[0]); break;
-			case GL_UNSIGNED_INT_VEC2: glUniform2ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1]); break;
-			case GL_UNSIGNED_INT_VEC3: glUniform3ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2]); break;
-			case GL_UNSIGNED_INT_VEC4: glUniform4ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2], ((GLuint*) uniform->data)[3]); break;
+			case GL_UNSIGNED_INT: GL_CALL(glUniform1ui(uniform->loc, ((GLuint*) uniform->data)[0])); break;
+			case GL_UNSIGNED_INT_VEC2: GL_CALL(glUniform2ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1])); break;
+			case GL_UNSIGNED_INT_VEC3: GL_CALL(glUniform3ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2])); break;
+			case GL_UNSIGNED_INT_VEC4: GL_CALL(glUniform4ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2], ((GLuint*) uniform->data)[3])); break;
 
-			case GL_FLOAT: glUniform1f(uniform->loc, ((GLfloat*) uniform->data)[0]); break;
-			case GL_FLOAT_VEC2: glUniform2fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data); break;
-			case GL_FLOAT_VEC3: glUniform3f(uniform->loc, ((GLfloat*) uniform->data)[0], ((GLfloat*) uniform->data)[1], ((GLfloat*) uniform->data)[2]); break;
-			case GL_FLOAT_VEC4: glUniform4fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data); break;
+			case GL_FLOAT: GL_CALL(glUniform1f(uniform->loc, ((GLfloat*) uniform->data)[0])); break;
+			case GL_FLOAT_VEC2: GL_CALL(glUniform2fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data)); break;
+			case GL_FLOAT_VEC3: GL_CALL(glUniform3f(uniform->loc, ((GLfloat*) uniform->data)[0], ((GLfloat*) uniform->data)[1], ((GLfloat*) uniform->data)[2])); break;
+			case GL_FLOAT_VEC4: GL_CALL(glUniform4fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data)); break;
 
-			case GL_FLOAT_MAT4: glUniformMatrix4fv(uniform->loc, 1, GL_FALSE, (GLfloat*) uniform->data); break;
+			case GL_FLOAT_MAT4: GL_CALL(glUniformMatrix4fv(uniform->loc, 1, GL_FALSE, (GLfloat*) uniform->data)); break;
 
 			case GL_UNSIGNED_INT_SAMPLER_2D:
 			case GL_INT_SAMPLER_2D:
 			case GL_SAMPLER_2D:
 			{
-				glActiveTexture(GL_TEXTURE0 + target);
-				glBindTexture(GL_TEXTURE_2D, ((GLuint*) uniform->data)[0]);
-				glUniform1i(uniform->loc, target++);
+				GL_CALL(glActiveTexture(GL_TEXTURE0 + target));
+				GL_CALL(glBindTexture(GL_TEXTURE_2D, ((GLuint*) uniform->data)[0]));
+				GL_CALL(glUniform1i(uniform->loc, target++));
 			}
 			break;
 		}
-		GL_CHECK_ERROR(glUniform1i);
+	}
+}
+
+void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
+{
+	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
+	for (uint32 i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	{
+		VertexAttribute attrib = VertexAttribute(i);
+		const uint64 attribOffset = fmt.getAttributeOffset(attrib);
+		switch (attrib)
+		{
+			case VertexAttribute::VERTEX_POSITION:
+			{
+				if (fmt.isAttributeEnabled(attrib))
+				{
+					GL_CALL(glEnableVertexAttribArray(0));
+					GL_CALL(glVertexAttribPointer(0, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_TRUE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
+				}
+				else
+				{
+					GL_CALL(glDisableVertexAttribArray(0));
+				}
+			}
+			break;
+
+			case VertexAttribute::VERTEX_COLOR:
+			{
+				if (fmt.isAttributeEnabled(attrib))
+				{
+					GL_CALL(glEnableVertexAttribArray(1));
+					GL_CALL(glVertexAttribPointer(1, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_TRUE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
+				}
+				else
+				{
+					GL_CALL(glDisableVertexAttribArray(1));
+				}
+			}
+			break;
+
+			case VertexAttribute::VERTEX_TEX_COORD:
+			{
+				if (fmt.isAttributeEnabled(attrib))
+				{
+					GL_CALL(glEnableVertexAttribArray(2));
+					GL_CALL(glVertexAttribPointer(2, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_FALSE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
+				}
+				else
+				{
+					GL_CALL(glDisableVertexAttribArray(2));
+				}
+			}
+			break;
+
+			case VertexAttribute::VERTEX_NORMAL:
+			{
+				if (fmt.isAttributeEnabled(attrib))
+				{
+					GL_CALL(glEnableVertexAttribArray(3));
+					GL_CALL(glVertexAttribPointer(3, fmt.getElementCount(attrib), (uint32)fmt.getDatatype(attrib), GL_FALSE, vertexSizeInBytes, (void*)(uint64)fmt.getAttributeOffset(attrib)));
+				}
+				else
+				{
+					GL_CALL(glDisableVertexAttribArray(3));
+				}
+			}
+			break;
+		}
 	}
 }
 
@@ -383,7 +482,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 
 	// Get vertices and vertex data
 	VertexFormat fmt = vertices->getFormat();
-	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
+	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
 	char *vertexData = new char[vertexCount * vertexSizeInBytes];
 	for(uint i = 0; i < vertexCount; ++i)
 	{
@@ -391,73 +490,20 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 	}
 
 	// Bind buffers
-	glBindBuffer(GL_ARRAY_BUFFER, s_vbo); GL_CHECK_ERROR(glBindBuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW); GL_CHECK_ERROR(glBufferData);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ibo); GL_CHECK_ERROR(glBindBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, GL_DYNAMIC_DRAW); GL_CHECK_ERROR(glBufferData);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, s_vbo));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ibo));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, GL_DYNAMIC_DRAW));
 
-	// Set array pointers
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
-	{
-		VertexAttribute attrib = VertexAttribute(i);
-		switch(attrib)
-		{
-			case VERTEX_POSITION:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_COLOR:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_TEX_COORD:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*) fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_NORMAL:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-		}
-	}
+	// Setup vertex attribute pointers
+	setupVertexAttributePointers(fmt);
 
 	// Draw primitives
-	glDrawElements(type, indexCount, GL_UNSIGNED_INT, 0); GL_CHECK_ERROR(glDrawElements);
+	GL_CALL(glDrawElements((uint32)type, indexCount, GL_UNSIGNED_INT, 0));
 
 	// Reset vbo buffers
-	glBindBuffer(GL_ARRAY_BUFFER, 0); GL_CHECK_ERROR(glBindBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_CHECK_ERROR(glBindBuffer);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
 	// Release vertex data
 	delete[] vertexData;
@@ -471,75 +517,19 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType type, const Vertex
 	setupContext();
 
 	// Bind vertices and indices array
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->m_id);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->m_id);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo->m_id));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->m_id));
 
-	// Set array pointers
-	VertexFormat fmt = vbo->getVertexFormat();
-	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
-	{
-		VertexAttribute attrib = VertexAttribute(i);
-		switch(attrib)
-		{
-			case VERTEX_POSITION:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_COLOR:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_TEX_COORD:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_NORMAL:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-		}
-	}
+	// Setup vertex attribute pointers
+	const VertexFormat fmt = vbo->getVertexFormat();
+	setupVertexAttributePointers(fmt);
 
 	// Draw vbo
-	glDrawElements(type, ibo->getSize(), GL_UNSIGNED_INT, 0);
+	GL_CALL(glDrawElements((uint32)type, ibo->getSize(), GL_UNSIGNED_INT, 0));
 
 	// Reset vbo buffers
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	GL_CHECK_ERROR(glBindBuffer);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
 void OpenGLContext::drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount)
@@ -550,8 +540,8 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const Vertex *verti
 	setupContext();
 
 	// Get vertices and vertex data
-	VertexFormat fmt = vertices->getFormat();
-	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
+	const VertexFormat fmt = vertices->getFormat();
+	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
 	char *vertexData = new char[vertexCount * vertexSizeInBytes];
 	for(uint i = 0; i < vertexCount; ++i)
 	{
@@ -559,72 +549,17 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const Vertex *verti
 	}
 
 	// Bind buffer
-	glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, s_vbo));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW));
 
-	// Set array pointers
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
-	{
-		VertexAttribute attrib = VertexAttribute(i);
-		switch(attrib)
-		{
-			case VERTEX_POSITION:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_COLOR:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_TEX_COORD:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_NORMAL:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-		}
-	}
+	// Setup vertex attribute pointers
+	setupVertexAttributePointers(fmt);
 
 	// Draw primitives
-	glDrawArrays(type, 0, vertexCount);
+	GL_CALL(glDrawArrays((uint32)type, 0, vertexCount));
 
 	// Reset vbo buffers
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	GL_CHECK_ERROR(glBindBuffer);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
 	// Release vertex data
 	delete[] vertexData;
@@ -638,73 +573,17 @@ void OpenGLContext::drawPrimitives(const PrimitiveType type, const VertexBuffer 
 	setupContext();
 
 	// Bind vertices and indices array
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->m_id);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo->m_id));
 
-	// Set array pointers
-	VertexFormat fmt = vbo->getVertexFormat();
-	int vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	for(int i = 0; i < VERTEX_ATTRIB_MAX; i++)
-	{
-		VertexAttribute attrib = VertexAttribute(i);
-		switch(attrib)
-		{
-			case VERTEX_POSITION:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(0); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(0, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(0); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_COLOR:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(1); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(1, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_TRUE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(1); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_TEX_COORD:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(2); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(2, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(2); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-
-			case VERTEX_NORMAL:
-				if(fmt.isAttributeEnabled(attrib))
-				{
-					glEnableVertexAttribArray(3); GL_CHECK_ERROR(glEnableVertexAttribArray);
-					glVertexAttribPointer(3, fmt.getElementCount(attrib), fmt.getDataType(attrib), GL_FALSE, vertexSizeInBytes, (void*)fmt.getAttributeOffset(attrib)); GL_CHECK_ERROR(glVertexAttribPointer);
-				}
-				else
-				{
-					glDisableVertexAttribArray(3); GL_CHECK_ERROR(glDisableVertexAttribArray);
-				}
-				break;
-		}
-	}
+	// Setup vertex attribute pointers
+	const VertexFormat fmt = vbo->getVertexFormat();
+	setupVertexAttributePointers(fmt);
 
 	// Draw vbo
-	glDrawArrays(type, 0, vbo->getSize());
+	GL_CALL(glDrawArrays((uint32)type, 0, vbo->getSize()));
 
 	// Reset vbo buffers
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	GL_CHECK_ERROR(glBindBuffer);
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
 RenderTarget2D *OpenGLContext::createRenderTarget(const uint width, const uint height, const uint targetCount, const PixelFormat &format)

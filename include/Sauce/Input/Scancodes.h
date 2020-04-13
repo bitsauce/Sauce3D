@@ -1,3 +1,7 @@
+// Copied and modified file from SDL2
+// This file contains SDL scancodes that have been renamed to
+// to make it easier to use for the end user
+
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -25,8 +29,7 @@
  *  Defines keyboard scancodes.
  */
 
-#ifndef SAUCE_SCANCODES_H
-#define SAUCE_SCANCODES_H
+#pragma once
 
 #include <Sauce/Config.h>
 
@@ -399,5 +402,3 @@ enum Scancode
 };
 
 END_SAUCE_NAMESPACE
-
-#endif /* SAUCE_SCANCODES_H */

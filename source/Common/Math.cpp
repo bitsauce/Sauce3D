@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Math.h>
 
@@ -108,6 +109,21 @@ float step(float edge, float x)
 float pow(const float a, const float b)
 {
 	return powf(a, b);
+}
+
+uint32 ceilPow2(const uint32& number)
+{
+	// Find first set bit from the left
+	uint32 leftbit;
+	for (leftbit = 0; leftbit < 32; ++leftbit)
+	{
+		const uint32 bitmask = 0x80000000 >> leftbit;
+		if ((number & bitmask) != 0)
+		{
+			return 0x80000000 >> (leftbit - 1);
+		}
+	}
+	return 0x00000000;
 }
 
 int mod(const int a, const int b)

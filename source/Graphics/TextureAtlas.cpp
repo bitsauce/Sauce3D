@@ -1,3 +1,15 @@
+//     _____                        ______             _            
+//    / ____|                      |  ____|           (_)           
+//   | (___   __ _ _   _  ___ ___  | |__   _ __   __ _ _ _ __   ___ 
+//    \___ \ / _` | | | |/ __/ _ \ |  __| | '_ \ / _` | | '_ \ / _ \
+//    ____) | (_| | |_| | (_|  __/ | |____| | | | (_| | | | | |  __/
+//   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
+//                                                __/ |             
+//                                               |___/              
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
 
@@ -10,7 +22,7 @@ TextureAtlas::TextureAtlas(GraphicsContext *graphicsContext, const int width, co
 	m_height(height)
 {
 	// Create a texture for the atlas
-	m_texture = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height));
+	m_texture = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE)));
 	m_rectanglePacker.setMaxWidth(width);
 }
 
@@ -77,7 +89,7 @@ void TextureAtlas::create()
 		}
 	}
 	m_result = result;
-	m_texture->updatePixmap(Pixmap(m_width, m_height, pixels));
+	m_texture->updatePixmap(Pixmap(m_width, m_height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE), pixels));
 }
 
 END_SAUCE_NAMESPACE

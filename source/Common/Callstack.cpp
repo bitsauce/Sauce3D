@@ -1,3 +1,6 @@
+// Copied from: https://github.com/JochenKalmbach/StackWalker
+// File may have been modified for use in Sauce3D
+
 /**********************************************************************
 *
 * StackWalker.cpp
@@ -436,6 +439,7 @@ private:
 					LPVOID vData = malloc(dwSize);
 					if (vData != NULL)
 					{
+						#pragma warning(suppress:6388)
 						if (GetFileVersionInfoA(szImg, dwHandle, dwSize, vData) != 0)
 						{
 							UINT len;
@@ -950,6 +954,7 @@ void Callstack::OnLoadModule(LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD siz
 	OnOutput(buffer);
 }
 
+#pragma warning(suppress:26812)
 void Callstack::OnCallstackEntry(CallstackEntryType eType, CallstackEntry &entry)
 {
 	CHAR buffer[STACKWALK_MAX_NAMELEN];

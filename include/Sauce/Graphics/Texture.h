@@ -1,10 +1,29 @@
-#ifndef SAUCE_TEXTURE_H
-#define SAUCE_TEXTURE_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Pixmap.h>
 
 BEGIN_SAUCE_NAMESPACE
+
+// Texture filtering
+enum class TextureFiltering : uint32
+{
+	NEAREST = GL_NEAREST,
+	LINEAR = GL_LINEAR
+};
+
+// Texture wrapping
+enum class TextureWrapping : uint32
+{
+	CLAMP_TO_BORDER = GL_CLAMP_TO_BORDER,
+	CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
+	REPEAT = GL_REPEAT,
+	MIRRORED_REPEAT = GL_MIRRORED_REPEAT
+};
 
 class SAUCE_API Texture2D
 {
@@ -20,24 +39,8 @@ public:
 	void disableMipmaps();
 	bool isMipmapsEnabled() const;
 
-	// Texture filtering
-	enum TextureFilter
-	{
-		NEAREST = GL_NEAREST,
-		LINEAR = GL_LINEAR
-	};
-
-	void setFiltering(const TextureFilter filter);
-	TextureFilter getFiltering() const;
-	
-	// Texture wrapping
-	enum TextureWrapping
-	{
-		CLAMP_TO_BORDER = GL_CLAMP_TO_BORDER,
-		CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
-		REPEAT = GL_REPEAT,
-		MIRRORED_REPEAT = GL_MIRRORED_REPEAT
-	};
+	void setFiltering(const TextureFiltering filter);
+	TextureFiltering getFiltering() const;
 
 	void setWrapping(const TextureWrapping wrapping);
 	TextureWrapping getWrapping() const;
@@ -58,7 +61,7 @@ public:
 protected:
 	virtual void updateFiltering() = 0;
 
-	TextureFilter m_filter;
+	TextureFiltering m_filter;
 	TextureWrapping m_wrapping;
 
 	bool m_mipmaps;
@@ -73,7 +76,7 @@ class TextureResourceDesc : public ResourceDesc
 {
 public:
 	TextureResourceDesc(const string &name, const string &path, const bool premultiplyAlpha) :
-		ResourceDesc(RESOURCE_TYPE_TEXTURE, name),
+		ResourceDesc(ResourceType::RESOURCE_TYPE_TEXTURE, name),
 		m_premultiplyAlpha(premultiplyAlpha),
 		m_path(path)
 	{
@@ -89,5 +92,3 @@ private:
 END_SAUCE_NAMESPACE
 
 template class SAUCE_API std::shared_ptr<sauce::Texture2D>;
-
-#endif // SAUCE_TEXTURE_H

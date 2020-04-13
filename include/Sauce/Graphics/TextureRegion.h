@@ -1,5 +1,8 @@
-#ifndef SAUCE_TEXTURE_REGION_H
-#define SAUCE_TEXTURE_REGION_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
@@ -27,5 +30,3 @@ public:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_TEXTURE_REGION_H

@@ -1,3 +1,6 @@
+// Copied from: https://github.com/JochenKalmbach/StackWalker
+// File may have been modified for use in Sauce3D
+
 /**********************************************************************
 *
 * StackWalker.h
@@ -9,8 +12,7 @@
 *
 **********************************************************************/
 
-#ifndef _SAUCE_CALLSTACK_H_
-#define _SAUCE_CALLSTACK_H_
+#pragma once
 
 #include <Sauce/Config.h>
 
@@ -139,5 +141,3 @@ protected:
 #else
 
 #endif // SAUCE_COMPILE_WINDOWS
-
-#endif // _SAUCE_CALLSTACK_H_

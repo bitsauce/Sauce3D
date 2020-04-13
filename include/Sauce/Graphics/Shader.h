@@ -1,5 +1,8 @@
-#ifndef SAUCE_SHADER_H
-#define SAUCE_SHADER_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Texture.h>
@@ -50,7 +53,7 @@ class ShaderResourceDesc : public ResourceDesc
 {
 public:
 	ShaderResourceDesc(const string &name, const string &vertexFilePath, const string &fragmentFilePath, const string &geometryFilePath) :
-		ResourceDesc(RESOURCE_TYPE_TEXTURE, name),
+		ResourceDesc(ResourceType::RESOURCE_TYPE_TEXTURE, name),
 		m_vertexFilePath(vertexFilePath),
 		m_fragmentFilePath(fragmentFilePath),
 		m_geometryFilePath(geometryFilePath)
@@ -83,5 +86,3 @@ private:
 END_SAUCE_NAMESPACE
 
 template SAUCE_API class std::shared_ptr<sauce::Shader>;
-
-#endif // SAUCE_SHADER_H

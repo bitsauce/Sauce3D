@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
@@ -28,7 +29,7 @@ RenderTarget2D::RenderTarget2D(GraphicsContext *graphicsContext, const uint widt
 	m_textures = new shared_ptr<Texture2D>[m_textureCount];
 	for(uint i = 0; i < m_textureCount; ++i)
 	{
-		m_textures[i] = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, 0, fmt));
+		m_textures[i] = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, fmt));
 	}
 }
 

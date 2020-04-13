@@ -1,5 +1,8 @@
-#ifndef SAUCE_AUDIO_H
-#define SAUCE_AUDIO_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
@@ -113,5 +116,3 @@ private:
 };*/
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_AUDIO_H

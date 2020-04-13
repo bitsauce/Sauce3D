@@ -1,11 +1,22 @@
-#ifndef SAUCE_VERTEX_BUFFER_H
-#define SAUCE_VERTEX_BUFFER_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
 BEGIN_SAUCE_NAMESPACE
 
 class Vertex;
+
+// TODO: Remove OpenGL dependency
+enum class BufferUsage : uint32
+{
+	Static = GL_STATIC_DRAW,
+	Dynamic = GL_DYNAMIC_DRAW,
+	Stream = GL_STREAM_DRAW
+};
 
 /*********************************************************************
 **	Vertex buffer													**
@@ -14,6 +25,8 @@ class SAUCE_API VertexBuffer
 {
 	friend class OpenGLContext;
 public:
+	virtual ~VertexBuffer();
+
 	// Add vertices and indices to the batch
 	void setData(const Vertex *vertices, const uint vertexCount);
 	char *getData() const;
@@ -23,15 +36,7 @@ public:
 	uint getSize() const { return m_size; }
 
 protected:
-
-	enum BufferType
-	{
-		STATIC_BUFFER = GL_STATIC_DRAW,
-		DYNAMIC_BUFFER = GL_DYNAMIC_DRAW
-	};
-
-	VertexBuffer(const BufferType type);
-	~VertexBuffer();
+	VertexBuffer(const BufferUsage usage);
 
 	// Buffer ID
 	GLuint m_id;
@@ -40,8 +45,8 @@ protected:
 	VertexFormat m_format;
 
 private:
-	// Buffer type
-	BufferType m_type;
+	// Buffer usage
+	BufferUsage m_usage;
 
 	// Size
 	uint m_size;
@@ -70,6 +75,8 @@ class SAUCE_API IndexBuffer
 {
 	friend class OpenGLContext;
 public:
+	virtual ~IndexBuffer();
+
 	// Add vertices and indices to the batch
 	void setData(const uint *indices, const uint indexCount);
 	char *getData() const;
@@ -78,22 +85,14 @@ public:
 	uint getSize() const { return m_size; }
 
 protected:
-
-	enum BufferType
-	{
-		STATIC_BUFFER = GL_STATIC_DRAW,
-		DYNAMIC_BUFFER = GL_DYNAMIC_DRAW
-	};
-
-	IndexBuffer(const BufferType type);
-	~IndexBuffer();
+	IndexBuffer(const BufferUsage usage);
 
 	// Buffer ID
 	GLuint m_id;
 
 private:
 	// Buffer type
-	BufferType m_type;
+	BufferUsage m_usage;
 
 	// Size
 	uint m_size;
@@ -116,5 +115,3 @@ public:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_VERTEX_BUFFER_H

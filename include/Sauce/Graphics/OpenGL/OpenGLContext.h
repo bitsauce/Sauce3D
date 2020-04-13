@@ -1,3 +1,7 @@
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
 #pragma once
 
 #include <Sauce/Common.h>
@@ -8,9 +12,17 @@
 BEGIN_SAUCE_NAMESPACE
 
 class Vertex;
+class VertexFormat;
 class RenderTarget2D;
 class VertexBuffer;
 class IndexBuffer;
+
+#ifdef SAUCE_DEBUG
+extern void checkOpenGLError(const string& info);
+#define GL_CALL(call) call; checkOpenGLError(#call)
+#else
+#define GL_CALL(call) call
+#endif
 
 class SAUCE_API OpenGLContext : public GraphicsContext
 {
@@ -20,6 +32,7 @@ private:
 	~OpenGLContext();
 
 	void setupContext();
+	void setupVertexAttributePointers(const VertexFormat& fmt);
 
 	static GLuint s_vao;
 	static GLuint s_vbo;

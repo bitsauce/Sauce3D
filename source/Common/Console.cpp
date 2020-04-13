@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 
@@ -37,7 +38,7 @@ void Console::call_log(const char *msg, va_list args)
 {
 #ifdef SAUCE_COMPILE_WINDOWS
 	// Get string length
-	int size = _vscprintf(msg, args);
+	const size_t size = _vscprintf(msg, args);
 
 	// Create out string
 	string out;
@@ -57,7 +58,7 @@ void Console::call_log(const char *msg, va_list args)
 #endif
 	
 	// Append message to log file
-	if(m_engine->isEnabled(SAUCE_EXPORT_LOG))
+	if(m_engine->isEnabled(EngineFlag::SAUCE_EXPORT_LOG))
 	{
 		*m_output << out << endl;
 		m_output->flush();
@@ -76,14 +77,14 @@ void Console::call_log(const char *msg, va_list args)
 	char *newMsg = new char[size];					\
 	sprintf(newMsg, format, __VA_ARGS__);			\
 	s_this->call_log(newMsg, args);					\
-	delete newMsg;
+	delete[] newMsg;
 #else
 #define CALL_LOG(format, ...)						\
 	int size = _scprintf(format, __VA_ARGS__) + 1;	\
 	char *newMsg = new char[size];					\
 	sprintf_s(newMsg, size, format, __VA_ARGS__);	\
 	s_this->call_log(newMsg, args);					\
-	delete newMsg;
+	delete[] newMsg;
 #endif
 #endif
 

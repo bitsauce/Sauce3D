@@ -6,22 +6,23 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-Texture2D::Texture2D():
-	m_filter(NEAREST),
-	m_wrapping(CLAMP_TO_BORDER),
-	m_mipmaps(false),
-	m_mipmapsGenerated(false),
-	m_width(0),
-	m_height(0),
-	m_pixelFormat()
+Texture2D::Texture2D()
+	: m_filter(TextureFiltering::NEAREST)
+	, m_wrapping(TextureWrapping::CLAMP_TO_BORDER)
+	, m_mipmaps(false)
+	, m_mipmapsGenerated(false)
+	, m_width(0)
+	, m_height(0)
+	, m_pixelFormat()
 {
 }
 
@@ -55,7 +56,7 @@ void Texture2D::disableMipmaps()
 	}
 }
 
-void Texture2D::setFiltering(const TextureFilter filter)
+void Texture2D::setFiltering(const TextureFiltering filter)
 {
 	if(m_filter != filter)
 	{
@@ -68,9 +69,9 @@ void Texture2D::setFiltering(const TextureFilter filter)
 	}
 }
 
-Texture2D::TextureFilter Texture2D::getFiltering() const
+TextureFiltering Texture2D::getFiltering() const
 {
-	return TextureFilter(m_filter);
+	return m_filter;
 }
 
 void Texture2D::setWrapping(const TextureWrapping wrapping)
@@ -82,9 +83,9 @@ void Texture2D::setWrapping(const TextureWrapping wrapping)
 	}
 }
 
-Texture2D::TextureWrapping Texture2D::getWrapping() const
+TextureWrapping Texture2D::getWrapping() const
 {
-	return TextureWrapping(m_wrapping);
+	return m_wrapping;
 }
 
 uint Texture2D::getWidth() const
@@ -100,14 +101,16 @@ uint Texture2D::getHeight() const
 void Texture2D::exportToFile(string path)
 {
 	// TODO: This function might be redundant?
-	getPixmap().exportToFile(path);
+	getPixmap().saveToFile(path);
 }
 
 void *TextureResourceDesc::create() const
 {
 	// Load texture from file
 	GraphicsContext *graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
-	return graphicsContext->createTexture(Pixmap(m_path, m_premultiplyAlpha));
+	Pixmap pixmap = Pixmap::loadFromFile(m_path);
+	pixmap.setPremultipliedAlpha(m_premultiplyAlpha);
+	return graphicsContext->createTexture(pixmap);
 }
 
 END_SAUCE_NAMESPACE

@@ -6,8 +6,9 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Input.h>
@@ -145,6 +146,8 @@ InputManager::InputManager(string contextFile) :
 	m_strToKey["lmb"] = SAUCE_MOUSE_BUTTON_LEFT;
 	m_strToKey["rmb"] = SAUCE_MOUSE_BUTTON_RIGHT;
 	m_strToKey["wheel"] = SAUCE_MOUSE_BUTTON_MIDDLE;
+	m_strToKey["x1"] = SAUCE_MOUSE_BUTTON_X1;
+	m_strToKey["x2"] = SAUCE_MOUSE_BUTTON_X2;
 
 	m_strToKey["controller_a"] = SAUCE_CONTROLLER_BUTTON_A;
 	m_strToKey["controller_b"] = SAUCE_CONTROLLER_BUTTON_B;
@@ -200,7 +203,7 @@ InputManager::InputManager(string contextFile) :
 				if(name && key)
 				{
 					InputButton inputButton = toInputButton(key->GetText());
-					if(inputButton.getType() != InputButton::NONE)
+					if(inputButton.getType() != InputButtonType::NONE)
 					{
 						Keybind *kb = new Keybind(inputButton);
 						inputContext->addKeybind(name->GetText(), kb);
@@ -358,15 +361,15 @@ bool InputManager::getKeyState(const InputButton inputButton, ControllerDevice *
 	//if(m_game->isEnabled(SAUCE_BLOCK_BACKGROUND_INPUT) && !m_game->getWindow()->checkFlags(SDL_WINDOW_INPUT_FOCUS)) return false;
 	switch(inputButton.getType())
 	{
-		case InputButton::KEYBOARD: return SDL_GetKeyboardState(NULL)[inputButton.getCode()];
-		case InputButton::MOUSE: return (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(inputButton.getCode())) != 0;
-		case InputButton::CONTROLLER_BUTTON:
+		case InputButtonType::KEYBOARD: return SDL_GetKeyboardState(NULL)[inputButton.getCode()];
+		case InputButtonType::MOUSE: return (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(inputButton.getCode())) != 0;
+		case InputButtonType::CONTROLLER_BUTTON:
 		{
 			if(inputButton.getCode() == SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER) return m_leftTrigger/*[controller]*/;
 			else if(inputButton.getCode() == SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER) return m_rightTrigger/*[controller]*/;
 			else return SDL_GameControllerGetButton(static_cast<SDL_GameController*>(controller ? controller : m_defaultController), (SDL_GameControllerButton)inputButton.getCode()) != 0;
 		}
-		case InputButton::CONTROLLER_AXIS: return getAxisValue((const ControllerAxis)inputButton.getCode(), controller) > m_triggerThreshold;
+		case InputButtonType::CONTROLLER_AXIS: return getAxisValue((const ControllerAxis)inputButton.getCode(), controller) > m_triggerThreshold;
 	}
 	return false;
 }

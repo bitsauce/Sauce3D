@@ -1,5 +1,8 @@
-#ifndef SAUCE_RANDOM_H
-#define SAUCE_RANDOM_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 
@@ -88,5 +91,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_RANDOM_H

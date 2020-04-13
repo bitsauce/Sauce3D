@@ -6,17 +6,19 @@
 //   |_____/ \__,_|\__,_|\___\___| |______|_| |_|\__, |_|_| |_|\___|
 //                                                __/ |             
 //                                               |___/              
-// Made by Marcus "Bitsauce" Loo Vergara
-// 2011-2018 (C)
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-SpriteBatch::SpriteBatch(const uint maxSprites) :
-	m_graphicsContext(nullptr),
-	m_maxSpriteCount(maxSprites)
+SpriteBatch::SpriteBatch(const uint maxSprites)
+	: m_graphicsContext(nullptr)
+	, m_maxSpriteCount(maxSprites)
+	, m_spriteCount(0)
 {
 	m_sprites = new Sprite[maxSprites];
 	m_vertices = new Vertex[maxSprites * 4];
@@ -66,18 +68,19 @@ void SpriteBatch::drawSprite(const Sprite &sprite)
 	m_sprites[m_spriteCount++] = sprite;
 }
 
-void SpriteBatch::drawText(const Vector2F &pos, const string &text, Font *font)
-{
-	if(!m_graphicsContext)
-	{
-		LOG("SpriteBatch::drawText(): Called before begin()");
-		return;
-	}
-
-	if(!font) return;
-
-	font->draw(this, pos, text);
-}
+// TODO: Fonts
+//void SpriteBatch::drawText(const Vector2F &pos, const string &text, Font *font)
+//{
+//	if(!m_graphicsContext)
+//	{
+//		LOG("SpriteBatch::drawText(): Called before begin()");
+//		return;
+//	}
+//
+//	if(!font) return;
+//
+//	font->draw(this, pos, text);
+//}
 
 void SpriteBatch::end()
 {
@@ -94,7 +97,7 @@ void SpriteBatch::end()
 	{
 		switch(m_state.mode)
 		{
-			case DEFERRED:
+			case SpriteSortMode::DEFERRED:
 			{
 				// Sprites are not drawn until end() is called. end() will apply graphics
 				// device settings and draw all the sprites in one batch, in the same
@@ -134,7 +137,7 @@ void SpriteBatch::end()
 						{
 							// Draw textured primitives
 							m_graphicsContext->setTexture(itr2->first);
-							m_graphicsContext->drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
+							m_graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
 							spriteCount = 0;
 						}
 					}
@@ -142,7 +145,7 @@ void SpriteBatch::end()
 			}
 			break;
 
-			case TEXTURE:
+			case SpriteSortMode::TEXTURE:
 			{
 				// Sort sprites by texture. Draw forwards and batch together
 				// similar textures, as long as they don't overlap a different texture.

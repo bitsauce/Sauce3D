@@ -1,3 +1,7 @@
+// Copied and modified file from SDL2
+// This file contains SDL keycodes that have been renamed to
+// to make it easier to use for the end user
+
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -24,8 +28,8 @@
  *
  *  Defines constants which identify keyboard keys and modifiers.
  */
-#ifndef SAUCE_KEYCODES_H
-#define SAUCE_KEYCODES_H
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include "Scancodes.h"
@@ -317,7 +321,9 @@ enum MouseButton
 	SAUCE_MOUSE_BUTTON_NONE = 0,
 	SAUCE_MOUSE_BUTTON_LEFT = SDL_BUTTON_LEFT,
 	SAUCE_MOUSE_BUTTON_MIDDLE = SDL_BUTTON_MIDDLE,
-	SAUCE_MOUSE_BUTTON_RIGHT = SDL_BUTTON_RIGHT
+	SAUCE_MOUSE_BUTTON_RIGHT = SDL_BUTTON_RIGHT,
+    SAUCE_MOUSE_BUTTON_X1 = SDL_BUTTON_X1,
+    SAUCE_MOUSE_BUTTON_X2 = SDL_BUTTON_X2
 };
 
 enum ControllerButton
@@ -381,5 +387,3 @@ END_SAUCE_NAMESPACE
 #define KMOD_SHIFT  (KMOD_LSHIFT|KMOD_RSHIFT)
 #define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
 #define KMOD_GUI    (KMOD_LGUI|KMOD_RGUI)*/
-
-#endif /* SAUCE_KEYCODES_H */

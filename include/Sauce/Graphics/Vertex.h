@@ -1,5 +1,8 @@
-#ifndef SAUCE_VERTEX_H
-#define SAUCE_VERTEX_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Common.h>
 
@@ -8,7 +11,7 @@ BEGIN_SAUCE_NAMESPACE
 /*********************************************************************
 **	Data types														**
 **********************************************************************/
-enum DataType
+enum class Datatype : uint32
 {
 	SAUCE_FLOAT = GL_FLOAT,
 	SAUCE_UINT = GL_UNSIGNED_INT,
@@ -22,7 +25,7 @@ enum DataType
 /*********************************************************************
 **	Vertex attributes												**
 **********************************************************************/
-enum VertexAttribute
+enum class VertexAttribute : uint32
 {
 	VERTEX_POSITION,
 	VERTEX_COLOR,
@@ -44,15 +47,15 @@ public:
 	VertexFormat();
 	VertexFormat(const VertexFormat &other);
 
-	void set(const VertexAttribute attrib, const int size, const DataType = SAUCE_FLOAT);
+	void set(const VertexAttribute attrib, const int size, const Datatype=Datatype::SAUCE_FLOAT);
 	int getElementCount(const VertexAttribute attrib) const;
-	DataType getDataType(const VertexAttribute attrib) const;
+	Datatype getDatatype(const VertexAttribute attrib) const;
 	bool isAttributeEnabled(const VertexAttribute attrib) const;
 
 	uint getVertexSizeInBytes() const;
 	uint getAttributeOffset(const VertexAttribute attrib) const;
 	
-	Vertex *createVertices(const int count) const;
+	Vertex *createVertices(const uint32 count) const;
 	
 	VertexFormat &operator=(const VertexFormat &other);
 	bool operator==(const VertexFormat &other);
@@ -65,22 +68,22 @@ private:
 	{
 		Attribute() :
 			elementCount(0),
-			dataType(SAUCE_FLOAT),
+			datatype(Datatype::SAUCE_FLOAT),
 			offset(0)
 		{
 		}
 
 		int elementCount;
-		DataType dataType;
+		Datatype datatype;
 		uint offset;
 		
 		bool operator!=(const Attribute &other)
 		{
-			return elementCount != other.elementCount || dataType != other.dataType;
+			return elementCount != other.elementCount || datatype != other.datatype;
 		}
 	};
 
-	Attribute m_attributes[VERTEX_ATTRIB_MAX];
+	Attribute m_attributes[(uint32)VertexAttribute::VERTEX_ATTRIB_MAX];
 	uint m_vertexByteSize;
 };
 
@@ -143,5 +146,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_VERTEX_H

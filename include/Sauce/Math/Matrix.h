@@ -1,5 +1,8 @@
-#ifndef SAUCE_MATRIX_H
-#define SAUCE_MATRIX_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Math/Vector.h>
@@ -699,5 +702,3 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix4& m)
        << "(" << m[12] << ",\t" << m[13] << ",\t" << m[14] <<  ",\t" << m[15] << ")\n";
     return os;
 }
-
-#endif // SAUCE_MATRIX_H

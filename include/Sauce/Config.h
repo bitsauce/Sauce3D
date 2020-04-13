@@ -1,5 +1,10 @@
-#ifndef SAUCE_CONFIG_H
-#define SAUCE_CONFIG_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
+
+#define NOMINMAX
 
 #include <SDL.h>
 
@@ -96,10 +101,20 @@ using namespace std;
 /*********************************************************************
 **	Set typedefs													**
 **********************************************************************/
+// TODO: Should get rid of these old typedefs
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef unsigned long ulong;
+
+typedef uint8_t uint8;
+typedef int8_t int8;
+typedef uint16_t uint16;
+typedef int16_t int16;
+typedef uint32_t uint32;
+typedef int32_t int32;
+typedef uint64_t uint64;
+typedef int64_t int64;
 
 #ifdef SAUCE_USE_FLOAT
 typedef float  SFloat;
@@ -113,11 +128,22 @@ typedef double SFloat;
 BEGIN_SAUCE_NAMESPACE
 
 /*********************************************************************
+**	Enum class utility												**
+**********************************************************************/
+#define ENUM_CLASS_ADD_BITWISE_OPERATORS(Enumclass)                       \
+	template<typename Other>                                              \
+	inline auto operator|(const Other& lhs, const Enumclass& rhs)         \
+	{                                                                     \
+		using T = std::underlying_type_t<Enumclass>;                      \
+		return static_cast<T>(static_cast<T>(lhs) | static_cast<T>(rhs)); \
+	}
+
+/*********************************************************************
 **	Engine return codes												**
 **********************************************************************/
-enum RetCode
+enum class RetCode : int32
 {
-	SAUCE_OK					= 0,
+	SAUCE_OK					=  0,
 	SAUCE_RUNTIME_EXCEPTION		= -1,
 	SAUCE_INVALID_CONFIG		= -2,
 	SAUCE_UNKNOWN_EXCEPTION		= -3
@@ -126,7 +152,7 @@ enum RetCode
 /*********************************************************************
 **	Engine run flags												**
 **********************************************************************/
-enum EngineFlag
+enum class EngineFlag : uint32
 {
 	SAUCE_EXPORT_LOG				= 1 << 0, ///< Export the output log to a log file.
 	SAUCE_RUN_IN_BACKGROUND			= 1 << 1, ///< This will allow the program to run while not focused.
@@ -134,6 +160,7 @@ enum EngineFlag
 	SAUCE_VERBOSE					= 1 << 4, ///< This will make the engine produce more verbose messages from engine calls.
 	SAUCE_WINDOW_RESIZABLE			= 1 << 5
 };
+ENUM_CLASS_ADD_BITWISE_OPERATORS(EngineFlag);
 
 /*********************************************************************
 **	Message types													**
@@ -143,6 +170,17 @@ enum MessageType
 	SAUCE_INFO_MSG,
 	SAUCE_WARN_MSG,
 	SAUCE_ERR_MSG
+};
+
+/*********************************************************************
+**	List of supported graphics backends								**
+**********************************************************************/
+enum class GraphicsBackend : uint32
+{
+	SAUCE_OPENGL_3,
+	SAUCE_OPENGL_4,
+	SAUCE_DIRECTX,
+	SAUCE_VULKAN
 };
 
 /*********************************************************************
@@ -178,7 +216,7 @@ namespace util
 	SAUCE_API void toDirectoryPath(string &path);
 	SAUCE_API string getWorkingDirectory();
 
-	enum UnicodeByteOrder
+	enum class UnicodeByteOrder : uint32
 	{
 		DECODE_LITTLE_ENDIAN,
 		DECODE_BIG_ENDIAN,
@@ -194,11 +232,11 @@ namespace util
 
 	// This function will attempt to decode a UTF-16 encoded character in the buffer.
 	// If the encoding is invalid, the function returns -1.
-	int decodeUTF16(const char *encodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = DECODE_LITTLE_ENDIAN);
+	int decodeUTF16(const char *encodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder=UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
 
 	// This function will encode the value into the buffer.
 	// If the value is invalid, the function returns -1, else the encoded length.
-	int encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder = DECODE_LITTLE_ENDIAN);
+	int encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder=UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
 }
 
 END_SAUCE_NAMESPACE
@@ -214,5 +252,3 @@ END_SAUCE_NAMESPACE
 #define TUPLE_CMP2(a, b) \
 	if(a < b) return false; \
 	if(a > b) return true;
-
-#endif // SAUCE_CONFIG_H

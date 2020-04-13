@@ -1,5 +1,8 @@
-#ifndef SAUCE_INPUT_CONTEXT_H
-#define SAUCE_INPUT_CONTEXT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Input/InputManager.h>
@@ -75,5 +78,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_INPUT_CONTEXT_H

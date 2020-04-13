@@ -1,5 +1,8 @@
-#ifndef SAUCE_SCENE_OBJECT_H
-#define SAUCE_SCENE_OBJECT_H
+// Copyright (C) 2011-2020
+// Made by Marcus "Bitsauce" Vergara
+// Distributed under the MIT license
+
+#pragma once
 
 #include <Sauce/Config.h>
 #include <Sauce/Common/Event.h>
@@ -117,17 +120,17 @@ public:
 	{
 		switch(e->getType())
 		{
-			case EVENT_KEY_DOWN:
-			case EVENT_KEY_UP:
-			case EVENT_KEY_REPEAT: onKeyEvent(static_cast<KeyEvent*>(e)); break;
-			case EVENT_MOUSE_UP:
-			case EVENT_MOUSE_DOWN:
-			case EVENT_MOUSE_MOVE:
-			case EVENT_MOUSE_WHEEL: onMouseEvent(static_cast<MouseEvent*>(e)); break;
-			case EVENT_CONTROLLER_BUTTON_UP:
-			case EVENT_CONTROLLER_BUTTON_DOWN:
-			case EVENT_CONTROLLER_BUTTON_REPEAT:
-			case EVENT_CONTROLLER_AXIS: onControllerEvent(static_cast<InputEvent*>(e)); break;
+			case (uint32)KeyEventType::DOWN:
+			case (uint32)KeyEventType::UP:
+			case (uint32)KeyEventType::REPEAT: onKeyEvent(static_cast<KeyEvent*>(e)); break;
+			case (uint32)MouseEventType::UP:
+			case (uint32)MouseEventType::DOWN:
+			case (uint32)MouseEventType::MOVE:
+			case (uint32)MouseEventType::WHEEL: onMouseEvent(static_cast<MouseEvent*>(e)); break;
+			case (uint32)ControllerButtonEventType::UP:
+			case (uint32)ControllerButtonEventType::DOWN:
+			case (uint32)ControllerButtonEventType::REPEAT:
+			case (uint32)CoreEventType::CONTROLLER_AXIS: onControllerEvent(static_cast<InputEvent*>(e)); break;
 		}
 	}
 
@@ -143,9 +146,9 @@ public:
 	{
 		switch(e->getType())
 		{
-			case EVENT_KEY_DOWN: onKeyDown(e); break;
-			case EVENT_KEY_UP: onKeyUp(e); break;
-			case EVENT_KEY_REPEAT: onKeyRepeat(e); break;
+			case (uint32)KeyEventType::DOWN: onKeyDown(e); break;
+			case (uint32)KeyEventType::UP: onKeyUp(e); break;
+			case (uint32)KeyEventType::REPEAT: onKeyRepeat(e); break;
 		}
 	}
 
@@ -205,10 +208,10 @@ public:
 	{
 		switch(e->getType())
 		{
-			case EVENT_MOUSE_UP: onMouseUp(e); break;
-			case EVENT_MOUSE_DOWN: onMouseDown(e); break;
-			case EVENT_MOUSE_MOVE: onMouseMove(e); break;
-			case EVENT_MOUSE_WHEEL: onMouseWheel(e); break;
+			case (uint32)MouseEventType::UP: onMouseUp(e); break;
+			case (uint32)MouseEventType::DOWN: onMouseDown(e); break;
+			case (uint32)MouseEventType::MOVE: onMouseMove(e); break;
+			case (uint32)MouseEventType::WHEEL: onMouseWheel(e); break;
 		}
 	}
 
@@ -269,10 +272,10 @@ public:
 	{
 		switch(e->getType())
 		{
-			case EVENT_CONTROLLER_BUTTON_DOWN:
-			case EVENT_CONTROLLER_BUTTON_UP:
-			case EVENT_CONTROLLER_BUTTON_REPEAT: onControllerButton(static_cast<ControllerButtonEvent*>(e)); break;
-			case EVENT_CONTROLLER_AXIS: onControllerAxis(static_cast<ControllerAxisEvent*>(e)); break;
+			case (uint32)ControllerButtonEventType::DOWN:
+			case (uint32)ControllerButtonEventType::UP:
+			case (uint32)ControllerButtonEventType::REPEAT: onControllerButton(static_cast<ControllerButtonEvent*>(e)); break;
+			case (uint32)CoreEventType::CONTROLLER_AXIS: onControllerAxis(static_cast<ControllerAxisEvent*>(e)); break;
 		}
 	}
 
@@ -299,25 +302,25 @@ public:
 		// Find and call the specific event function
 		switch(e->getType())
 		{
-			case EVENT_START: onStart(static_cast<GameEvent*>(e)); break;
-			case EVENT_END: onEnd(static_cast<GameEvent*>(e)); break;
-			case EVENT_TICK: onTick(static_cast<TickEvent*>(e)); break;
-			case EVENT_DRAW: onDraw(static_cast<DrawEvent*>(e)); break;
-			case EVENT_STEP_BEGIN: onStepBegin(static_cast<StepEvent*>(e)); break;
-			case EVENT_STEP_END: onStepEnd(static_cast<StepEvent*>(e)); break;
-			case EVENT_TEXT_INPUT: onTextInput(static_cast<TextEvent*>(e)); break;
-			case EVENT_WINDOW_SIZE_CHANGED: onWindowSizeChanged(static_cast<WindowEvent*>(e)); break;
-			case EVENT_KEY_DOWN:
-			case EVENT_KEY_UP:
-			case EVENT_KEY_REPEAT:
-			case EVENT_MOUSE_UP:
-			case EVENT_MOUSE_DOWN:
-			case EVENT_MOUSE_MOVE:
-			case EVENT_MOUSE_WHEEL:
-			case EVENT_CONTROLLER_BUTTON_UP:
-			case EVENT_CONTROLLER_BUTTON_DOWN:
-			case EVENT_CONTROLLER_BUTTON_REPEAT:
-			case EVENT_CONTROLLER_AXIS: onInputEvent(static_cast<InputEvent*>(e)); break;
+			case (uint32)GameEventType::START: onStart(static_cast<GameEvent*>(e)); break;
+			case (uint32)GameEventType::END: onEnd(static_cast<GameEvent*>(e)); break;
+			case (uint32)CoreEventType::TICK: onTick(static_cast<TickEvent*>(e)); break;
+			case (uint32)CoreEventType::DRAW: onDraw(static_cast<DrawEvent*>(e)); break;
+			case (uint32)StepEventType::BEGIN: onStepBegin(static_cast<StepEvent*>(e)); break;
+			case (uint32)StepEventType::END: onStepEnd(static_cast<StepEvent*>(e)); break;
+			case (uint32)CoreEventType::TEXT_INPUT: onTextInput(static_cast<TextEvent*>(e)); break;
+			case (uint32)WindowEventType::SIZE_CHANGED: onWindowSizeChanged(static_cast<WindowEvent*>(e)); break;
+			case (uint32)KeyEventType::DOWN:
+			case (uint32)KeyEventType::UP:
+			case (uint32)KeyEventType::REPEAT:
+			case (uint32)MouseEventType::UP:
+			case (uint32)MouseEventType::DOWN:
+			case (uint32)MouseEventType::MOVE:
+			case (uint32)MouseEventType::WHEEL:
+			case (uint32)ControllerButtonEventType::UP:
+			case (uint32)ControllerButtonEventType::DOWN:
+			case (uint32)ControllerButtonEventType::REPEAT:
+			case (uint32)CoreEventType::CONTROLLER_AXIS: onInputEvent(static_cast<InputEvent*>(e)); break;
 		}
 	}
 
@@ -449,5 +452,3 @@ private:
 };
 
 END_SAUCE_NAMESPACE
-
-#endif // SAUCE_SCENE_OBJECT_H
