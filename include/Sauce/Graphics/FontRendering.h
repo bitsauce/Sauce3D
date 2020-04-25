@@ -8,13 +8,25 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+enum class TextAlignment
+{
+	Left,
+	Centered,
+	Right
+};
+
 class SAUCE_API FontRenderer
 {
 public:
 	virtual ~FontRenderer() { }
 	virtual bool initialize(const string& fontFilePath) = 0;
 	virtual bool setFontSize(const uint32 fontSize) = 0;
-	virtual void drawString(GraphicsContext* context, const string& str) = 0;
+	virtual void drawString(GraphicsContext* context,
+		const string& str,
+		const float x, const float y,
+		const float scale=1.0f,
+		const float rotation=0.0f,
+		const TextAlignment alignment=TextAlignment::Left) = 0;
 };
 
 class SAUCE_API FontRenderingSystem

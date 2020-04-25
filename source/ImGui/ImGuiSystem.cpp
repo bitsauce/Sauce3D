@@ -98,7 +98,7 @@ void ImGuiSystem::initialize(void* hwnd)
     createShaders();
 }
 
-void ImGuiSystem::processInputs(const float deltaTime)
+void ImGuiSystem::processInputs(const float deltaTime, const char textInputChar)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
@@ -121,12 +121,12 @@ void ImGuiSystem::processInputs(const float deltaTime)
 
     // Update key states
     {
-        for (int32 keyCode = 0; keyCode <= SAUCE_KEY_Z; ++keyCode)
+        for (int32 scancode = 0; scancode < 512; ++scancode)
         {
-            io.KeysDown[keyCode] = input->getButtonState((Keycode)keyCode);
+            const int32 keycode = SDL_GetKeyFromScancode((SDL_Scancode)scancode);
+            io.KeysDown[scancode] = input->getButtonState((Keycode)keycode);
         }
-        // TODO:
-        //io.AddInputCharacter();
+        io.AddInputCharacter(textInputChar);
     }
 
     // Update mouse state
@@ -307,6 +307,8 @@ void ImGuiSystem::render()
         delete vbo;
         delete ibo;
     }
+
+    graphicsContext->setShader(nullptr);
 }
 
 bool createShaders()

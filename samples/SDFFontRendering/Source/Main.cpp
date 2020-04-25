@@ -1,6 +1,7 @@
 /* Include the SauceEngine framework */
 #include <Sauce/Sauce.h>
 #include <Sauce/ImGui.h>
+
 using namespace sauce;
 
 class SDFFontRenderingGame : public Game
@@ -54,7 +55,13 @@ public:
 
 		static float edge0 = 0.213f;
 		static float edge1 = 0.504f;
-		static float scale = 1.0f;
+
+		static char textToDraw[256]  = "Test";
+		static Vector2F textPosition = Vector2F(0.0f, 100.0f);
+		static float textScale       = 1.0f;
+		static float textRotation    = 0.0f;
+		static int32 textAlignment   = (int32)TextAlignment::Left;
+
 		{
 			static int counter = 0;
 			static bool show_demo_window = false;
@@ -62,18 +69,41 @@ public:
 			static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 			ImGui::Begin("SDF Font Rendering");
-			ImGui::SliderFloat("edge0", &edge0, 0.0f, 1.0f);
-			ImGui::SliderFloat("edge1", &edge1, 0.0f, 1.0f);
-			ImGui::SliderFloat("scale", &scale, 0.0f, 10.0f);
+
+			if (ImGui::TreeNode("Text"))
+			{
+				ImGui::InputText("Text", textToDraw, 256);
+				ImGui::SliderFloat("PosX", &textPosition.x, 0.f, 1000.f);
+				ImGui::SliderFloat("PosY", &textPosition.y, 0.f, 1000.f);
+				ImGui::SliderFloat("Scale", &textScale, 0.0f, 10.0f);
+				ImGui::SliderFloat("Rotation", &textRotation, 0.0f, 360.0f);
+				const char* textAlignments[] = { "Left", "Center", "Right" };
+				ImGui::Combo("Alignment", &textAlignment, textAlignments, IM_ARRAYSIZE(textAlignments));
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("SDF"))
+			{
+				ImGui::SliderFloat("edge0", &edge0, 0.0f, 1.0f);
+				ImGui::SliderFloat("edge1", &edge1, 0.0f, 1.0f);
+				ImGui::TreePop();
+			}
+
 			ImGui::End();
 		}
 
-		e->getGraphicsContext()->setShader(m_fontShader);
+		GraphicsContext* context = e->getGraphicsContext();
+
+		context->setShader(m_fontShader);
 		m_fontShader->setUniform1f("u_Edge0", edge0);
 		m_fontShader->setUniform1f("u_Edge1", edge1);
-		m_fontShader->setUniform1f("u_Scale", scale);
-		m_fontRenderer->drawString(e->getGraphicsContext(), "");
-		e->getGraphicsContext()->setShader(nullptr);
+		
+		//m_fontShader->setUniform1f("u_Scale", scale);
+
+		m_fontRenderer->drawString(context, textToDraw, textPosition.x, textPosition.y, textScale, textRotation, (TextAlignment)textAlignment);
+		context->setShader(nullptr);
+
+		context->drawCircle(textPosition.x, textPosition.y, 3, 12);
 
 		Game::onDraw(e);
 	}

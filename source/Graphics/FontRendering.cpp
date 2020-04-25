@@ -22,6 +22,7 @@ BEGIN_SAUCE_NAMESPACE
 
 FT_Library   g_library;
 const uint32 g_defaultFontSize = 128;
+VertexFormat g_fontVertexFormat;
 
 //--------------------------------------------------------------
 // FontRenderingSystem::initialize()
@@ -35,6 +36,11 @@ bool FontRenderingSystem::initialize()
 		return false;
 	}
 
+	// Set font vertex format
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+
 	return true;
 }
 
@@ -46,6 +52,9 @@ void FontRenderingSystem::free()
 //--------------------------------------------------------------
 // FontRenderer implementation
 //--------------------------------------------------------------
+// TODO: Should support vertical text rendering
+// TODO: Should support boxed text rendering
+// TODO: Text coloring would be nice I suppose
 class FontRendererImpl : public FontRenderer
 {
 public:
@@ -65,7 +74,7 @@ public:
 		delete m_sdfAtlas;
 	}
 
-	virtual bool initialize(const string& fontFilePath)
+	virtual bool initialize(const string& fontFilePath) override
 	{
 		FT_Error error = FT_New_Face(g_library, fontFilePath.c_str(), 0, &m_face);
 		if (error)
@@ -82,7 +91,7 @@ public:
 		return true;
 	}
 
-	bool setFontSize(uint32 fontSize)
+	bool setFontSize(uint32 fontSize) override
 	{
 		FT_Error error = FT_Set_Char_Size(m_face, 0, fontSize * 64, 0, 96);
 		if (error)
@@ -95,11 +104,102 @@ public:
 		return true;
 	}
 
-	void drawString(GraphicsContext* context, const string& str)
+	void drawString(GraphicsContext* context, const string& str, const float startX, const float startY,
+		const float scale, const float rotation, const TextAlignment alignment) override
 	{
+		const int32 numChars = str.length();
+
+		Vector2F extentsOfString;
+		for (int32 i = 0; i < numChars; ++i)
+		{
+			// Find glyph desc
+			GlyphDesc glyphDesc;
+			{
+				const uint64 charcode = str[i];
+				unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.find(charcode);
+				if (itr == m_charcodeToGlyph.end())
+				{
+					LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
+					continue;
+				}
+				glyphDesc = itr->second;
+			}
+
+			extentsOfString += glyphDesc.advance;
+		}
+
+		// TODO: Should cache rendered string
+		//m_cachedRenderedText = context->createRenderTarget(extentsOfString.x, extentsOfString.y);
+		
+		Vertex* vertices = g_fontVertexFormat.createVertices(numChars * 4);
+		uint32* indices = new uint32[numChars * 6];
+		Vector2F currentPos = Vector2F(0.0f, 0.0f);
+
+		if (alignment == TextAlignment::Centered)
+		{
+			currentPos.x = -extentsOfString.x / 2.0f;
+		}
+		else if (alignment == TextAlignment::Right)
+		{
+			currentPos.x = -extentsOfString.x;
+		}
+
+		for (int32 i = 0; i < numChars; ++i)
+		{
+			// Find glyph desc
+			GlyphDesc glyphDesc;
+			{
+				const uint64 charcode = str[i];
+				unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.find(charcode);
+				if (itr == m_charcodeToGlyph.end())
+				{
+					LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
+					continue;
+				}
+				glyphDesc = itr->second;
+			}
+
+			const Vector2F currentTL = currentPos + glyphDesc.pixelDrawOffset;
+			const Vector2F currentBR = currentPos + glyphDesc.pixelSize + glyphDesc.pixelDrawOffset;
+			vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentTL.y);
+			vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv0.x, glyphDesc.uv0.y);
+			vertices[i * 4 + 0].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+			vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentTL.y);
+			vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv1.x, glyphDesc.uv0.y);
+			vertices[i * 4 + 1].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+			vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentBR.y);
+			vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv0.x, glyphDesc.uv1.y);
+			vertices[i * 4 + 2].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+			vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentBR.y);
+			vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv1.x, glyphDesc.uv1.y);
+			vertices[i * 4 + 3].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+			indices[i * 6 + 0] = i * 4 + 0;
+			indices[i * 6 + 1] = i * 4 + 2;
+			indices[i * 6 + 2] = i * 4 + 1;
+
+			indices[i * 6 + 3] = i * 4 + 3;
+			indices[i * 6 + 4] = i * 4 + 1;
+			indices[i * 6 + 5] = i * 4 + 2;
+
+			currentPos += glyphDesc.advance;
+		}
+
 		context->setTexture(m_sdfAtlasTexture);
-		context->drawRectangle(Vector2F(0, 0), m_sdfAtlasTexture->getSize() * 2);
-		context->setTexture(0);
+		Matrix4 textTransform;
+		textTransform.scale(scale);
+		textTransform.rotateZ(rotation);
+		textTransform.translate(startX, startY, 0.0f);
+		context->pushMatrix(textTransform);
+		context->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, numChars * 4, indices, numChars * 6);
+		context->popMatrix();
+		context->setTexture(nullptr);
+
+		delete[] vertices;
+		delete[] indices;
 	}
 
 private:
@@ -107,14 +207,17 @@ private:
 	{
 		uint64 charcode;
 		uint32 glyphIndex;
-		uint32 x;
-		uint32 y;
-		uint32 width;
-		uint32 height;
+		Vector2I pixelSize;
+		Vector2I pixelPos;
+		Vector2I pixelDrawOffset;
+		Vector2F advance;
+		Vector2F uv0;
+		Vector2F uv1;
 	};
 
 	void updateGlyphAtlas()
 	{
+		// TODO: Should cache glyph atlases as they're pretty slow to create
 		static uint32 MAX_ATLAS_WIDTH = 4096;
 
 		// Calculate the extents of the resulting pixmap
@@ -157,18 +260,20 @@ private:
 				// Add glyph descriptor
 				{
 					GlyphDesc glyphDesc;
-					glyphDesc.charcode = charcode;
+					glyphDesc.charcode   = charcode;
 					glyphDesc.glyphIndex = glyphIndex;
-					glyphDesc.x = currentOffset.x + m_fontPadding / 2;
-					glyphDesc.y = currentOffset.y + m_fontPadding / 2;
-					glyphDesc.width = glyphWidth;
-					glyphDesc.height = glyphHeight;
+					glyphDesc.pixelPos   = currentOffset;
+					glyphDesc.pixelSize.set(glyphWidth, glyphHeight);
+					glyphDesc.advance.set(m_face->glyph->advance.x / 64, m_face->glyph->advance.y / 64);
+					glyphDesc.pixelDrawOffset.set(m_face->glyph->metrics.horiBearingX / 64, -m_face->glyph->metrics.horiBearingY / 64);
+					
+
 					m_charcodeToGlyph[charcode] = glyphDesc;
 				}
 
 				// Update offsets and extents
-				currentOffset.x += glyphWidth;
-				maxGlyphHeight = math::maximum(maxGlyphHeight, glyphHeight);
+				currentOffset.x += glyphWidth + m_fontPadding;
+				maxGlyphHeight = math::maximum(maxGlyphHeight, glyphHeight + m_fontPadding);
 				extents.x = math::maximum(extents.x, currentOffset.x);
 				extents.y = math::maximum(extents.y, currentOffset.y + maxGlyphHeight);
 			}
@@ -181,9 +286,9 @@ private:
 		// Render characters to atlas
 		uint8* glyphAtlasData = new uint8[extents.x * extents.y];
 		memset(glyphAtlasData, 0, extents.x * extents.y);
-		for (const pair<uint64, GlyphDesc>& itr : m_charcodeToGlyph)
+		for (unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.begin(); itr != m_charcodeToGlyph.end(); ++itr)
 		{
-			const GlyphDesc& glyphDesc = itr.second;
+			GlyphDesc& glyphDesc = itr->second;
 			FT_Load_Glyph(m_face, glyphDesc.glyphIndex, FT_LOAD_DEFAULT);
 			FT_Error error = FT_Render_Glyph(m_face->glyph, FT_RENDER_MODE_MONO);
 			if (error)
@@ -191,7 +296,9 @@ private:
 				LOG("Failed to render glyph for glyphIndex=%i (error string: \"%s\")", glyphDesc.glyphIndex, FT_Error_String(error));
 				continue;
 			}
-			drawBitmapToAtlas(glyphAtlasData, extents.x, &m_face->glyph->bitmap, glyphDesc.x, glyphDesc.y);
+			drawBitmapToAtlas(glyphAtlasData, extents.x, &m_face->glyph->bitmap, glyphDesc.pixelPos.x + m_fontPadding / 2, glyphDesc.pixelPos.y + m_fontPadding / 2);
+			glyphDesc.uv0 = Vector2F(glyphDesc.pixelPos) / Vector2F(extents);
+			glyphDesc.uv1 = Vector2F(glyphDesc.pixelPos + glyphDesc.pixelSize) / Vector2F(extents);
 		}
 
 		// Create sdf map
@@ -332,8 +439,11 @@ private:
 	int32 m_sdfRadius;
 	shared_ptr<Texture2D> m_sdfAtlasTexture;
 	int32 m_subdivisionsPerSDFPixel;
-
 	unordered_map<uint64, GlyphDesc> m_charcodeToGlyph;
+
+	RenderTarget2D* m_cachedRenderedText;
+
+	static VertexFormat s_vertexFormat;
 };
 
 //--------------------------------------------------------------

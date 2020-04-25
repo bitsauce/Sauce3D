@@ -1,5 +1,6 @@
 /* Include the SauceEngine framework */
 #include <Sauce/Sauce.h>
+
 using namespace sauce;
 
 class MinimalGame : public Game
@@ -57,8 +58,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	GameDesc desc;
 	desc.name = "Minimal Sample";
 	desc.workingDirectory = "../Assets";
-	desc.flags = SAUCE_WINDOW_RESIZABLE;
-	desc.graphicsBackend = SAUCE_OPENGL_3;
+	desc.flags = (uint32)EngineFlag::SAUCE_WINDOW_RESIZABLE;
+	desc.graphicsBackend = GraphicsBackend::SAUCE_OPENGL_3;
 
 	MinimalGame game;
 	return game.run(desc);

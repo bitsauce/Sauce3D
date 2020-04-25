@@ -217,6 +217,7 @@ int Game::run(const GameDesc &desc)
 		{
 			// Event handling
 			SDL_Event event;
+			char textInputChar = '\0';
 			while(SDL_PollEvent(&event))
 			{
 				switch(event.type)
@@ -270,6 +271,7 @@ int Game::run(const GameDesc &desc)
 							TextEvent e(event.text.text[0]);
 							onEvent(&e);
 						}
+						textInputChar = event.text.text[0];
 					}
 					break;
 
@@ -432,7 +434,7 @@ int Game::run(const GameDesc &desc)
 			}
 
 			// TODO: Make a scene object instead?
-			ImGuiSystem::processInputs(deltaTime);
+			ImGuiSystem::processInputs(deltaTime, textInputChar);
 
 			// Step begin
 			{

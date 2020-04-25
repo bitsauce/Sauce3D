@@ -349,7 +349,7 @@ void OpenGLContext::setupContext()
 	{
 		shader->setSampler2D("u_Texture", m_currentState->texture);
 	}
-	else if (!shader)
+	else if (!m_currentState->shader)
 	{
 		shader->setSampler2D("u_Texture", s_defaultTexture);
 	}

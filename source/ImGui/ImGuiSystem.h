@@ -14,7 +14,7 @@ class ImGuiSystem
 {
 public:
 	static void initialize(void* hwnd);
-	static void processInputs(const float deltaTime);
+	static void processInputs(const float deltaTime, const char textInputChar);
 	static void newFrame();
 	static void render();
 };

@@ -1,3 +1,5 @@
+#version 420
+
 in vec2 in_Position;
 in vec2 in_TexCoord;
 in vec4 in_VertexColor;
