@@ -10,15 +10,18 @@
 // Made by Marcus "Bitsauce" Vergara
 // Distributed under the MIT license
 
-#include <Sauce/Common.h>
+#include <Sauce/Utils/MiscUtils.h>
 #include <sstream>
 #include <fstream>
+
+#include "MD5.h"
 
 // TODO: This will only work on windows i think
 #ifdef SAUCE_COMPILE_WINDOWS
 #include <direct.h>
 #else
 #include <unistd.h>
+#include "..\..\include\Sauce\Utils\MiscUtils.h"
 #define MAX_PATH 1024
 #endif
 
@@ -114,51 +117,6 @@ string util::asciiToStr(const uchar value)
 	string s;
 	s += value;
 	return s;
-}
-
-string util::getAbsoluteFilePath(const string &path)
-{
-	if(path.substr(0, 2) == ":/")
-	{
-		return path.substr(2, string::npos);
-	}
-	else if(path.substr(0, 7) == "prefs:/")
-	{
-		return Game::Get()->getPrefPath() + path.substr(7, string::npos);
-	}
-	else if(path.substr(0, 5) == "bin:/")
-	{
-		return Game::Get()->getBinaryPath() + path.substr(5, string::npos);
-	}
-	return path;
-}
-
-void util::toAbsoluteFilePath(string &path)
-{
-	path = getAbsoluteFilePath(path);
-}
-
-void util::toDirectoryPath(string &path)
-{
-	if(path.back() != '/')
-	{
-		path += '/';
-	}
-}
-
-string util::getWorkingDirectory()
-{
-	char cwd[MAX_PATH];
-	assert(getcwd(cwd, MAX_PATH) != nullptr);
-	return cwd;
-}
-
-bool util::fileExists(string filePath)
-{
-	ifstream s(getAbsoluteFilePath(filePath).c_str());
-	bool open = s.is_open();
-	s.close();
-	return open;
 }
 
 int util::decodeUTF8(const char *encodedBuffer, unsigned int *outLength)
@@ -352,6 +310,11 @@ int util::encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *
 		if(outCharLength) *outCharLength = 4;
 		return 4;
 	}
+}
+
+std::string util::ByteArrayMD5(const std::string& str)
+{
+	return md5(str);
 }
 
 END_SAUCE_NAMESPACE

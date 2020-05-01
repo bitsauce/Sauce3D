@@ -36,7 +36,7 @@ public:
 
 	struct State
 	{
-		State(const SpriteSortMode mode=SpriteSortMode::DEFERRED, const BlendState blendState=BlendPreset::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix=Matrix4(), shared_ptr<Shader> shader=nullptr) :
+		State(const SpriteSortMode mode=SpriteSortMode::DEFERRED, const BlendState blendState=BlendPreset::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix=Matrix4(), ShaderRef shader=nullptr) :
 			mode(mode),
 			blendState(blendState),
 			transformationMatix(transformationMatix),
@@ -47,7 +47,7 @@ public:
 		SpriteSortMode mode;
 		BlendState blendState;
 		Matrix4 transformationMatix;
-		shared_ptr<Shader> shader;
+		ShaderRef shader;
 	};
 
 	void begin(GraphicsContext *graphicsContext, const State &state = State());

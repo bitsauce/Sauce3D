@@ -287,5 +287,6 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-# Exclude Sauce3D build directory
+# Exclude Sauce3D directories
 build/
+DataCache/

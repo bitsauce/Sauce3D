@@ -61,6 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SAUCE_DEBUG;SAUCE_IMPORT;</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -90,6 +91,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>SAUCE_IMPORT;</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -119,8 +121,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\projects\Sauce3D.ruleset" />
-    <None Include="..\Assets\Shader.frag" />
-    <None Include="..\Assets\Shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

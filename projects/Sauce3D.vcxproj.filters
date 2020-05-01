@@ -46,6 +46,12 @@
     <Filter Include="Include\Sauce\ImGui">
       <UniqueIdentifier>{1c26517b-582f-4956-b230-662f709ade01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Sauce\Utils">
+      <UniqueIdentifier>{c81cd833-a439-45ad-9f89-be9c02ac745d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{b483d5eb-c045-487c-a54b-d37c396394d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)source\Common\Window.cpp">
@@ -61,12 +67,6 @@
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Common\ResourceManager.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Common\Timer.cpp">
-      <Filter>Source\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Common\Utilities.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)source\Graphics\Animation.cpp">
@@ -178,6 +178,18 @@
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\source\Common\Exception.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Utils\MD5.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Utils\MiscUtils.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Utils\FileSystemUtils.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Common\Timer.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -343,6 +355,21 @@
     </ClInclude>
     <ClInclude Include="..\source\ImGui\ImGuiSystem.h">
       <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Utils\MD5.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Utils.h">
+      <Filter>Include\Sauce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Utils\MiscUtils.h">
+      <Filter>Include\Sauce\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Utils\FileSystemUtils.h">
+      <Filter>Include\Sauce\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Common\SauceObject.h">
+      <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

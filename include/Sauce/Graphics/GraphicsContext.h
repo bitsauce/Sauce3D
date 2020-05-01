@@ -33,15 +33,53 @@ enum class PrimitiveType : uint32
 };
 
 /**
+ * Clearing buffer mask.
+ * Used for selecting how to clear the backbuffer.
+ */
+enum class BufferMask : uint32
+{
+	COLOR_BUFFER = GL_COLOR_BUFFER_BIT,		///< %Color buffer
+	DEPTH_BUFFER = GL_DEPTH_BUFFER_BIT,		///< Depth buffer
+	STENCIL_BUFFER = GL_STENCIL_BUFFER_BIT	///< Stencil buffer
+};
+ENUM_CLASS_ADD_BITWISE_OPERATORS(BufferMask);
+
+/**
+  * Graphics capabilites.
+  * For enabling and disabling certain rendering options.
+  */
+enum class Capability : uint32
+{
+	BLEND,					///< Back buffer blending
+	DEPTH_TEST,				///< Depth testing
+	FACE_CULLING,			///< Back face culling
+	LINE_SMOOTH,			///< Smooth lines
+	POLYGON_SMOOTH,			///< Smooth polygons
+	MULTISAMPLE,			///< Multisample?
+	TEXTURE_1D,				///< 1D textures
+	TEXTURE_2D,				///< 2D textures
+	TEXTURE_3D,				///< 3D textures
+	VSYNC,
+	WIREFRAME
+};
+
+/**
  * \brief Handles primitive rendering to the screen.
  */
 class SAUCE_API GraphicsContext
 {
 	friend class Game;
 	friend class Window;
-public:
 
-	// State
+protected:
+	GraphicsContext();
+	virtual ~GraphicsContext();
+
+	virtual Window* createWindow(const string& title, const int x, const int y, const int w, const int h, const Uint32 flags) = 0;
+
+	static GraphicsContext* GetContext();
+
+public:
 	struct State
 	{
 		State()
@@ -57,8 +95,8 @@ public:
 
 		uint width;
 		uint height;
-		shared_ptr<Texture2D> texture;
-		shared_ptr<Shader> shader;
+		Texture2DRef texture;
+		ShaderRef shader;
 		BlendState blendState;
 		RenderTarget2D *renderTarget;
 		stack<Matrix4> transformationMatrixStack;
@@ -68,17 +106,6 @@ public:
 	// TODO: For every set*, add a push*/pop* which uses the state stack
 	void pushState();
 	void popState();
-
-	/**
-	 * Clearing buffer mask.
-	 * Used for selecting how to clear the backbuffer.
-	 */
-	enum BufferMask
-	{
-		COLOR_BUFFER = GL_COLOR_BUFFER_BIT,		///< %Color buffer
-		DEPTH_BUFFER = GL_DEPTH_BUFFER_BIT,		///< Depth buffer
-		STENCIL_BUFFER = GL_STENCIL_BUFFER_BIT	///< Stencil buffer
-	};
 
 	/**
 	 * Sets a render target. This means that everything drawn after this function call
@@ -124,24 +151,24 @@ public:
 	 * applied to it.
 	 * \param texture Texture to apply to the primitives.
 	 */
-	void setTexture(shared_ptr<Texture2D> texture);
+	void setTexture(Texture2DRef texture);
 
 	/**
 	 * Gets the current texture.
 	 */
-	shared_ptr<Texture2D> getTexture() const;
+	Texture2DRef getTexture() const;
 
 	/**
 	 * Set shader. Every vertex and fragment rendered after this will
 	 * have the effect of \p shader applied to them.
 	 * \param shader Shader to render the primitves with.
 	 */
-	void setShader(shared_ptr<Shader> shader);
+	void setShader(ShaderRef shader);
 
 	/**
 	 * Returns the current shader.
 	 */
-	shared_ptr<Shader> getShader() const;
+	ShaderRef getShader() const;
 
 	/**
 	 * Set blend state. Every pixel rendered after this will use a 
@@ -286,44 +313,10 @@ public:
 
 	Vertex *getVertices(const uint vertexCount);
 
-protected:
-	GraphicsContext();
-	virtual ~GraphicsContext();
-
-	void *m_context;
-	Window *m_window;
-
-	stack<State> m_stateStack;
-	State *m_currentState;
-
-	vector<Vertex> m_vertices; // Vertices for when needed
-
-	static shared_ptr<Shader> s_defaultShader;
-	static shared_ptr<Texture2D> s_defaultTexture;
-
 public:
-	/**
-	 *  Pure virtual backend dependent functions
-	 */
-	 
-	/**
-	  * Graphics capabilites.
-	  * For enabling and disabling certain rendering options.
-	  */
-	enum class Capability : uint32
-	{
-		BLEND,					///< Back buffer blending
-		DEPTH_TEST,				///< Depth testing
-		FACE_CULLING,			///< Back face culling
-		LINE_SMOOTH,			///< Smooth lines
-		POLYGON_SMOOTH,			///< Smooth polygons
-		MULTISAMPLE,			///< Multisample?
-		TEXTURE_1D,				///< 1D textures
-		TEXTURE_2D,				///< 2D textures
-		TEXTURE_3D,				///< 3D textures
-		VSYNC,
-		WIREFRAME
-	};
+	/************************************************
+	 *  Pure virtual backend dependent functions    *
+	 ************************************************/
 
 	/**
 	 * Enables the capability \p cap.
@@ -428,7 +421,18 @@ public:
 	virtual RenderTarget2D *createRenderTarget(const uint width, const uint height, const uint targetCount = 1, const PixelFormat &fmt = PixelFormat()) = 0;
 
 protected:
-	virtual Window *createWindow(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags) = 0;
+	void* m_context;
+	Window* m_window;
+
+	stack<State> m_stateStack;
+	State* m_currentState;
+
+	/** We keep a list of vertices for when we might need it */
+	vector<Vertex> m_vertices;
+
+	static ShaderRef s_defaultShader;
+	static Texture2DRef s_defaultTexture;
+	static GraphicsContext* s_this;
 };
 
 END_SAUCE_NAMESPACE

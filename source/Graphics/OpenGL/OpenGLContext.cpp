@@ -120,13 +120,13 @@ void OpenGLContext::setLineWidth(const float lineWidth)
 
 void OpenGLContext::clear(const uint mask, const Color &fillColor)
 {
-	if(mask & COLOR_BUFFER)   GL_CALL(glClearColor(fillColor.getR() / 255.0f, fillColor.getG() / 255.0f, fillColor.getB() / 255.0f, fillColor.getA() / 255.0f));
-	if(mask & DEPTH_BUFFER)   GL_CALL(glClearDepth(fillColor.getR() / 255.0f));
-	if(mask & STENCIL_BUFFER) GL_CALL(glClearStencil(fillColor.getR() / 255.0f));
-	                          GL_CALL(glClear(mask));
-	if(mask & COLOR_BUFFER)   GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
-	if(mask & DEPTH_BUFFER)   GL_CALL(glClearDepth(0.0f));
-	if(mask & STENCIL_BUFFER) GL_CALL(glClearStencil(0.0f));
+	if(mask & BufferMask::COLOR_BUFFER)   GL_CALL(glClearColor(fillColor.getR() / 255.0f, fillColor.getG() / 255.0f, fillColor.getB() / 255.0f, fillColor.getA() / 255.0f));
+	if(mask & BufferMask::DEPTH_BUFFER)   GL_CALL(glClearDepth(fillColor.getR() / 255.0f));
+	if(mask & BufferMask::STENCIL_BUFFER) GL_CALL(glClearStencil(fillColor.getR() / 255.0f));
+	                                      GL_CALL(glClear(mask));
+	if(mask & BufferMask::COLOR_BUFFER)   GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+	if(mask & BufferMask::DEPTH_BUFFER)   GL_CALL(glClearDepth(0.0f));
+	if(mask & BufferMask::STENCIL_BUFFER) GL_CALL(glClearStencil(0.0f));
 }
 
 void OpenGLContext::enableScissor(const int x, const int y, const int w, const int h)
@@ -319,12 +319,12 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 		"}\n";
 
 	OpenGLShader::s_glslVersion = getGLSLVersion();
-	s_defaultShader = shared_ptr<Shader>(new OpenGLShader(vertexShader, fragmentShader, ""));
+	s_defaultShader = ShaderRef(new OpenGLShader(vertexShader, fragmentShader, ""));
 
 	// Create blank texture
 	uint8 pixel[4];
 	pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-	s_defaultTexture = shared_ptr<Texture2D>(GraphicsContext::createTexture(1, 1, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixel));
+	s_defaultTexture = Texture2DRef(GraphicsContext::createTexture(1, 1, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixel));
 
 	return m_window;
 }
@@ -339,7 +339,7 @@ void OpenGLContext::setupContext()
 		(uint32)m_currentState->blendState.m_alphaDst)
 	);
 
-	shared_ptr<Shader> shader = m_currentState->shader;
+	ShaderRef shader = m_currentState->shader;
 	if(!shader)
 	{
 		shader = s_defaultShader;

@@ -9,13 +9,19 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-class SAUCE_API Shader
+struct SAUCE_API ShaderDesc : public SauceObjectDesc {};
+
+class SAUCE_API Shader : public SauceObject
 {
 	friend class GraphicsContext;
 	friend class ResourceManager;
 public:
+	SAUCE_REF_TYPE(Shader);
+
 	Shader();
 	virtual ~Shader();
+
+	virtual bool initialize(ShaderDesc) { return true; }
 
 	virtual void bindFragLocation(const uint location, const string &name) = 0;
 
@@ -43,11 +49,12 @@ public:
 	virtual void setUniform4f(const string &name, const float v0, const float v1, const float v2, const float v3) = 0;
 	virtual void setUniform4f(const string &name, const float *v) = 0;
 	virtual void setUniformMatrix4f(const string &name, const float *v0) = 0;
-	virtual void setSampler2D(const string &name, shared_ptr<Texture2D> texture) = 0;
+	virtual void setSampler2D(const string &name, Texture2DRef texture) = 0;
 
 	virtual void setUniformColor(const string &name, const Color &color) = 0;
 	virtual void setUniformColorRGB(const string &name, const ColorRGB &color) = 0;
 };
+SAUCE_REF_TYPE_TYPEDEFS(Shader);
 
 class ShaderResourceDesc : public ResourceDesc
 {

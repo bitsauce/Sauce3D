@@ -111,19 +111,13 @@ float pow(const float a, const float b)
 	return powf(a, b);
 }
 
-uint32 ceilPow2(const uint32& number)
+uint32 ceilPow2(uint32 number)
 {
-	// Find first set bit from the left
-	uint32 leftbit;
-	for (leftbit = 0; leftbit < 32; ++leftbit)
-	{
-		const uint32 bitmask = 0x80000000 >> leftbit;
-		if ((number & bitmask) != 0)
-		{
-			return 0x80000000 >> (leftbit - 1);
-		}
-	}
-	return 0x00000000;
+	if (number <= 1) return 1;
+	uint32 power = 2;
+	number--;
+	while (number >>= 1) power <<= 1;
+	return power;
 }
 
 int mod(const int a, const int b)

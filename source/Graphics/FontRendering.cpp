@@ -20,204 +20,157 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-FT_Library   g_library;
-const uint32 g_defaultFontSize = 128;
-VertexFormat g_fontVertexFormat;
+/** Global FreeType library object */
+FT_Library g_library;
 
-//--------------------------------------------------------------
-// FontRenderingSystem::initialize()
-//--------------------------------------------------------------
-bool FontRenderingSystem::initialize()
+/**
+ * Glyph descriptor
+ */
+struct GlyphDesc
 {
-	FT_Error error = FT_Init_FreeType(&g_library);
-	if (error)
+	uint64 charcode;
+	uint32 glyphIndex;
+	Vector2I pixelSize;
+	Vector2I pixelPos;
+	Vector2I pixelDrawOffset;
+	Vector2F advance;
+	Vector2F uv0;
+	Vector2F uv1;
+
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const GlyphDesc& glyphDesc)
 	{
-		LOG("Failed to initialize the FontRenderingSystem (error string: \"%s\")", FT_Error_String(error));
-		return false;
+		out << glyphDesc.charcode;
+		out << glyphDesc.glyphIndex;
+		out << glyphDesc.pixelSize;
+		out << glyphDesc.pixelPos;
+		out << glyphDesc.pixelDrawOffset;
+		out << glyphDesc.advance;
+		out << glyphDesc.uv0;
+		out << glyphDesc.uv1;
+		return out;
 	}
 
-	// Set font vertex format
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, GlyphDesc& glyphDesc)
+	{
+		in >> glyphDesc.charcode;
+		in >> glyphDesc.glyphIndex;
+		in >> glyphDesc.pixelSize;
+		in >> glyphDesc.pixelPos;
+		in >> glyphDesc.pixelDrawOffset;
+		in >> glyphDesc.advance;
+		in >> glyphDesc.uv0;
+		in >> glyphDesc.uv1;
+		return in;
+	}
+};
 
-	return true;
-}
-
-void FontRenderingSystem::free()
-{
-	FT_Done_FreeType(g_library);
-}
-
-//--------------------------------------------------------------
-// FontRenderer implementation
-//--------------------------------------------------------------
-// TODO: Should support vertical text rendering
-// TODO: Should support boxed text rendering
-// TODO: Text coloring would be nice I suppose
-class FontRendererImpl : public FontRenderer
+/**
+ * This class contains font data that is slow to generate
+ * (e.g. glyph atlases and glyph descriptors.)
+ *
+ * This data is shared between FontRenderers to imporve performance.
+ */
+class FontRendererSharedData : public SauceObject
 {
 public:
-	FontRendererImpl()
-		: m_face(nullptr)
-		, m_fontSize(0)
-		, m_fontPadding(16)
-		, m_sdfRadius(6)
-		, m_sdfAtlas(nullptr)
+	// Reuse FontRenderer's descriptor object
+	using FontRendererSharedDataDesc = FontRendererDesc;
+	SAUCE_REF_TYPE(FontRendererSharedData);
+
+	FontRendererSharedData()
+		: m_fontSize(0)
+		, m_fontPadding(40)
+		, m_sdfRadius(20)
 		, m_subdivisionsPerSDFPixel(4)
+		, m_sdfTextureAtlas(nullptr)
 	{
 	}
 
-	~FontRendererImpl()
+	/**
+	 * Initializes a font by loading and storing glyph metrics and
+	 * renders the font's glyphs to a texture atlas
+	 */
+	virtual bool initialize(FontRendererSharedDataDesc fontDesc)
 	{
-		FT_Done_Face(m_face);
-		delete m_sdfAtlas;
-	}
-
-	virtual bool initialize(const string& fontFilePath) override
-	{
-		FT_Error error = FT_New_Face(g_library, fontFilePath.c_str(), 0, &m_face);
+		// Load font
+		FT_Face face;
+		FT_Error error = FT_New_Face(g_library, fontDesc.fontFilePath.c_str(), 0, &face);
 		if (error)
 		{
 			LOG("Failed create font typeface (error string: \"%s\")", FT_Error_String(error));
 			return false;
 		}
 
-		// Initialize font with default font size
-		if (!setFontSize(g_defaultFontSize))
-		{
-			return false;
-		}
-		return true;
-	}
-
-	bool setFontSize(uint32 fontSize) override
-	{
-		FT_Error error = FT_Set_Char_Size(m_face, 0, fontSize * 64, 0, 96);
+		// Set font size
+		error = FT_Set_Char_Size(face, 0, fontDesc.fontSize * 64, 0, 96);
 		if (error)
 		{
 			LOG("Failed create set font size (error string: \"%s\")", FT_Error_String(error));
 			return false;
 		}
-		m_fontSize = fontSize;
-		updateGlyphAtlas();
+		m_fontSize = fontDesc.fontSize;
+		updateGlyphAtlas(face);
+
+		FT_Done_Face(face);
+
 		return true;
 	}
 
-	void drawString(GraphicsContext* context, const string& str, const float startX, const float startY,
-		const float scale, const float rotation, const TextAlignment alignment) override
+	/**
+	 * Serialization
+	 */
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const FontRendererSharedDataRef& sharedData)
 	{
-		const int32 numChars = str.length();
+		out << sharedData->m_fontSize;
+		out << sharedData->m_fontPadding;
+		out << sharedData->m_sdfRadius;
+		out << sharedData->m_sdfTextureAtlas;
+		out << sharedData->m_subdivisionsPerSDFPixel;
+		out << sharedData->m_charcodeToGlyph;
+		return out;
+	}
 
-		Vector2F extentsOfString;
-		for (int32 i = 0; i < numChars; ++i)
+	/**
+	 * Deserialization
+	 */
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, FontRendererSharedDataRef& sharedData)
+	{
+		assert(sharedData == nullptr);
+		sharedData = FontRendererSharedDataRef(new FontRendererSharedData());
+
+		in >> sharedData->m_fontSize;
+		in >> sharedData->m_fontPadding;
+		in >> sharedData->m_sdfRadius;
+		in >> sharedData->m_sdfTextureAtlas;
+		in >> sharedData->m_subdivisionsPerSDFPixel;
+		in >> sharedData->m_charcodeToGlyph;
+		return in;
+	}
+
+	/**
+	 * Getters
+	 */
+	inline const GlyphDesc* getGlyphDesc(uint64 charcode) const
+	{
+		const unordered_map<uint64, GlyphDesc>::const_iterator itr = m_charcodeToGlyph.find(charcode);
+		if (itr != m_charcodeToGlyph.end())
 		{
-			// Find glyph desc
-			GlyphDesc glyphDesc;
-			{
-				const uint64 charcode = str[i];
-				unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.find(charcode);
-				if (itr == m_charcodeToGlyph.end())
-				{
-					LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
-					continue;
-				}
-				glyphDesc = itr->second;
-			}
-
-			extentsOfString += glyphDesc.advance;
+			return &itr->second;
 		}
+		return nullptr;
+	}
 
-		// TODO: Should cache rendered string
-		//m_cachedRenderedText = context->createRenderTarget(extentsOfString.x, extentsOfString.y);
-		
-		Vertex* vertices = g_fontVertexFormat.createVertices(numChars * 4);
-		uint32* indices = new uint32[numChars * 6];
-		Vector2F currentPos = Vector2F(0.0f, 0.0f);
-
-		if (alignment == TextAlignment::Centered)
-		{
-			currentPos.x = -extentsOfString.x / 2.0f;
-		}
-		else if (alignment == TextAlignment::Right)
-		{
-			currentPos.x = -extentsOfString.x;
-		}
-
-		for (int32 i = 0; i < numChars; ++i)
-		{
-			// Find glyph desc
-			GlyphDesc glyphDesc;
-			{
-				const uint64 charcode = str[i];
-				unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.find(charcode);
-				if (itr == m_charcodeToGlyph.end())
-				{
-					LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
-					continue;
-				}
-				glyphDesc = itr->second;
-			}
-
-			const Vector2F currentTL = currentPos + glyphDesc.pixelDrawOffset;
-			const Vector2F currentBR = currentPos + glyphDesc.pixelSize + glyphDesc.pixelDrawOffset;
-			vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentTL.y);
-			vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv0.x, glyphDesc.uv0.y);
-			vertices[i * 4 + 0].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
-
-			vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentTL.y);
-			vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv1.x, glyphDesc.uv0.y);
-			vertices[i * 4 + 1].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
-
-			vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentBR.y);
-			vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv0.x, glyphDesc.uv1.y);
-			vertices[i * 4 + 2].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
-
-			vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentBR.y);
-			vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc.uv1.x, glyphDesc.uv1.y);
-			vertices[i * 4 + 3].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
-
-			indices[i * 6 + 0] = i * 4 + 0;
-			indices[i * 6 + 1] = i * 4 + 2;
-			indices[i * 6 + 2] = i * 4 + 1;
-
-			indices[i * 6 + 3] = i * 4 + 3;
-			indices[i * 6 + 4] = i * 4 + 1;
-			indices[i * 6 + 5] = i * 4 + 2;
-
-			currentPos += glyphDesc.advance;
-		}
-
-		context->setTexture(m_sdfAtlasTexture);
-		Matrix4 textTransform;
-		textTransform.scale(scale);
-		textTransform.rotateZ(rotation);
-		textTransform.translate(startX, startY, 0.0f);
-		context->pushMatrix(textTransform);
-		context->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, numChars * 4, indices, numChars * 6);
-		context->popMatrix();
-		context->setTexture(nullptr);
-
-		delete[] vertices;
-		delete[] indices;
+	inline Texture2DRef getSDFTextureAtlas() const
+	{
+		return m_sdfTextureAtlas;
 	}
 
 private:
-	struct GlyphDesc
+	/**
+	 * Render glyphs to atlas and store glyph metrics
+	 */
+	void updateGlyphAtlas(FT_Face face)
 	{
-		uint64 charcode;
-		uint32 glyphIndex;
-		Vector2I pixelSize;
-		Vector2I pixelPos;
-		Vector2I pixelDrawOffset;
-		Vector2F advance;
-		Vector2F uv0;
-		Vector2F uv1;
-	};
-
-	void updateGlyphAtlas()
-	{
-		// TODO: Should cache glyph atlases as they're pretty slow to create
 		static uint32 MAX_ATLAS_WIDTH = 4096;
 
 		// Calculate the extents of the resulting pixmap
@@ -231,21 +184,21 @@ private:
 			uint32 maxGlyphHeight = 0;
 			for (uint64 charcode = 0; charcode <= NUM_GLYPHS; ++charcode)
 			{
-				const uint32 glyphIndex = FT_Get_Char_Index(m_face, charcode);
+				const uint32 glyphIndex = FT_Get_Char_Index(face, charcode);
 				if (glyphIndex <= 0)
 				{
 					// Skip invalid glyphs
 					continue;
 				}
 
-				FT_Error error = FT_Load_Glyph(m_face, glyphIndex, FT_LOAD_DEFAULT);
+				FT_Error error = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
 				if (error)
 				{
 					LOG("Failed to load glyph for charcode=%l (error string: \"%s\")", charcode, FT_Error_String(error));
 					continue;
 				}
 
-				const FT_Glyph_Metrics metrics = m_face->glyph->metrics;
+				const FT_Glyph_Metrics metrics = face->glyph->metrics;
 				const uint32 glyphWidth = (metrics.width / 64) + m_fontPadding;
 				const uint32 glyphHeight = (metrics.height / 64) + m_fontPadding;
 
@@ -260,20 +213,18 @@ private:
 				// Add glyph descriptor
 				{
 					GlyphDesc glyphDesc;
-					glyphDesc.charcode   = charcode;
+					glyphDesc.charcode = charcode;
 					glyphDesc.glyphIndex = glyphIndex;
-					glyphDesc.pixelPos   = currentOffset;
+					glyphDesc.pixelPos = currentOffset;
 					glyphDesc.pixelSize.set(glyphWidth, glyphHeight);
-					glyphDesc.advance.set(m_face->glyph->advance.x / 64, m_face->glyph->advance.y / 64);
-					glyphDesc.pixelDrawOffset.set(m_face->glyph->metrics.horiBearingX / 64, -m_face->glyph->metrics.horiBearingY / 64);
-					
-
+					glyphDesc.advance.set(face->glyph->advance.x / 64, face->glyph->advance.y / 64);
+					glyphDesc.pixelDrawOffset.set(metrics.horiBearingX / 64, -metrics.horiBearingY / 64);
 					m_charcodeToGlyph[charcode] = glyphDesc;
 				}
 
 				// Update offsets and extents
-				currentOffset.x += glyphWidth + m_fontPadding;
-				maxGlyphHeight = math::maximum(maxGlyphHeight, glyphHeight + m_fontPadding);
+				currentOffset.x += glyphWidth;
+				maxGlyphHeight = math::maximum(maxGlyphHeight, glyphHeight);
 				extents.x = math::maximum(extents.x, currentOffset.x);
 				extents.y = math::maximum(extents.y, currentOffset.y + maxGlyphHeight);
 			}
@@ -289,14 +240,14 @@ private:
 		for (unordered_map<uint64, GlyphDesc>::iterator itr = m_charcodeToGlyph.begin(); itr != m_charcodeToGlyph.end(); ++itr)
 		{
 			GlyphDesc& glyphDesc = itr->second;
-			FT_Load_Glyph(m_face, glyphDesc.glyphIndex, FT_LOAD_DEFAULT);
-			FT_Error error = FT_Render_Glyph(m_face->glyph, FT_RENDER_MODE_MONO);
+			FT_Load_Glyph(face, glyphDesc.glyphIndex, FT_LOAD_DEFAULT);
+			FT_Error error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_MONO);
 			if (error)
 			{
 				LOG("Failed to render glyph for glyphIndex=%i (error string: \"%s\")", glyphDesc.glyphIndex, FT_Error_String(error));
 				continue;
 			}
-			drawBitmapToAtlas(glyphAtlasData, extents.x, &m_face->glyph->bitmap, glyphDesc.pixelPos.x + m_fontPadding / 2, glyphDesc.pixelPos.y + m_fontPadding / 2);
+			drawBitmapToAtlas(glyphAtlasData, extents.x, &face->glyph->bitmap, glyphDesc.pixelPos.x + m_fontPadding / 2, glyphDesc.pixelPos.y + m_fontPadding / 2);
 			glyphDesc.uv0 = Vector2F(glyphDesc.pixelPos) / Vector2F(extents);
 			glyphDesc.uv1 = Vector2F(glyphDesc.pixelPos + glyphDesc.pixelSize) / Vector2F(extents);
 		}
@@ -304,7 +255,7 @@ private:
 		// Create sdf map
 		const int32 sdfMapSizeX = extents.x / m_subdivisionsPerSDFPixel;
 		const int32 sdfMapSizeY = extents.y / m_subdivisionsPerSDFPixel;
-		m_sdfAtlas = new Pixmap(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelComponents::R, PixelDatatype::UNSIGNED_BYTE));
+		Pixmap sdfAtlas(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelComponents::R, PixelDatatype::UNSIGNED_BYTE));
 		{
 			for (int32 sdfMapY = 0; sdfMapY < sdfMapSizeY; ++sdfMapY)
 			{
@@ -338,7 +289,7 @@ private:
 						{
 							// Write 0.5 if this SDF pixel contains a contour
 							const uint8 sdfPixelValue = 127;
-							m_sdfAtlas->setPixel(sdfMapX, sdfMapY, &sdfPixelValue);
+							sdfAtlas.setPixel(sdfMapX, sdfMapY, &sdfPixelValue);
 							continue;
 						}
 					}
@@ -404,19 +355,22 @@ private:
 						}
 
 						const float signedDistanceNorm = signedDistanceSqMin / float(m_sdfRadius * m_sdfRadius); // [-1, +1]
-						const float distanceNorm       = ((signedDistanceNorm + 1.0f) / 2.0f);                   // [+0, +1]
-						const uint8 sdfPixelValue      = distanceNorm * 255.5f;                                  // [+0, +255]
-						m_sdfAtlas->setPixel(sdfMapX, sdfMapY, &sdfPixelValue);
+						const float distanceNorm = ((signedDistanceNorm + 1.0f) / 2.0f);                   // [+0, +1]
+						const uint8 sdfPixelValue = distanceNorm * 255.5f;                                  // [+0, +255]
+						sdfAtlas.setPixel(sdfMapX, sdfMapY, &sdfPixelValue);
 					}
 				}
 			}
 		}
-		m_sdfAtlasTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(*m_sdfAtlas));
-		m_sdfAtlasTexture->setFiltering(TextureFiltering::LINEAR);
+		m_sdfTextureAtlas = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(sdfAtlas));
+		m_sdfTextureAtlas->setFiltering(TextureFiltering::LINEAR);
 
 		delete[] glyphAtlasData;
 	}
 
+	/**
+	 * Copies a monochrome glyph into a texutre atlas
+	 */
 	void drawBitmapToAtlas(uint8* glyphAtlasData, int32 glyphAtlasWidth, FT_Bitmap* bitmap, const int32 offsetX, const int32 offsetY)
 	{
 		assert(bitmap->pixel_mode == FT_PIXEL_MODE_MONO);
@@ -432,32 +386,322 @@ private:
 		}
 	}
 
-	FT_Face m_face;
+private:
+	/**
+	 * Member variables
+	 */
 	int32 m_fontSize;
 	int32 m_fontPadding;
-	Pixmap* m_sdfAtlas;
 	int32 m_sdfRadius;
-	shared_ptr<Texture2D> m_sdfAtlasTexture;
 	int32 m_subdivisionsPerSDFPixel;
+	Texture2DRef m_sdfTextureAtlas;
 	unordered_map<uint64, GlyphDesc> m_charcodeToGlyph;
+};
+SAUCE_REF_TYPE_TYPEDEFS(FontRendererSharedData);
 
-	RenderTarget2D* m_cachedRenderedText;
+/**
+ * Globals used by FontRendererImpl
+ */
+VertexFormat                                     g_fontVertexFormat;
+unordered_map<string, string>                    g_sharedFontDataOnDisk;
+unordered_map<string, FontRendererSharedDataRef> g_sharedFontDataLoaded;
+
+const string g_fontShaderVS =
+	"in vec2 in_Position;\n"
+	"in vec2 in_TexCoord;\n"
+	"in vec4 in_VertexColor;\n"
+	"\n"
+	"out vec2 v_TexCoord;\n"
+	"out vec4 v_VertexColor;\n"
+	"\n"
+	"uniform mat4 u_ModelViewProj;\n"
+	"\n"
+	"void main()\n"
+	"{\n"
+	"	gl_Position = vec4(in_Position, 0.0, 1.0) * u_ModelViewProj;\n"
+	"	v_TexCoord = in_TexCoord;\n"
+	"	v_VertexColor = in_VertexColor;\n"
+	"}\n";
+
+const string g_fontShaderPS =
+	"in vec2 v_TexCoord;\n"
+	"in vec4 v_VertexColor;\n"
+	"\n"
+	"out vec4 out_FragColor;\n"
+	"\n"
+	"uniform sampler2D u_Texture;\n"
+	"uniform float u_Edge0;\n"
+	"uniform float u_Edge1;\n"
+	"\n"
+	"void main()\n"
+	"{\n"
+	"	// TODO: Use dFdx(v_TexCoord.x), dFdy(v_TexCoord.y) to shift the edge when font is far away/small\n"
+	"	float sdfValue = texture(u_Texture, v_TexCoord).r;\n"
+	"	float alpha = smoothstep(u_Edge0, u_Edge1, sdfValue);\n"
+	"	out_FragColor = vec4(v_VertexColor.rgb, alpha);\n"
+	"}\n";
+
+ShaderRef g_fontShader;
+
+//--------------------------------------------------------------
+// FontRenderingSystem::Initialize()
+//--------------------------------------------------------------
+bool FontRenderingSystem::Initialize(GraphicsContext* context)
+{
+	FT_Error error = FT_Init_FreeType(&g_library);
+	if (error)
+	{
+		LOG("Failed to initialize the FontRenderingSystem (error string: \"%s\")", FT_Error_String(error));
+		return false;
+	}
+
+	// Create shader from strings
+	g_fontShader = ShaderRef(context->createShader(g_fontShaderVS, g_fontShaderPS, ""));
+
+	// Set font vertex format
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+
+	// Register all cached fonts
+	util::FileSystemIterator cachedFontsDir("DataCache/Fonts", "*", (uint32)util::FileSystemIteratorFlag::IncludeFiles);
+	for (util::DirectoryOrFile cachedFontFile : cachedFontsDir)
+	{
+		g_sharedFontDataOnDisk[cachedFontFile.baseName] = cachedFontFile.fullPath;
+	}
+
+	return true;
+}
+
+void FontRenderingSystem::Free()
+{
+	FT_Done_FreeType(g_library);
+}
+
+//--------------------------------------------------------------
+// FontRenderer implementation
+//--------------------------------------------------------------
+class FontRendererImpl : public FontRenderer
+{
+public:
+	FontRendererImpl()
+		: m_sharedData(nullptr)
+		, m_vertices(nullptr)
+		, m_indices(nullptr)
+	{
+	}
+
+	~FontRendererImpl()
+	{
+		delete[] m_vertices;
+		delete[] m_indices;
+	}
+
+	bool initialize(FontRendererDesc fontDesc) override
+	{
+		if (fontDesc.fontFilePath.empty())
+		{
+#ifdef SAUCE_COMPILE_WINDOWS
+			fontDesc.fontFilePath = "C:/Windows/Fonts/Arial.ttf";
+#else
+			LOG("No default font provided for the current platform");
+			return false;
+#endif
+		}
+
+		// Check if shared font data has already been loaded
+		const string cachedFontKey = fontDesc.getKey();
+		{
+			const unordered_map<string, FontRendererSharedDataRef>::iterator itr = g_sharedFontDataLoaded.find(cachedFontKey);
+			if (itr != g_sharedFontDataLoaded.end())
+			{
+				m_sharedData = itr->second;
+				return true;
+			}
+		}
+
+		// Check if we have a cached version of this font's shared data on disk
+		{
+			const unordered_map<string, string>::iterator itr = g_sharedFontDataOnDisk.find(cachedFontKey);
+			if (itr != g_sharedFontDataOnDisk.end())
+			{
+				if (loadCached(itr->second))
+				{
+					g_sharedFontDataLoaded[cachedFontKey] = m_sharedData;
+					return true;
+				}
+				else
+				{
+					LOG("Failed to load font's cached shared data from file");
+					return false;
+				}
+			}
+		}
+
+		// Couldn't find cached shared font data, initialize new font
+		{
+			m_sharedData = sauce::CreateNew<FontRendererSharedData>(fontDesc);
+
+			// Write to data cache
+			if (!filesystem::exists("DataCache/Fonts/"))
+			{
+				filesystem::create_directories("DataCache/Fonts/");
+			}
+			saveCached("DataCache/Fonts/" + fontDesc.getKey());
+
+			g_sharedFontDataLoaded[cachedFontKey] = m_sharedData;
+
+			return true;
+		}
+	}
+
+	bool loadCached(const string& cachedFile)
+	{
+		ByteStreamIn fileStream(cachedFile);
+		if (fileStream)
+		{
+			fileStream >> m_sharedData;
+			fileStream.close();
+			return true;
+		}
+		return false;
+	}
+
+	bool saveCached(const string& cachedFile)
+	{
+		ByteStreamOut fileStream(cachedFile);
+		if (fileStream)
+		{
+			fileStream << m_sharedData;
+			fileStream.close();
+			return true;
+		}
+		return false;
+	}
+
+	void drawText(GraphicsContext* context, FontRendererDrawTextArgs& args) override
+	{
+		const int32 numChars = args.text.length();
+
+		// We only regenerate vertex buffers if text has changed
+		const bool hasTextChanged = m_prevDrawArgs.text != args.text;
+		if (hasTextChanged)
+		{
+			m_extentsOfString = Vector2F::Zero;
+
+			delete[] m_vertices;
+			delete[] m_indices;
+			m_vertices = g_fontVertexFormat.createVertices(numChars * 4);
+			m_indices = new uint32[numChars * 6];
+
+			Vector2F currentPos = Vector2F(0.0f, 0.0f);
+
+			for (int32 i = 0; i < numChars; ++i)
+			{
+				// Find glyph desc
+				const GlyphDesc* glyphDesc;
+				{
+					const uint64 charcode = args.text[i];
+					glyphDesc = m_sharedData->getGlyphDesc(charcode);
+					if (!glyphDesc)
+					{
+						LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
+						continue;
+					}
+				}
+
+				const Vector2F currentTL = currentPos + glyphDesc->pixelDrawOffset;
+				const Vector2F currentBR = currentPos + glyphDesc->pixelSize + glyphDesc->pixelDrawOffset;
+				m_vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentTL.y);
+				m_vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv0.x, glyphDesc->uv0.y);
+				m_vertices[i * 4 + 0].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+				m_vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentTL.y);
+				m_vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv1.x, glyphDesc->uv0.y);
+				m_vertices[i * 4 + 1].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+				m_vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentBR.y);
+				m_vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv0.x, glyphDesc->uv1.y);
+				m_vertices[i * 4 + 2].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+				m_vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentBR.y);
+				m_vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv1.x, glyphDesc->uv1.y);
+				m_vertices[i * 4 + 3].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+
+				m_indices[i * 6 + 0] = i * 4 + 0;
+				m_indices[i * 6 + 1] = i * 4 + 2;
+				m_indices[i * 6 + 2] = i * 4 + 1;
+
+				m_indices[i * 6 + 3] = i * 4 + 3;
+				m_indices[i * 6 + 4] = i * 4 + 1;
+				m_indices[i * 6 + 5] = i * 4 + 2;
+
+				currentPos += glyphDesc->advance;
+
+			}
+			m_extentsOfString = currentPos;
+		}
+
+		// Setup shader
+		{
+			context->setShader(g_fontShader);
+			g_fontShader->setUniform1f("u_Edge0", args.edge0);
+			g_fontShader->setUniform1f("u_Edge1", args.edge1);
+			g_fontShader->setSampler2D("u_Texture", m_sharedData->getSDFTextureAtlas());
+		}
+
+		Matrix4 drawTransform;
+		if (args.transform == Matrix4::Zero)
+		{
+			Vector2F centering = Vector2F::Zero;
+			if (args.alignment == TextAlignment::Centered)
+			{
+				centering.x = -0.5f;
+			}
+			else if (args.alignment == TextAlignment::Right)
+			{
+				centering.x = -1.0f;
+			}
+
+			drawTransform.scale(1.0f / m_extentsOfString.x);
+			drawTransform.translate(centering.x, centering.y, 0.0f);
+			drawTransform.scale(m_extentsOfString.x * args.scale);
+			drawTransform.rotateZ(args.rotation);
+			drawTransform.translate(args.position.x, args.position.y, 0.0f);
+		}
+		else
+		{
+			drawTransform = args.transform;
+		}
+
+		// Draw text
+		context->pushMatrix(drawTransform);
+		context->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, m_vertices, numChars * 4, m_indices, numChars * 6);
+		context->popMatrix();
+
+		// Clean up
+		context->setTexture(nullptr);
+		context->setShader(nullptr);
+
+		m_prevDrawArgs = args;
+	}
+
+private:
+	FontRendererSharedDataRef m_sharedData;
+	FontRendererDrawTextArgs m_prevDrawArgs;
+	
+	Vector2F m_extentsOfString;
+
+	Vertex* m_vertices;
+	uint32* m_indices;
 
 	static VertexFormat s_vertexFormat;
 };
 
-//--------------------------------------------------------------
-// FontRenderingSystem::createFontRenderer()
-//--------------------------------------------------------------
-FontRenderer* FontRenderingSystem::createFontRenderer(const string& fontFilePath)
+FontRenderer* FontRenderer::CreateImpl(FontRendererDesc desc)
 {
-	FontRenderer* fontRenderer = new FontRendererImpl();
-	if (!fontRenderer->initialize(fontFilePath))
-	{
-		delete fontRenderer;
-		return nullptr;
-	}
-	return fontRenderer;
+	return new FontRendererImpl();
 }
 
 END_SAUCE_NAMESPACE
+

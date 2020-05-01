@@ -6,6 +6,7 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Pixmap.h>
+#include <Sauce/Utils/FileSystemUtils.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -25,14 +26,20 @@ enum class TextureWrapping : uint32
 	MIRRORED_REPEAT = GL_MIRRORED_REPEAT
 };
 
-class SAUCE_API Texture2D
+class SAUCE_API Texture2DDesc : public SauceObjectDesc {};
+
+class SAUCE_API Texture2D : public SauceObject
 {
 	friend class RenderTarget2D;
 	friend class GraphicsContext;
 	friend class Shader;
 public:
+	SAUCE_REF_TYPE(Texture2D);
+
 	Texture2D();
 	virtual ~Texture2D();
+
+	virtual bool initialize(Texture2DDesc) { return true; }
 
 	// Mipmapping
 	void enableMipmaps();
@@ -58,6 +65,9 @@ public:
 
 	void exportToFile(string path);
 
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const Texture2DRef& texture);
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture);
+
 protected:
 	virtual void updateFiltering() = 0;
 
@@ -71,6 +81,7 @@ protected:
 	uint m_height;
 	PixelFormat m_pixelFormat;
 };
+SAUCE_REF_TYPE_TYPEDEFS(Texture2D);
 
 class TextureResourceDesc : public ResourceDesc
 {

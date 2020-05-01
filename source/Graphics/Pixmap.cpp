@@ -305,4 +305,40 @@ Pixmap Pixmap::loadFromFile(const string& imageFile)
 	return std::move(newPixmap);
 }
 
+ByteStreamOut& operator<<(ByteStreamOut& out, const Pixmap& pixmap)
+{
+	out << pixmap.m_width;
+	out << pixmap.m_height;
+	out << (uint32)pixmap.m_format.getComponents();
+	out << (uint32)pixmap.m_format.getDataType();
+
+	vector<uint8> dataArray;
+	const int32 dataSize = pixmap.m_width * pixmap.m_height * pixmap.m_format.getPixelSizeInBytes();
+	dataArray.resize(dataSize);
+	memcpy(dataArray.data(), pixmap.m_data, dataSize);
+
+	out << dataArray;
+	return out;
+}
+
+ByteStreamIn& operator>>(ByteStreamIn& in, Pixmap& pixmap)
+{
+	in >> pixmap.m_width;
+	in >> pixmap.m_height;
+
+	uint32 components, datatype;
+	in >> components;
+	in >> datatype;
+	pixmap.m_format = PixelFormat((PixelComponents)components, (PixelDatatype)datatype);
+
+	vector<uint8> dataArray;
+	in >> dataArray;
+	delete[] pixmap.m_data;
+	pixmap.m_data = new uint8[dataArray.size()];
+	memcpy(pixmap.m_data, dataArray.data(), dataArray.size());
+
+	return in;
+}
+
 END_SAUCE_NAMESPACE
+

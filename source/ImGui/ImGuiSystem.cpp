@@ -16,8 +16,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-shared_ptr<Shader> g_ImGuiShader;
-shared_ptr<Texture2D> g_FontTexture;
+ShaderRef g_ImGuiShader;
+Texture2DRef g_FontTexture;
 static ImGuiMouseCursor g_LastMouseCursor = ImGuiMouseCursor_COUNT;
 static SDL_Cursor* g_ImGuiToSDLCursor[ImGuiMouseCursor_COUNT];
 
@@ -299,7 +299,7 @@ void ImGuiSystem::render()
 //                            glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)));
 //                    }
 
-                    g_ImGuiShader->setSampler2D("u_Texture", *(shared_ptr<Texture2D>*)pcmd->TextureId);
+                    g_ImGuiShader->setSampler2D("u_Texture", *(Texture2DRef*)pcmd->TextureId);
                     graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vbo, ibo);
                 }
             }
@@ -345,7 +345,7 @@ bool createShaders()
         "	out_FragColor = texture(u_Texture, v_TexCoord) * v_VertexColor;\n"
         "}\n";
 
-    g_ImGuiShader = shared_ptr<Shader>(Game::Get()->getWindow()->getGraphicsContext()->createShader(vertexShader, fragmentShader, ""));
+    g_ImGuiShader = ShaderRef(Game::Get()->getWindow()->getGraphicsContext()->createShader(vertexShader, fragmentShader, ""));
 
     createFontsTexture();
 
@@ -360,7 +360,7 @@ bool createFontsTexture()
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
-    g_FontTexture = shared_ptr<Texture2D>(Game::Get()->getWindow()->getGraphicsContext()->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels));
+    g_FontTexture = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels));
 
     // Store our identifier
     io.Fonts->TexID = (ImTextureID)&g_FontTexture;

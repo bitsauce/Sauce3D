@@ -31,7 +31,7 @@ OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, con
 	}
 }
 
-OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, shared_ptr<Texture2D> target) :
+OpenGLRenderTarget2D::OpenGLRenderTarget2D(GraphicsContext *graphicsContext, Texture2DRef target) :
 	RenderTarget2D(graphicsContext, target)
 {
 	// Generate framebuffer

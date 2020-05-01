@@ -11,6 +11,7 @@
 // Distributed under the MIT license
 
 #include <Sauce/Common.h>
+#include <Sauce/Utils.h>
 #include <Sauce/Graphics/Texture.h>
 #include <Sauce/Graphics/FontRendering.h>
 #include <Sauce/Graphics/Shader.h>

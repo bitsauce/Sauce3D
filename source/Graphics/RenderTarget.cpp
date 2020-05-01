@@ -26,20 +26,20 @@ RenderTarget2D::RenderTarget2D(GraphicsContext *graphicsContext, const uint widt
 	}
 	
 	// Allocate textures
-	m_textures = new shared_ptr<Texture2D>[m_textureCount];
+	m_textures = new Texture2DRef[m_textureCount];
 	for(uint i = 0; i < m_textureCount; ++i)
 	{
-		m_textures[i] = shared_ptr<Texture2D>(graphicsContext->createTexture(width, height, fmt));
+		m_textures[i] = Texture2DRef(graphicsContext->createTexture(width, height, fmt));
 	}
 }
 
-RenderTarget2D::RenderTarget2D(GraphicsContext *graphicsContext, shared_ptr<Texture2D> target) :
+RenderTarget2D::RenderTarget2D(GraphicsContext *graphicsContext, Texture2DRef target) :
 	m_width(target->getWidth()),
 	m_height(target->getHeight()),
 	m_textureCount(1)
 {
 	// Set texture variables
-	(m_textures = new shared_ptr<Texture2D>[1])[0] = target;
+	(m_textures = new Texture2DRef[1])[0] = target;
 }
 
 RenderTarget2D::~RenderTarget2D()

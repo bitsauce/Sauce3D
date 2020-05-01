@@ -130,6 +130,7 @@ int Game::run(const GameDesc &desc)
 		m_console->m_engine = this;
 
 		LOG("** Initializing Engine **");
+		LOG("** Current working dir: %s **", util::getWorkingDirectory().c_str());
 
 		// Initialize SDL
 		THROW_IF(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Unable to initialize SDL");
@@ -140,9 +141,6 @@ int Game::run(const GameDesc &desc)
 
 		// Set FreeImage message callback
 		FreeImage_SetOutputMessage(FreeImageErrorHandler);
-
-		// Initialize font rendering system
-		FontRenderingSystem::initialize();
 
 		// Initialize resource manager
 		m_resourceManager = new ResourceManager("Resources.xml");
@@ -166,6 +164,9 @@ int Game::run(const GameDesc &desc)
 		VertexFormat::s_vct.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
 		VertexFormat::s_vct.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
 		VertexFormat::s_vct.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+
+		// Initialize font rendering system
+		FontRenderingSystem::Initialize(graphicsContext);
 
 		// Initialize input handler
 		m_inputManager = new InputManager("InputConfig.xml");
@@ -514,7 +515,7 @@ gameloopend:
 	}
 
 	// Free font rendering system
-	FontRenderingSystem::free();
+	FontRenderingSystem::Free();
 
 	return (uint32)RetCode::SAUCE_OK;
 }

@@ -6,7 +6,7 @@ class RenderTargetsGame : public Game
 {
 	RenderTarget2D *m_renderTarget;
 	RenderTarget2D *m_renderTarget2;
-	shared_ptr<Texture2D> m_texture;
+	Texture2DRef m_texture;
 
 public:
 	void onStart(GameEvent *e)
@@ -14,7 +14,7 @@ public:
 		GraphicsContext *graphicsContext = getWindow()->getGraphicsContext();
 		m_renderTarget = graphicsContext->createRenderTarget(128, 128);
 		m_renderTarget2 = graphicsContext->createRenderTarget(128, 128);
-		m_texture = shared_ptr<Texture2D>(getWindow()->getGraphicsContext()->createTexture(Pixmap("Image.png")));
+		m_texture = Texture2DRef(getWindow()->getGraphicsContext()->createTexture(Pixmap("Image.png")));
 		Game::onStart(e);
 	}
 

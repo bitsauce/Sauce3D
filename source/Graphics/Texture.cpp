@@ -113,4 +113,48 @@ void *TextureResourceDesc::create() const
 	return graphicsContext->createTexture(pixmap);
 }
 
+ByteStreamOut& operator<<(ByteStreamOut& out, const Texture2DRef& texture)
+{
+	const bool isNull = texture == nullptr;
+	out << isNull;
+	if (!isNull)
+	{
+		Pixmap pixmap = texture->getPixmap();
+		out << pixmap;
+		out << (uint32)texture->m_filter;
+		out << (uint32)texture->m_wrapping;
+		out << texture->m_mipmaps;
+		out << texture->m_mipmapsGenerated;
+	}
+	return out;
+}
+
+ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture)
+{
+	assert(texture == nullptr);
+
+	bool isNull;
+	in >> isNull;
+	if (!isNull)
+	{
+		Pixmap pixmap;
+		in >> pixmap;
+		texture = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(pixmap));
+
+		uint32 filter;
+		in >> filter;
+		texture->m_filter = (TextureFiltering)filter;
+
+		uint32 wrapping;
+		in >> wrapping;
+		texture->m_wrapping = (TextureWrapping)wrapping;
+
+		in >> texture->m_mipmaps;
+		in >> texture->m_mipmapsGenerated;
+
+		texture->updateFiltering();
+	}
+	return in;
+}
+
 END_SAUCE_NAMESPACE

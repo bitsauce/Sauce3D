@@ -7,6 +7,8 @@
 #include <Sauce/Config.h>
 #include <Sauce/Math/Vector.h>
 
+BEGIN_SAUCE_NAMESPACE
+
 /**
  * \class	Matrix2
  *
@@ -481,6 +483,8 @@ public:
     friend Vector4<float> operator*(const Vector4<float>& vec, const Matrix4& m);
     friend std::ostream& operator<<(std::ostream& os, const Matrix4& m);
 
+    static const Matrix4 Zero;
+
 private:
     float       getCofactor(float m0, float m1, float m2,
                             float m3, float m4, float m5,
@@ -702,3 +706,5 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix4& m)
        << "(" << m[12] << ",\t" << m[13] << ",\t" << m[14] <<  ",\t" << m[15] << ")\n";
     return os;
 }
+
+END_SAUCE_NAMESPACE

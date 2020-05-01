@@ -12,6 +12,7 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Input.h>
+#include <Sauce/Utils.h>
 
 BEGIN_SAUCE_NAMESPACE
 

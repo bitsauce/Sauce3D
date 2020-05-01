@@ -15,7 +15,7 @@ class SAUCE_API Sprite
 {
 	friend class SpriteBatch;
 public:
-	Sprite(shared_ptr<Texture2D> texture = 0, const Rect<float> &rectangle = Rect<float>(0, 0, 0, 0), const Vector2F &origin = Vector2F(0.0f, 0.0f), const float angle = 0.0f, const TextureRegion &region = TextureRegion(), const Color &color = Color::White, const float depth = 0.0f, const Vector2F scale = Vector2F(1.0f, 1.0f));
+	Sprite(Texture2DRef texture = 0, const Rect<float> &rectangle = Rect<float>(0, 0, 0, 0), const Vector2F &origin = Vector2F(0.0f, 0.0f), const float angle = 0.0f, const TextureRegion &region = TextureRegion(), const Color &color = Color::White, const float depth = 0.0f, const Vector2F scale = Vector2F(1.0f, 1.0f));
 	//Sprite(const Resource<Texture2D> texture, const Rect &rectangle, const TextureRegion &region = TextureRegion(), const Color &color = Color(255), const float depth = 0.0f);
 	//Sprite(const Resource<Texture2D> texture, const Rect &rectangle, const TextureRegion &region = TextureRegion(), const Color &color = Color(255), const float depth = 0.0f);
 	//Sprite(const Resource<Texture2D> texture, const Vector2F &center, const TextureRegion &region = TextureRegion(), const Color &color = Color(255), const float depth = 0.0f);
@@ -62,11 +62,11 @@ public:
 	float getRotation() const;
 	Color getColor() const;
 	TextureRegion getRegion() const;
-	void setTexture(shared_ptr<Texture2D> texture) { m_texture = texture; }
-	shared_ptr<Texture2D> getTexture() const;
+	void setTexture(Texture2DRef texture) { m_texture = texture; }
+	Texture2DRef getTexture() const;
 
 private:
-	shared_ptr<Texture2D> m_texture;
+	Texture2DRef m_texture;
 	TextureRegion m_textureRegion;
 	Vector2F m_position;
 	Vector2F m_size;

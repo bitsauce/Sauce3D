@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Sauce/Common.h>
+#include <Sauce/Utils/FileSystemUtils.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -84,6 +85,9 @@ public:
 
 	void saveToFile(string path) const;
 	static Pixmap loadFromFile(const string& imageFile);
+
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const Pixmap& pixmap);
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, Pixmap& pixmap);
 
 private:
 	uchar* m_data;

@@ -708,7 +708,7 @@ void OpenGLShader::setUniformMatrix4f(const string & name, const float * v0)
 	}
 }
 
-void OpenGLShader::setSampler2D(const string &name, shared_ptr<Texture2D> texture)
+void OpenGLShader::setSampler2D(const string &name, Texture2DRef texture)
 {
 	// TODO: We should actually store a handle to the texture object to avoid it being destroyed
 	map<string, Uniform*>::iterator itr;

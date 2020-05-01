@@ -15,10 +15,13 @@
 BEGIN_SAUCE_NAMESPACE
 
 // Default shader. Used when no shader is set.
-shared_ptr<Shader> GraphicsContext::s_defaultShader = 0;
+ShaderRef GraphicsContext::s_defaultShader = 0;
 
 // Default texture. Empty texture used when no texture is set.
-shared_ptr<Texture2D> GraphicsContext::s_defaultTexture = 0;
+Texture2DRef GraphicsContext::s_defaultTexture = 0;
+
+// Singleton pointer
+GraphicsContext* GraphicsContext::s_this = nullptr;
 
 Vertex *GraphicsContext::getVertices(const uint vertexCount)
 {
@@ -33,6 +36,9 @@ GraphicsContext::GraphicsContext()
 	: m_context(nullptr)
 	, m_window(nullptr)
 {
+	assert(s_this == nullptr);
+	s_this = this;
+
 	State state;
 	m_stateStack.push(state);
 	m_currentState = &m_stateStack.top();
@@ -128,22 +134,22 @@ void GraphicsContext::clearMatrixStack()
 	while(popMatrix());
 }
 
-void GraphicsContext::setTexture(shared_ptr<Texture2D> texture)
+void GraphicsContext::setTexture(Texture2DRef texture)
 {
 	m_currentState->texture = texture;
 }
 
-shared_ptr<Texture2D> GraphicsContext::getTexture() const
+Texture2DRef GraphicsContext::getTexture() const
 {
 	return m_currentState->texture;
 }
 
-void GraphicsContext::setShader(shared_ptr<Shader> shader)
+void GraphicsContext::setShader(ShaderRef shader)
 {
 	m_currentState->shader = shader;
 }
 
-shared_ptr<Shader> GraphicsContext::getShader() const
+ShaderRef GraphicsContext::getShader() const
 {
 	return m_currentState->shader;
 }
