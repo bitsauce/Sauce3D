@@ -6,6 +6,7 @@
 
 // TODO:
 // The following features are missing in the FontRenderer:
+// - Find out why it seems like 0.5 is the highest value in the font atlas
 // - Should support boxed text rendering (e.g. re-implement FontRenderer::drawTextBox())
 // - Should support vertical text rendering
 // - Text coloring would be nice I suppose
@@ -31,14 +32,8 @@ enum class TextAlignment : uint32
  */
 struct SAUCE_API FontRendererDesc : public SauceObjectDesc
 {
-	string fontFilePath;
-	uint32 fontSize;
-
-	FontRendererDesc()
-		: fontFilePath("")
-		, fontSize(128)
-	{
-	}
+	string fontFilePath = "";
+	uint32 fontSize     = 128;
 
 	/** Key that is used to look for cached font data files */
 	string getKey() const

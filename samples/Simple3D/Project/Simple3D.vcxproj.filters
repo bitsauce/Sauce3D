@@ -18,6 +18,7 @@
     <None Include="..\Data\Default.vert">
       <Filter>Data</Filter>
     </None>
+    <None Include="..\..\..\projects\Sauce3D.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\Data\Resources.xml">

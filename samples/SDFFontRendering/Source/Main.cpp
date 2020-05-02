@@ -1,4 +1,4 @@
-/* Include the SauceEngine framework */
+/** Include the SauceEngine framework */
 #include <Sauce/Sauce.h>
 #include <Sauce/ImGui.h>
 

@@ -43,10 +43,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Simple3D</TargetName>
+    <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Simple3D</TargetName>
+    <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -102,6 +104,7 @@
     <ClCompile Include="..\Source\Lights.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\projects\Sauce3D.ruleset" />
     <None Include="..\Data\Default.frag" />
     <None Include="..\Data\Default.vert" />
   </ItemGroup>

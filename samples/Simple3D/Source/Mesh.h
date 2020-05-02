@@ -4,19 +4,26 @@
 
 using namespace sauce;
 
-class Mesh
+struct MeshDesc : public SauceObjectDesc
 {
-public:
-	Mesh(Vertex *vertices, uint vertexCount) :
-		m_vertices(vertices), m_vertexCount(vertexCount)
-	{}
-
-	Vertex *getVertices() const { return m_vertices; }
-	uint getVertexCount() const { return m_vertexCount;  }
-
-private:
-	Vertex *m_vertices;
-	uint m_vertexCount;
+	string meshFilePath = "";
 };
 
-Mesh *loadMesh(const string &modelFile);
+class Mesh : public SauceObject
+{
+public:
+	SAUCE_REF_TYPE(Mesh);
+
+	Mesh()
+		: m_vertexBuffer(nullptr)
+	{
+	}
+
+	bool initialize(MeshDesc meshDesc);
+
+	VertexBuffer* getVertexBuffer() const { return m_vertexBuffer; }
+
+private:
+	VertexBuffer* m_vertexBuffer;
+};
+SAUCE_REF_TYPE_TYPEDEFS(Mesh);
