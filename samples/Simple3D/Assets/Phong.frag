@@ -1,3 +1,5 @@
+#version 420
+
 in vec2 v_TexCoord;
 in vec3 v_FragWorldPos;
 in vec3 v_Normal;

@@ -49,16 +49,16 @@ void VertexFormat::set(const VertexAttribute attrib, const int size, const Datat
 				m_attributes[(uint32)at].offset = m_vertexByteSize;
 				switch(getDatatype(at))
 				{
-				case Datatype::SAUCE_FLOAT:
+				case Datatype::Float:
 					m_vertexByteSize += sizeof(float)*getElementCount(at); break;
-				case Datatype::SAUCE_UINT:
-				case Datatype::SAUCE_INT:
+				case Datatype::Uint32:
+				case Datatype::Int32:
 					m_vertexByteSize += sizeof(int)*getElementCount(at); break;
-				case Datatype::SAUCE_USHORT:
-				case Datatype::SAUCE_SHORT:
+				case Datatype::Uint16:
+				case Datatype::Int16:
 					m_vertexByteSize += sizeof(short)*getElementCount(at); break;
-				case Datatype::SAUCE_UBYTE:
-				case Datatype::SAUCE_BYTE:
+				case Datatype::Uint8:
+				case Datatype::Int8:
 					m_vertexByteSize += sizeof(char)*getElementCount(at); break;
 				}
 			}
@@ -587,19 +587,19 @@ void Vertex::print()
 			{
 				switch(m_format.getDatatype(attrib))
 				{
-				case Datatype::SAUCE_FLOAT:
+				case Datatype::Float:
 					ss << ((float*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case Datatype::SAUCE_UINT:
-				case Datatype::SAUCE_INT:
+				case Datatype::Uint32:
+				case Datatype::Int32:
 					ss << ((int*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case Datatype::SAUCE_USHORT:
-				case Datatype::SAUCE_SHORT:
+				case Datatype::Uint16:
+				case Datatype::Int16:
 					ss << ((short*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
-				case Datatype::SAUCE_UBYTE:
-				case Datatype::SAUCE_BYTE:
+				case Datatype::Uint8:
+				case Datatype::Int8:
 					ss << (int)((char*)(m_data + m_format.getAttributeOffset(attrib)))[j];
 					break;
 				}

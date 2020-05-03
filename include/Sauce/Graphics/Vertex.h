@@ -9,20 +9,6 @@
 BEGIN_SAUCE_NAMESPACE
 
 /*********************************************************************
-**	Data types														**
-**********************************************************************/
-enum class Datatype : uint32
-{
-	SAUCE_FLOAT = GL_FLOAT,
-	SAUCE_UINT = GL_UNSIGNED_INT,
-	SAUCE_INT = GL_INT,
-	SAUCE_USHORT = GL_UNSIGNED_SHORT,
-	SAUCE_SHORT = GL_SHORT,
-	SAUCE_UBYTE = GL_UNSIGNED_BYTE,
-	SAUCE_BYTE = GL_BYTE
-};
-
-/*********************************************************************
 **	Vertex attributes												**
 **********************************************************************/
 enum class VertexAttribute : uint32
@@ -47,7 +33,7 @@ public:
 	VertexFormat();
 	VertexFormat(const VertexFormat &other);
 
-	void set(const VertexAttribute attrib, const int size, const Datatype=Datatype::SAUCE_FLOAT);
+	void set(const VertexAttribute attrib, const int size, const Datatype=Datatype::Float);
 	int getElementCount(const VertexAttribute attrib) const;
 	Datatype getDatatype(const VertexAttribute attrib) const;
 	bool isAttributeEnabled(const VertexAttribute attrib) const;
@@ -68,7 +54,7 @@ private:
 	{
 		Attribute() :
 			elementCount(0),
-			datatype(Datatype::SAUCE_FLOAT),
+			datatype(Datatype::Float),
 			offset(0)
 		{
 		}

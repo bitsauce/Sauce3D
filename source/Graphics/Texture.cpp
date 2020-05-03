@@ -16,13 +16,8 @@
 BEGIN_SAUCE_NAMESPACE
 
 Texture2D::Texture2D()
-	: m_filter(TextureFiltering::NEAREST)
-	, m_wrapping(TextureWrapping::CLAMP_TO_BORDER)
-	, m_mipmaps(false)
-	, m_mipmapsGenerated(false)
-	, m_width(0)
-	, m_height(0)
-	, m_pixelFormat()
+	: m_graphicsContext(nullptr)
+	, m_deviceObject(nullptr)
 {
 }
 
@@ -30,87 +25,146 @@ Texture2D::~Texture2D()
 {
 }
 
-void Texture2D::enableMipmaps()
+bool Texture2D::initialize(Texture2DDesc textureDesc)
 {
-	if(!m_mipmaps)
+	// Get graphics context to use
+	if (textureDesc.graphicsContext)
 	{
-		m_mipmaps = true;
-		updateFiltering();
+		m_graphicsContext = textureDesc.graphicsContext;
 	}
 	else
 	{
-		//warn("Mipmapping already enabled");
+		m_graphicsContext = GraphicsContext::GetContext();
 	}
+
+	// Get debug name
+	if (textureDesc.debugName.empty())
+	{
+		static uint32 anonymousTexureCount = 0;
+		textureDesc.debugName = "Texture_" + to_string(anonymousTexureCount);
+		anonymousTexureCount++;
+	}
+
+	// Create texture device object
+	m_graphicsContext->texture2D_createDeviceObject(m_deviceObject, textureDesc.debugName);
+
+	// Set initial settings
+	m_graphicsContext->texture2D_updateFiltering(m_deviceObject, textureDesc.filtering);
+	m_graphicsContext->texture2D_updateWrapping(m_deviceObject, textureDesc.wrapping);
+
+	// Set initial pixel data if a pixmap was provided
+	if (!textureDesc.filePath.empty())
+	{
+		updatePixmap(Pixmap::loadFromFile(textureDesc.filePath));
+	}
+	else if (textureDesc.pixmap)
+	{
+		updatePixmap(*textureDesc.pixmap);
+	}
+
+	return true;
 }
 
-void Texture2D::disableMipmaps()
+Pixmap Texture2D::getPixmap() const
 {
-	if(m_mipmaps)
-	{
-		m_mipmaps = false;
-		updateFiltering();
-	}
-	else
-	{
-		//warn("Mipmapping already disabled");
-	}
+	// Get texture data
+	uchar* textureData;
+	m_graphicsContext->texture2D_copyToCPUReadable(m_deviceObject, &textureData);
+
+	// Copy data to pixmap
+	Pixmap pixmap(m_deviceObject->width, m_deviceObject->height, m_deviceObject->pixelFormat, textureData);
+	delete[] textureData;
+	return pixmap;
 }
 
-void Texture2D::setFiltering(const TextureFiltering filter)
+void Texture2D::updatePixmap(const Pixmap& pixmap)
 {
-	if(m_filter != filter)
+	m_graphicsContext->texture2D_copyToGPU(
+		m_deviceObject,
+		pixmap.getFormat(),
+		pixmap.getWidth(),
+		pixmap.getHeight(),
+		(uint8*)pixmap.getData()
+	);
+}
+
+void Texture2D::updatePixmap(const uint32 x, const uint32 y, const Pixmap& pixmap)
+{
+	if (x + pixmap.getWidth() >= m_deviceObject->width || y + pixmap.getHeight() >= m_deviceObject->height)
 	{
-		m_filter = filter;
-		updateFiltering();
+		LOG("OpenGLContext::texture2D_updateSubregion(): Trying to update out-of-bounds texture data");
+		return;
 	}
-	else
-	{
-		//warn("Texture filtering was not changed.");
-	}
+
+	m_graphicsContext->texture2D_updateSubregion(
+		m_deviceObject,
+		x,
+		y,
+		pixmap.getWidth(),
+		pixmap.getHeight(),
+		(uint8*)pixmap.getData()
+	);
+}
+
+void Texture2D::clear()
+{
+	m_graphicsContext->texture2D_clearTexture(m_deviceObject);
+}
+
+//void Texture2D::enableMipmaps()
+//{
+//	if(!m_mipmaps)
+//	{
+//		m_mipmaps = true;
+//		updateFiltering();
+//	}
+//	else
+//	{
+//		//warn("Mipmapping already enabled");
+//	}
+//}
+//
+//void Texture2D::disableMipmaps()
+//{
+//	if(m_mipmaps)
+//	{
+//		m_mipmaps = false;
+//		updateFiltering();
+//	}
+//	else
+//	{
+//		//warn("Mipmapping already disabled");
+//	}
+//}
+
+void Texture2D::setFiltering(const TextureFiltering filtering)
+{
+	m_graphicsContext->texture2D_updateFiltering(m_deviceObject, filtering);
 }
 
 TextureFiltering Texture2D::getFiltering() const
 {
-	return m_filter;
+	return m_deviceObject->filtering;
 }
 
 void Texture2D::setWrapping(const TextureWrapping wrapping)
 {
-	if(m_wrapping != wrapping)
-	{
-		m_wrapping = wrapping;
-		updateFiltering();
-	}
+	m_graphicsContext->texture2D_updateWrapping(m_deviceObject, wrapping);
 }
 
 TextureWrapping Texture2D::getWrapping() const
 {
-	return m_wrapping;
+	return m_deviceObject->wrapping;
 }
 
-uint Texture2D::getWidth() const
+uint32 Texture2D::getWidth() const
 {
-	return m_width;
+	return m_deviceObject->width;
 }
 
-uint Texture2D::getHeight() const
+uint32 Texture2D::getHeight() const
 {
-	return m_height;
-}
-
-void Texture2D::exportToFile(string path)
-{
-	// TODO: This function might be redundant?
-	getPixmap().saveToFile(path);
-}
-
-void *TextureResourceDesc::create() const
-{
-	// Load texture from file
-	GraphicsContext *graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
-	Pixmap pixmap = Pixmap::loadFromFile(m_path);
-	pixmap.setPremultipliedAlpha(m_premultiplyAlpha);
-	return graphicsContext->createTexture(pixmap);
+	return m_deviceObject->height;
 }
 
 ByteStreamOut& operator<<(ByteStreamOut& out, const Texture2DRef& texture)
@@ -121,10 +175,8 @@ ByteStreamOut& operator<<(ByteStreamOut& out, const Texture2DRef& texture)
 	{
 		Pixmap pixmap = texture->getPixmap();
 		out << pixmap;
-		out << (uint32)texture->m_filter;
-		out << (uint32)texture->m_wrapping;
-		out << texture->m_mipmaps;
-		out << texture->m_mipmapsGenerated;
+		out << (uint32)texture->m_deviceObject->filtering;
+		out << (uint32)texture->m_deviceObject->wrapping;
 	}
 	return out;
 }
@@ -137,22 +189,15 @@ ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture)
 	in >> isNull;
 	if (!isNull)
 	{
-		Pixmap pixmap;
-		in >> pixmap;
-		texture = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(pixmap));
-
-		uint32 filter;
-		in >> filter;
-		texture->m_filter = (TextureFiltering)filter;
-
-		uint32 wrapping;
-		in >> wrapping;
-		texture->m_wrapping = (TextureWrapping)wrapping;
-
-		in >> texture->m_mipmaps;
-		in >> texture->m_mipmapsGenerated;
-
-		texture->updateFiltering();
+		Texture2DDesc textureDesc;
+		{
+			Pixmap pixmap;
+			in >> pixmap;
+			textureDesc.pixmap = &pixmap;
+		}
+		in >> *(uint32*)&textureDesc.filtering;
+		in >> *(uint32*)&textureDesc.wrapping;
+		texture = CreateNew<Texture2D>(textureDesc);
 	}
 	return in;
 }

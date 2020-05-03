@@ -32,9 +32,9 @@ uint PixelFormat::getDataTypeSizeInBytes() const
 {
 	switch (m_datatype)
 	{
-		case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return sizeof(GLint);
-		case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: return sizeof(GLbyte);
-		case PixelDatatype::FLOAT: return sizeof(GLfloat);
+		case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return 4;
+		case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: return 1;
+		case PixelDatatype::FLOAT: return 4;
 	}
 	return 0;
 }

@@ -147,15 +147,6 @@
     <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLContext.cpp">
       <Filter>Source\Graphics\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLShader.cpp">
-      <Filter>Source\Graphics\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLTexture.cpp">
-      <Filter>Source\Graphics\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLRenderTarget.cpp">
-      <Filter>Source\Graphics\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\Graphics\FontRendering.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -311,15 +302,6 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h">
       <Filter>Include\Sauce\Graphics\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLShader.h">
-      <Filter>Include\Sauce\Graphics\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLTexture.h">
-      <Filter>Include\Sauce\Graphics\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h">
-      <Filter>Include\Sauce\Graphics\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
@@ -370,6 +352,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Sauce\Common\SauceObject.h">
       <Filter>Include\Sauce\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Sauce\Graphics\GraphicsDeviceObjectDesc.h">
+      <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

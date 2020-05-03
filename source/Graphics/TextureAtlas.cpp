@@ -22,7 +22,10 @@ TextureAtlas::TextureAtlas(GraphicsContext *graphicsContext, const int width, co
 	m_height(height)
 {
 	// Create a texture for the atlas
-	m_texture = Texture2DRef(graphicsContext->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE)));
+	Texture2DDesc textureDesc;
+	Pixmap pixmap(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE));
+	textureDesc.pixmap = &pixmap;
+	m_texture = CreateNew<Texture2D>(textureDesc);
 	m_rectanglePacker.setMaxWidth(width);
 }
 

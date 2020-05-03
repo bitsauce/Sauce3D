@@ -48,24 +48,33 @@ GraphicsContext::~GraphicsContext()
 {
 }
 
-void GraphicsContext::pushRenderTarget(RenderTarget2D *renderTarget)
+GraphicsContext* GraphicsContext::GetContext()
+{
+	return s_this;
+}
+
+void GraphicsContext::pushRenderTarget(RenderTarget2DRef renderTarget)
 {
 	// Unbind previous render target
 	if(m_currentState->renderTarget)
 	{
-		m_currentState->renderTarget->unbind();
+		// TODO: Is it necessary to unbind here every time?
+		renderTarget2D_bindRenderTarget(nullptr);
 	}
 
 	// Push state
 	pushState();
 
 	// Bind render target
-	m_currentState->renderTarget = renderTarget;
-	m_currentState->renderTarget->bind();
+	{
+		renderTarget2D_bindRenderTarget(renderTarget->m_deviceObject);
+		m_currentState->renderTarget = renderTarget;
+	}
 
 	// Resize viewport
-	setProjectionMatrix(createOrtographicMatrix(0, renderTarget->m_width, renderTarget->m_height, 0)); // TODO: Maybe this shouldn't be here?
-	setSize(renderTarget->m_width, renderTarget->m_height);
+	Texture2DRef targetTexture = renderTarget->getTargetTexture();
+	setProjectionMatrix(createOrtographicMatrix(0, targetTexture->getWidth(), targetTexture->getHeight(), 0)); // TODO: Maybe this shouldn't be here?
+	setSize(targetTexture->getWidth(), targetTexture->getHeight());
 }
 
 void GraphicsContext::popRenderTarget()
@@ -73,7 +82,8 @@ void GraphicsContext::popRenderTarget()
 	// Unbind previous render target
 	if(m_currentState->renderTarget)
 	{
-		m_currentState->renderTarget->unbind();
+		// TODO: Is it necessary to unbind here every time?
+		renderTarget2D_bindRenderTarget(nullptr);
 	}
 
 	// Pop state
@@ -83,11 +93,13 @@ void GraphicsContext::popRenderTarget()
 	if(m_currentState->renderTarget)
 	{
 		// Bind render target
-		m_currentState->renderTarget->bind();
+		RenderTarget2DRef renderTarget = m_currentState->renderTarget;
+		renderTarget2D_bindRenderTarget(renderTarget->m_deviceObject);
 
 		// Resize viewport
-		setProjectionMatrix(createOrtographicMatrix(0, m_currentState->renderTarget->m_width, m_currentState->renderTarget->m_height, 0)); // TODO: Maybe this shouldn't be here?
-		setSize(m_currentState->renderTarget->m_width, m_currentState->renderTarget->m_height);
+		Texture2DRef targetTexture = renderTarget->getTargetTexture();
+		setProjectionMatrix(createOrtographicMatrix(0, targetTexture->getWidth(), targetTexture->getHeight(), 0)); // TODO: Maybe this shouldn't be here?
+		setSize(targetTexture->getWidth(), targetTexture->getHeight());
 	}
 	else
 	{
@@ -319,15 +331,29 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	drawPrimitives(PrimitiveType::PRIMITIVE_LINES, &m_vertices[0], 6);
 }
 
-Texture2D *GraphicsContext::createTexture(const uint width, const uint height, const PixelFormat& format, const uint8_t* data)
+void GraphicsContext::texture2D_getDeviceObject(Texture2DRef texture, Texture2DDeviceObject*& outTextureDeviceObject)
 {
-	Pixmap pixmap(width, height, format, data);
-	return createTexture(pixmap);
+	outTextureDeviceObject = texture->m_deviceObject;
 }
 
-Texture2D *GraphicsContext::createTexture(const Texture2D &texture)
+void GraphicsContext::shader_getDeviceObject(ShaderRef shader, ShaderDeviceObject*& outShaderDeviceObject)
 {
-	return createTexture(texture.getPixmap());
+	outShaderDeviceObject = shader->m_deviceObject;
+}
+
+void GraphicsContext::renderTarget2D_getDeviceObject(RenderTarget2DRef renderTarget, RenderTarget2DDeviceObject*& outRenderTargetDeviceObject)
+{
+	outRenderTargetDeviceObject = renderTarget->m_deviceObject;
+}
+
+void GraphicsContext::vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject)
+{
+	outVertexBufferDeviceObject = vertexBuffer->m_deviceObject;
+}
+
+void GraphicsContext::indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, IndexBufferDeviceObject*& outIndexBufferDeviceObject)
+{
+	outIndexBufferDeviceObject = indexBuffer->m_deviceObject;
 }
 
 END_SAUCE_NAMESPACE

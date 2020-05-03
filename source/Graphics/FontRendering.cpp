@@ -362,8 +362,11 @@ private:
 				}
 			}
 		}
-		m_sdfTextureAtlas = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(sdfAtlas));
-		m_sdfTextureAtlas->setFiltering(TextureFiltering::LINEAR);
+
+		Texture2DDesc textureDesc;
+		textureDesc.pixmap = &sdfAtlas;
+		textureDesc.filtering = TextureFiltering::LINEAR;
+		m_sdfTextureAtlas = CreateNew<Texture2D>(textureDesc);
 
 		delete[] glyphAtlasData;
 	}
@@ -456,12 +459,15 @@ bool FontRenderingSystem::Initialize(GraphicsContext* context)
 	}
 
 	// Create shader from strings
-	g_fontShader = ShaderRef(context->createShader(g_fontShaderVS, g_fontShaderPS, ""));
+	ShaderDesc shaderDesc;
+	shaderDesc.shaderSourceVS = g_fontShaderVS;
+	shaderDesc.shaderSourcePS = g_fontShaderPS;
+	g_fontShader = CreateNew<Shader>(shaderDesc);
 
 	// Set font vertex format
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::Float);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
+	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
 
 	// Register all cached fonts
 	util::FileSystemIterator cachedFontsDir("DataCache/Fonts", "*", (uint32)util::FileSystemIteratorFlag::IncludeFiles);

@@ -11,7 +11,7 @@ class DrawTexturedQuad : public Game
 	Resource<Texture2D> texture;
 	Texture2D *textureSaved;
 	Texture2D *testTexture;
-	StaticVertexBuffer *vbo;
+	VertexBufferRef vertexBuffer;
 	RenderTarget2D *renderTarget;
 public:
 	void onStart(GameEvent *e)

@@ -23,9 +23,9 @@ bool Mesh::initialize(MeshDesc meshDesc)
 	}
 
 	VertexFormat fmt;
-	fmt.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::SAUCE_FLOAT);
-	fmt.set(VertexAttribute::VERTEX_NORMAL, 3, Datatype::SAUCE_FLOAT);
-	fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+	fmt.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::Float);
+	fmt.set(VertexAttribute::VERTEX_NORMAL, 3, Datatype::Float);
+	fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
 
 	// Loop over shapes
 	for (size_t s = 0; s < shapes.size(); ++s)
@@ -67,7 +67,11 @@ bool Mesh::initialize(MeshDesc meshDesc)
 			shapes[s].mesh.material_ids[f];
 		}
 
-		m_vertexBuffer = new StaticVertexBuffer(vertices, vertexCount);
+		VertexBufferDesc vertexBufferDesc;
+		vertexBufferDesc.vertices = vertices;
+		vertexBufferDesc.vertexCount = vertexCount;
+		m_vertexBuffer = CreateNew<VertexBuffer>(vertexBufferDesc);
+
 		delete[] vertices;
 
 		return true;

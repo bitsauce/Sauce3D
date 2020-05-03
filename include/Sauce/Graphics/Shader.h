@@ -9,9 +9,23 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-struct SAUCE_API ShaderDesc : public SauceObjectDesc {};
+struct SAUCE_API ShaderDeviceObject
+{
+	virtual ~ShaderDeviceObject() { }
+};
 
-class SAUCE_API Shader : public SauceObject
+struct SAUCE_API ShaderDesc : public GraphicsDeviceObjectDesc
+{
+	string shaderFileVS;
+	string shaderFilePS;
+	string shaderFileGS;
+
+	string shaderSourceVS;
+	string shaderSourcePS;
+	string shaderSourceGS;
+};
+
+class SAUCE_API Shader final : public SauceObject
 {
 	friend class GraphicsContext;
 	friend class ResourceManager;
@@ -21,75 +35,77 @@ public:
 	Shader();
 	virtual ~Shader();
 
-	virtual bool initialize(ShaderDesc) { return true; }
-
-	virtual void bindFragLocation(const uint location, const string &name) = 0;
-
-	virtual void link() = 0;
+	bool initialize(ShaderDesc shaderDesc);
 	
-	virtual void setUniform1i(const string &name, const int v0) = 0;
-	virtual void setUniform2i(const string &name, const int v0, const int v1) = 0;
-	virtual void setUniform3i(const string &name, const int v0, const int v1, const int v2) = 0;
-	virtual void setUniform4i(const string &name, const int v0, const int v1, const int v2, const int v3) = 0;
+	/**
+	 * Signed integers
+	 */
+	void setUniform1i(const string& uniformName, const int32 v0);
+	void setUniform2i(const string& uniformName, const int32 v0, const int32 v1);
+	void setUniform3i(const string& uniformName, const int32 v0, const int32 v1, const int32 v2);
+	void setUniform4i(const string& uniformName, const int32 v0, const int32 v1, const int32 v2, const int32 v3);
 
-	virtual void setUniform1iv(const string &name, const uint count, const int *v) = 0;
-	virtual void setUniform2iv(const string &name, const uint count, const int *v) = 0;
-	virtual void setUniform3iv(const string &name, const uint count, const int *v) = 0;
-	virtual void setUniform4iv(const string &name, const uint count, const int *v) = 0;
+	void setUniform2i(const string& uniformName, const Vector2I& vec);
+	void setUniform3i(const string& uniformName, const Vector3I& vec);
+	void setUniform4i(const string& uniformName, const Vector4I& vec);
 
-	virtual void setUniform1ui(const string &name, const uint v0) = 0;
-	virtual void setUniform2ui(const string &name, const uint v0, const uint v1) = 0;
-	virtual void setUniform3ui(const string &name, const uint v0, const uint v1, const uint v2) = 0;
-	virtual void setUniform4ui(const string &name, const uint v0, const uint v1, const uint v2, const uint v3) = 0;
+	void setUniformArray1i(const string &uniformName, const uint32 numElements, const int32 *v);
+	void setUniformArray2i(const string &uniformName, const uint32 numElements, const int32 *v);
+	void setUniformArray3i(const string &uniformName, const uint32 numElements, const int32 *v);
+	void setUniformArray4i(const string &uniformName, const uint32 numElements, const int32 *v);
 
-	virtual void setUniform1f(const string &name, const float v0) = 0;
-	virtual void setUniform2f(const string &name, const float v0, const float v1) = 0;
-	virtual void setUniform2f(const string &name, const float *v) = 0;
-	virtual void setUniform3f(const string &name, const float v0, const float v1, const float v2) = 0;
-	virtual void setUniform4f(const string &name, const float v0, const float v1, const float v2, const float v3) = 0;
-	virtual void setUniform4f(const string &name, const float *v) = 0;
-	virtual void setUniformMatrix4f(const string &name, const float *v0) = 0;
-	virtual void setSampler2D(const string &name, Texture2DRef texture) = 0;
+	/**
+	 * Unsigned integers
+	 */
+	void setUniform1ui(const string& uniformName, const uint32 v0);
+	void setUniform2ui(const string& uniformName, const uint32 v0, const uint32 v1);
+	void setUniform3ui(const string& uniformName, const uint32 v0, const uint32 v1, const uint32 v2);
+	void setUniform4ui(const string& uniformName, const uint32 v0, const uint32 v1, const uint32 v2, const uint32 v3);
 
-	virtual void setUniformColor(const string &name, const Color &color) = 0;
-	virtual void setUniformColorRGB(const string &name, const ColorRGB &color) = 0;
+	void setUniform2ui(const string& uniformName, const Vector2U& vec);
+	void setUniform3ui(const string& uniformName, const Vector3U& vec);
+	void setUniform4ui(const string& uniformName, const Vector4U& vec);
+
+	void setUniformArray1ui(const string& uniformName, const uint32 numElements, const uint32* v);
+	void setUniformArray2ui(const string& uniformName, const uint32 numElements, const uint32* v);
+	void setUniformArray3ui(const string& uniformName, const uint32 numElements, const uint32* v);
+	void setUniformArray4ui(const string& uniformName, const uint32 numElements, const uint32* v);
+
+	/**
+	 * Floats
+	 */
+	void setUniform1f(const string& uniformName, const float v0);
+	void setUniform2f(const string& uniformName, const float v0, const float v1);
+	void setUniform3f(const string& uniformName, const float v0, const float v1, const float v2);
+	void setUniform4f(const string& uniformName, const float v0, const float v1, const float v2, const float v3);
+
+	void setUniform2f(const string& uniformName, const Vector2F& vec);
+	void setUniform3f(const string& uniformName, const Vector3F& vec);
+	void setUniform4f(const string& uniformName, const Vector4F& vec);
+
+	void setUniform3f(const string& uniformName, const ColorRGB& color);
+	void setUniform4f(const string& uniformName, const Color& color);
+
+	void setUniformArray1f(const string& uniformName, const uint32 numElements, const float* v);
+	void setUniformArray2f(const string& uniformName, const uint32 numElements, const float* v);
+	void setUniformArray3f(const string& uniformName, const uint32 numElements, const float* v);
+	void setUniformArray4f(const string& uniformName, const uint32 numElements, const float* v);
+
+	/**
+	 * Texture samplers
+	 */
+	void setSampler2D(const string& uniformName, Texture2DRef texture);
+
+	/**
+	 * Matrix4
+	 */
+	void setUniformMatrix4f(const string& uniformName, const float* mat);
+
+private:
+	GraphicsContext* m_graphicsContext;
+	ShaderDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(Shader);
 
-class ShaderResourceDesc : public ResourceDesc
-{
-public:
-	ShaderResourceDesc(const string &name, const string &vertexFilePath, const string &fragmentFilePath, const string &geometryFilePath) :
-		ResourceDesc(ResourceType::RESOURCE_TYPE_TEXTURE, name),
-		m_vertexFilePath(vertexFilePath),
-		m_fragmentFilePath(fragmentFilePath),
-		m_geometryFilePath(geometryFilePath)
-	{
-	}
-
-	string getVertexFilePath() const
-	{
-		return m_vertexFilePath;
-	}
-
-	string getFragmentFilePath() const
-	{
-		return m_fragmentFilePath;
-	}
-
-	string getGeometryFilePath() const
-	{
-		return m_geometryFilePath;
-	}
-
-	void *create() const;
-
-private:
-	const string m_vertexFilePath;
-	const string m_fragmentFilePath;
-	const string m_geometryFilePath;
-};
-
 END_SAUCE_NAMESPACE
 
-template SAUCE_API class std::shared_ptr<sauce::Shader>;

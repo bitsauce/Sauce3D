@@ -40,6 +40,8 @@
 **********************************************************************/
 #ifdef SAUCE_COMPILE_WINDOWS
 	#define NOMINMAX
+	#define _HAS_STD_BYTE 0
+	#define _HAS_STD_BOOLEAN 0
 	#include <string>
 	#include <vector>
 	#include <list>
@@ -62,8 +64,8 @@
 	#include <queue>
 	#include <chrono>
 	#include <filesystem>
-	#include "..\3rdparty\gl3w\include\GL\gl3w.h"
-	#include "..\3rdparty\gl3w\include\GL\wglext.h"
+	//#include "..\3rdparty\gl3w\include\GL\gl3w.h"
+	//#include "..\3rdparty\gl3w\include\GL\wglext.h"
 #elif __LINUX__
 	#include <string>
 	#include <vector>
@@ -140,7 +142,7 @@ BEGIN_SAUCE_NAMESPACE
 	{                                                             \
 		DescType* descType = dynamic_cast<DescType*>(objectDesc); \
 		assert(descType);                                         \
-		return initialize(*descType);                             \
+		return descType ? initialize(*descType) : false;          \
 	}
 
 #define SAUCE_REF_TYPE_TYPEDEFS(Class) \
@@ -208,6 +210,21 @@ enum class GraphicsBackend : uint32
 	SAUCE_OPENGL_4,
 	SAUCE_DIRECTX,
 	SAUCE_VULKAN
+};
+
+/*********************************************************************
+**	Data type enum													**
+**********************************************************************/
+enum class Datatype : uint32
+{
+	Float,
+	Uint32,
+	Int32,
+	Uint16,
+	Int16,
+	Uint8,
+	Int8,
+	Matrix4
 };
 
 END_SAUCE_NAMESPACE

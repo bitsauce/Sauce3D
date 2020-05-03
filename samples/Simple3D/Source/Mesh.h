@@ -21,9 +21,9 @@ public:
 
 	bool initialize(MeshDesc meshDesc);
 
-	VertexBuffer* getVertexBuffer() const { return m_vertexBuffer; }
+	VertexBufferRef getVertexBuffer() const { return m_vertexBuffer; }
 
 private:
-	VertexBuffer* m_vertexBuffer;
+	VertexBufferRef m_vertexBuffer;
 };
 SAUCE_REF_TYPE_TYPEDEFS(Mesh);

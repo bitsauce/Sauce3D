@@ -317,4 +317,25 @@ std::string util::ByteArrayMD5(const std::string& str)
 	return md5(str);
 }
 
+uint32 util::GetDatatypeSize(const Datatype datatype)
+{
+	switch (datatype)
+	{
+		case Datatype::Int8:
+		case Datatype::Uint8:
+			return 1;
+		case Datatype::Int16:
+		case Datatype::Uint16:
+			return 2;
+		case Datatype::Int32:
+		case Datatype::Uint32:
+			return 4;
+		case Datatype::Float:
+			return 4;
+		case Datatype::Matrix4:
+			return 64;
+	}
+	return 0;
+}
+
 END_SAUCE_NAMESPACE

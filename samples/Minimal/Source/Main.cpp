@@ -48,7 +48,7 @@ public:
 };
 
 #ifdef __WINDOWS__
-/* Main entry point. This is where our program first starts executing. */
+/** Main entry point. This is where our program first starts executing. */
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
 	/** 

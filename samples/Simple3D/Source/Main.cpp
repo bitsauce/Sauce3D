@@ -111,9 +111,9 @@ Vector2F CUBE_TEX_COORDS[36] = {
 void drawCube(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d)
 {
 	VertexFormat format;
-	format.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::SAUCE_FLOAT);
-	format.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
-	format.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+	format.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::Float);
+	format.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
+	format.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
 	
 	Vertex *vertices = format.createVertices(36);
 
@@ -136,37 +136,43 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 
 void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
 {
-	//m_defaultShader->setUniformMatrix4f();
+	//m_phongShader->setUniformMatrix4f();
 	graphicsContext->drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, mesh->getVertexBuffer());
 }
 
 class Simple3DGame : public Game
 {
 	Camera camera;
-	Resource<Shader> m_defaultShader;
-	Resource<Texture2D> m_texture;
-	
-	MeshRef m_mesh;
 	DirectionalLight m_directionalLight;
 	vector<PointLight> m_pointLights;
 
-	float m_time;
+	ShaderRef    m_phongShader = nullptr;
+	Texture2DRef m_texture       = nullptr;
+	MeshRef      m_mesh          = nullptr;
+
+	float m_time = 0.0f;
 
 public:
 	void onStart(GameEvent *e)
 	{
-		m_defaultShader = Resource<Shader>("Shader/Default");
-		m_texture = Resource<Texture2D>("Texture/Sample");
-		m_texture->setWrapping(TextureWrapping::REPEAT);
+		ShaderDesc shaderDesc;
+		shaderDesc.shaderFileVS = "Phong.vert";
+		shaderDesc.shaderFilePS = "Phong.frag";
+		m_phongShader = CreateNew<Shader>(shaderDesc);
+
+		Texture2DDesc textureDesc;
+		textureDesc.filePath = "Texture.png";
+		textureDesc.wrapping = TextureWrapping::REPEAT;
+		m_texture = CreateNew<Texture2D>(textureDesc);
+
+		MeshDesc meshDesc;
+		meshDesc.meshFilePath = "Bunny.obj";
+		m_mesh = CreateNew<Mesh>(meshDesc);
 
 		addChildLast(&camera);
 		camera.setPosition(Vector3F(-0.55f, 1.80f, 3.30f));
 		camera.setYaw(-math::degToRad(85));
 		camera.setPitch(-math::degToRad(20));
-
-		MeshDesc meshDesc;
-		meshDesc.meshFilePath = "bunny.obj";
-		m_mesh = CreateNew<Mesh>(meshDesc);
 
 		m_time = 0.0f;
 
@@ -202,20 +208,20 @@ public:
 			graphicsContext->enable(Capability::FACE_CULLING);
 
 			// Set shader
-			m_defaultShader->setSampler2D("u_Texture", m_texture);
-			//m_defaultShader->setUniform3f("u_DirLight.direction", 0,0,0);
-			//m_defaultShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
+			m_phongShader->setSampler2D("u_Texture", m_texture);
+			//m_phongShader->setUniform3f("u_DirLight.direction", 0,0,0);
+			//m_phongShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
 			for(int i = 0; i < m_pointLights.size(); i++)
 			{
 				const PointLight &light = m_pointLights[i];
 				const string uniformPrefix = "u_PointLight[" + std::to_string(i) + "]";
-				m_defaultShader->setUniform3f(uniformPrefix + ".position", light.position.x, light.position.y, light.position.z);
-				m_defaultShader->setUniform3f(uniformPrefix + ".color", light.color.x, light.color.y, light.color.z);
-				m_defaultShader->setUniform1f(uniformPrefix + ".radius", light.radius);
+				m_phongShader->setUniform3f(uniformPrefix + ".position", light.position.x, light.position.y, light.position.z);
+				m_phongShader->setUniform3f(uniformPrefix + ".color", light.color.x, light.color.y, light.color.z);
+				m_phongShader->setUniform1f(uniformPrefix + ".radius", light.radius);
 			}
-			m_defaultShader->setUniform1i("u_NumPointLights", m_pointLights.size());
-			m_defaultShader->setUniformMatrix4f("u_ModelMatrix", Matrix4().get());
-			graphicsContext->setShader(m_defaultShader);
+			m_phongShader->setUniform1i("u_NumPointLights", m_pointLights.size());
+			m_phongShader->setUniformMatrix4f("u_ModelMatrix", Matrix4().get());
+			graphicsContext->setShader(m_phongShader);
 
 			// Set camera and perspective matricies
 			const float aspectRatio = float(getWindow()->getWidth()) / getWindow()->getHeight();

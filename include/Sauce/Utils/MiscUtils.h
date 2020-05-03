@@ -54,6 +54,8 @@ namespace util
 	int encodeUTF16(unsigned int value, char* outEncodedBuffer, unsigned int* outCharLength, UnicodeByteOrder byteOrder = UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
 
 	SAUCE_API std::string ByteArrayMD5(const std::string& str);
+
+	SAUCE_API uint32 GetDatatypeSize(const Datatype datatype);
 }
 
 END_SAUCE_NAMESPACE

@@ -27,9 +27,6 @@
     <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\GraphicsContext.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLContext.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLRenderTarget.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLShader.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Pixmap.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\RenderTarget.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Shader.cpp" />
@@ -79,9 +76,6 @@
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLShader.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Pixmap.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\RenderTarget.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Shader.h" />
@@ -106,6 +100,7 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\RectanglePacker.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\Vector.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Sauce.h" />
+    <ClInclude Include="..\include\Sauce\Graphics\GraphicsDeviceObjectDesc.h" />
     <ClInclude Include="..\include\Sauce\ImGui.h" />
     <ClInclude Include="..\include\Sauce\ImGui\imconfig.h" />
     <ClInclude Include="..\include\Sauce\ImGui\imgui_library.h" />

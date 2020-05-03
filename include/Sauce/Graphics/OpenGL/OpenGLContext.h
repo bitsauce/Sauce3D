@@ -17,14 +17,7 @@ class RenderTarget2D;
 class VertexBuffer;
 class IndexBuffer;
 
-#ifdef SAUCE_DEBUG
-extern void checkOpenGLError(const string& info);
-#define GL_CALL(call) call; checkOpenGLError(#call)
-#else
-#define GL_CALL(call) call
-#endif
-
-class SAUCE_API OpenGLContext : public GraphicsContext
+class SAUCE_API OpenGLContext final : public GraphicsContext
 {
 	friend class Game;
 private:
@@ -34,107 +27,79 @@ private:
 	void setupContext();
 	void setupVertexAttributePointers(const VertexFormat& fmt);
 
-	static GLuint s_vao;
-	static GLuint s_vbo;
-	static GLuint s_ibo;
-
 public:
-	/**
-	 * Enables the capability \p cap.
-	 * \param cap Capability to enable.
-	 */
-	void enable(const Capability cap);
+	void enable(const Capability cap) override;
+	void disable(const Capability cap) override;
+	bool isEnabled(const Capability cap) override;
 
-	/**
-	 * Disables the capability \p cap.
-	 * \param cap Capability to disable.
-	 */
-	void disable(const Capability cap);
+	void enableScissor(const int x, const int y, const int w, const int h) override;
+	void disableScissor() override;
 
-	/**
-	 * Enable scissor testing
-	 */
-	void enableScissor(const int x, const int y, const int w, const int h);
-	
-	/**
-	 * Disable scissor testing
-	 */
-	void disableScissor();
+	void setPointSize(const float pointSize) override;
+	void setLineWidth(const float lineWidth) override;
+	void setViewportSize(const uint w, const uint h) override;
+	void clear(const uint32 clearMask, const Color &clearColor, const double clearDepth, const int32 clearStencil) override;
 
-	/**
-	 * Returns true if capability \p cap is enabled
-	 */
-	bool isEnabled(const Capability cap);
+	void saveScreenshot(string filePath) override;
 
-	/**
-	 * Set rendering point size
-	 */
-	void setPointSize(const float pointSize);
-	
-	/**
-	 * Set rendering line width
-	 */
-	void setLineWidth(const float lineWidth);
-	
-	/**
-	 * Set the size of the viewport
-	 */
-	void setViewportSize(const uint w, const uint h);
+	Matrix4 createOrtographicMatrix(const float left, const float right, const float top, const float bottom, const float n = -1.0f, const float f = 1.0f) const override;
+	Matrix4 createPerspectiveMatrix(const float fov, const float aspectRatio, const float zNear, const float zFar) const override;
+	Matrix4 createLookAtMatrix(const Vector3F &position, const Vector3F &fwd) const override;
 
-	/**
-	 * Clears the back buffer using \p mask.
-	 * \param mask Decides what channels in the back buffer to clear.
-	 * \param fillColor Decides what value to clear to.
-	 */
-	void clear(const uint mask, const Color &fillColor = Color(0, 0, 0, 0));
-
-	void saveScreenshot(string filePath);
-	
-	/**
-	 * Create matricies
-	 */
-	Matrix4 createOrtographicMatrix(const float left, const float right, const float top, const float bottom, const float n = -1.0f, const float f = 1.0f) const;
-	Matrix4 createPerspectiveMatrix(const float fov, const float aspectRatio, const float zNear, const float zFar) const;
-	Matrix4 createLookAtMatrix(const Vector3F &position, const Vector3F &fwd) const;
-	
-	/**
-	 * Renders an indexed primitive to the screen.
-	 * \param type Types of primitives to render.
-	 * \param vertices Array of vertices to render.
-	 * \param vertexCount Number of vertices to render.
-	 * \param indices Array of indices.
-	 * \param indexCount Number of indices.
-	 */
-	void drawIndexedPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount);
-
-	/**
-	 * Renders an indexed primitive to the screen using vertex and index buffers.
-	 * \param type Types of primitives to render.
-	 * \param vbo Vertex buffer object.
-	 * \param ibo Index buffer object.
-	 */
-	void drawIndexedPrimitives(const PrimitiveType type, const VertexBuffer *vbo, const IndexBuffer *ibo);
-
-	/**
-	 * Renders primitives to the screen.
-	 * \param type Types of primitives to render.
-	 * \param vertices Array of vertices to render.
-	 * \param vertexCount Number of vertices to render.
-	 */
-	void drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount);
-
-	/**
-	 * Renders primitives to the screen.
-	 * \param type Types of primitives to render.
-	 * \param vbo Vertex buffer object.
-	 */
-	void drawPrimitives(const PrimitiveType type, const VertexBuffer *vbo);
-
-	Texture2D *createTexture(const Pixmap &pixmap);
-	Shader *createShader(const string &vertexSource, const string &fragmentSource, const string &geometrySource);
-	RenderTarget2D *createRenderTarget(const uint width, const uint height, const uint targetCount = 1, const PixelFormat &fmt = PixelFormat());
+	void drawIndexedPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount) override;
+	void drawIndexedPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer, const IndexBufferRef indexBuffer) override;
+	void drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount) override;
+	void drawPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer) override;
 
 	string getGLSLVersion() const;
+
+protected:
+	/**
+	 * Texture2D internal API
+	 */
+	void texture2D_createDeviceObject(Texture2DDeviceObject*& outTextureDeviceObject, const string& deviceObjectName) override;
+	void texture2D_destroyDeviceObject(Texture2DDeviceObject*& outTextureDeviceObject) override;
+	void texture2D_copyToGPU(Texture2DDeviceObject* textureDeviceObject, const PixelFormat pixelFormat, const uint32 width, const uint32 height, uint8* textureData) override;
+	void texture2D_copyToCPUReadable(Texture2DDeviceObject* textureDeviceObject, uint8** outTextureData) override;
+	void texture2D_updateSubregion(Texture2DDeviceObject* textureDeviceObject, const uint32 x, const uint32 y, const uint32 subRegionWidth, const uint32 subRegionHeight, uint8* textureData) override;
+	void texture2D_updateFiltering(Texture2DDeviceObject* textureDeviceObject, const TextureFiltering filtering) override;
+	void texture2D_updateWrapping(Texture2DDeviceObject* textureDeviceObject, const TextureWrapping wrapping) override;
+	void texture2D_clearTexture(Texture2DDeviceObject* textureDeviceObject) override;
+
+	/**
+	 * Shader internal API
+	 */
+	void shader_createDeviceObject(ShaderDeviceObject*& outShaderDeviceObject, const string& deviceObjectName) override;
+	void shader_destroyDeviceObject(ShaderDeviceObject*& outShaderDeviceObject) override;
+	void shader_compileShader(ShaderDeviceObject* shaderDeviceObject, const string& vsSource, const string& psSource, const string& gsSource) override;
+	void shader_setUniform(ShaderDeviceObject* shaderDeviceObject, const string& uniformName, const Datatype datatype, const uint32 numComponentsPerElement, const uint32 numElements, const void* data) override;
+	void shader_setSampler2D(ShaderDeviceObject* shaderDeviceObject, const string& uniformName, Texture2DRef texture) override;
+
+	/**
+	 * RenderTarget2D internal API
+	 */
+	void renderTarget2D_createDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject, const string& deviceObjectName) override;
+	void renderTarget2D_destroyDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject) override;
+	void renderTarget2D_initializeRenderTarget(RenderTarget2DDeviceObject* renderTargetDeviceObject, const Texture2DRef* targetTextures, const uint32 targetCount) override;
+	void renderTarget2D_bindRenderTarget(RenderTarget2DDeviceObject* renderTargetDeviceObject) override;
+
+	/**
+	 * VertexBuffer internal API
+	 */
+	void vertexBuffer_createDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject, const string& deviceObjectName) override;
+	void vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject) override;
+	void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const Vertex* vertices, const uint32 vertexCount) override;
+	void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const Vertex* vertices, const uint32 vertexCount) override;
+	void vertexBuffer_bindVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject) override;
+
+	/**
+	 * IndexBuffer internal API
+	 */
+	void indexBuffer_createDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject, const string& deviceObjectName) override;
+	void indexBuffer_destroyDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject) override;
+	void indexBuffer_initializeIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const BufferUsage bufferUsage, const uint32* indices, const uint32 indexCount) override;
+	void indexBuffer_modifyIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const uint32 startIndex, const uint32* indices, const uint32 indexCount) override;
+	void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) override;
 
 private:
 	Window *createWindow(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags);

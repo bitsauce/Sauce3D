@@ -44,11 +44,13 @@
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Simple3D</TargetName>
     <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>Simple3D</TargetName>
     <CodeAnalysisRuleSet>..\..\..\projects\Sauce3D.ruleset</CodeAnalysisRuleSet>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -71,6 +73,10 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)build\$(Platform)\$(Configuration)\*.dll" "$(TargetDir)"</Command>
+      <Outputs>$(TargetDir)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -96,6 +102,10 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)build\$(Platform)\$(Configuration)\*.dll" "$(TargetDir)"</Command>
+      <Outputs>$(TargetDir)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Camera.cpp" />
@@ -105,13 +115,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\projects\Sauce3D.ruleset" />
-    <None Include="..\Data\Default.frag" />
-    <None Include="..\Data\Default.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="..\Data\Resources.xml">
-      <SubType>Designer</SubType>
-    </Xml>
+    <None Include="..\Data\Phong.frag" />
+    <None Include="..\Data\Phong.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Camera.h" />

@@ -203,13 +203,10 @@ void ImGuiSystem::render()
 
     ImDrawData* imDrawData = ImGui::GetDrawData();
     {
-        VertexBuffer* vbo = new StaticVertexBuffer();
-        IndexBuffer* ibo = new StaticIndexBuffer();
-
         VertexFormat fmt;
-        fmt.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
-        fmt.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
-        fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+        fmt.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::Float);
+        fmt.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
+        fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
 
         // Setup desired GL state
         // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
@@ -230,10 +227,12 @@ void ImGuiSystem::render()
             const ImDrawList* imDrawList = imDrawData->CmdLists[n];
 
             // Convert ImGui vertex buffer to Sauce vertex buffer
+            Vertex* vertices;
+            uint32 vertexCount;
             {
                 const ImVector<ImDrawVert>& imVbo = imDrawList->VtxBuffer;
-                const uint32 vertexCount = imVbo.Size;
-                Vertex* vertices = fmt.createVertices(vertexCount);
+                vertexCount = imVbo.Size;
+                vertices = fmt.createVertices(vertexCount);
                 for (uint32 i = 0; i < vertexCount; ++i)
                 {
                     const uint8* col = (const uint8*)&imVbo[i].col;
@@ -241,21 +240,19 @@ void ImGuiSystem::render()
                     vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, col[0], col[1], col[2], col[3]);
                     vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, imVbo[i].uv.x, imVbo[i].uv.y);
                 }
-                vbo->setData(vertices, vertexCount);
-                delete[] vertices;
             }
 
             // Convert ImGui index buffer to Sauce index buffer
+            uint32* indices;
+            uint32 indexCount;
             {
                 const ImVector<ImDrawIdx>& imIbo = imDrawList->IdxBuffer;
-                const uint32 indexCount = imIbo.Size;
-                uint32* indices = new uint32[indexCount];
+                indexCount = imIbo.Size;
+                indices = new uint32[indexCount];
                 for (uint32 i = 0; i < indexCount; ++i)
                 {
                     indices[i] = imIbo[i];
                 }
-                ibo->setData(indices, indexCount);
-                delete[] indices;
             }
 
             for (int cmd_i = 0; cmd_i < imDrawList->CmdBuffer.Size; cmd_i++)
@@ -300,12 +297,13 @@ void ImGuiSystem::render()
 //                    }
 
                     g_ImGuiShader->setSampler2D("u_Texture", *(Texture2DRef*)pcmd->TextureId);
-                    graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vbo, ibo);
+                    graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, vertexCount, indices, indexCount);
                 }
             }
+
+            delete[] vertices;
+            delete[] indices;
         }
-        delete vbo;
-        delete ibo;
     }
 
     graphicsContext->setShader(nullptr);
@@ -331,7 +329,7 @@ bool createShaders()
         "	v_VertexColor = in_VertexColor;\n"
         "}\n";
 
-    const string fragmentShader =
+    const string pixelShader =
         "\n"
         "in vec2 v_TexCoord;\n"
         "in vec4 v_VertexColor;\n"
@@ -345,7 +343,10 @@ bool createShaders()
         "	out_FragColor = texture(u_Texture, v_TexCoord) * v_VertexColor;\n"
         "}\n";
 
-    g_ImGuiShader = ShaderRef(Game::Get()->getWindow()->getGraphicsContext()->createShader(vertexShader, fragmentShader, ""));
+    ShaderDesc shaderDesc;
+    shaderDesc.shaderSourceVS = vertexShader;
+    shaderDesc.shaderSourcePS = pixelShader;
+    g_ImGuiShader = CreateNew<Shader>(shaderDesc);
 
     createFontsTexture();
 
@@ -357,10 +358,13 @@ bool createFontsTexture()
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;
-    int width, height;
+    int32 width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
-    g_FontTexture = Texture2DRef(Game::Get()->getWindow()->getGraphicsContext()->createTexture(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels));
+    Texture2DDesc textureDesc;
+    Pixmap pixmap(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels);
+    textureDesc.pixmap = &pixmap;
+    g_FontTexture = CreateNew<Texture2D>(textureDesc);
 
     // Store our identifier
     io.Fonts->TexID = (ImTextureID)&g_FontTexture;

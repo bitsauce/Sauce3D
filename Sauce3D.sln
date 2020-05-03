@@ -128,6 +128,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDFFontRendering", "samples
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "3rdparty\freetype\builds\windows\visualstudio\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloTriangle", "samples\HelloTriangle\Project\HelloTriangle.vcxproj", "{A6F11479-1F88-4F09-B113-9C24A1498334}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Static|x64 = Debug Static|x64
@@ -400,6 +402,14 @@ Global
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release Static|x64.Build.0 = Release Static|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x64.ActiveCfg = Release|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x64.Build.0 = Release|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Debug Static|x64.ActiveCfg = Debug|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Debug Static|x64.Build.0 = Debug|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Debug|x64.ActiveCfg = Debug|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Debug|x64.Build.0 = Debug|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Release Static|x64.ActiveCfg = Release|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Release Static|x64.Build.0 = Release|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Release|x64.ActiveCfg = Release|x64
+		{A6F11479-1F88-4F09-B113-9C24A1498334}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -433,6 +443,7 @@ Global
 		{17A4874B-0606-4687-90B6-F91F8CB3B8AF} = {8460DEA2-6B48-478B-922A-FD47BCDAF5EA}
 		{33134F61-C1AD-4B6F-9CEA-503A9F140C52} = {8460DEA2-6B48-478B-922A-FD47BCDAF5EA}
 		{1695866F-28C3-44F6-96A0-4C3BFD79ED1A} = {52A3D16B-ED61-40D4-8804-C241B45F0B10}
+		{A6F11479-1F88-4F09-B113-9C24A1498334} = {52A3D16B-ED61-40D4-8804-C241B45F0B10}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0D9DB0BD-798E-4276-BDD2-8C747C54E3DC}

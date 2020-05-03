@@ -6,6 +6,10 @@
 
 #include <Sauce/Config.h>
 
+#ifdef SAUCE_COMPILE_WINDOWS
+#include <Windows.h>
+#endif
+
 BEGIN_SAUCE_NAMESPACE
 
 namespace util

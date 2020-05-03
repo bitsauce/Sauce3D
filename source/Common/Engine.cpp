@@ -161,9 +161,9 @@ int Game::run(const GameDesc &desc)
 		m_windows.push_back(mainWindow);
 
 		// Setup default vertex format
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::Float);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
+		VertexFormat::s_vct.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
 
 		// Initialize font rendering system
 		FontRenderingSystem::Initialize(graphicsContext);
@@ -469,7 +469,7 @@ int Game::run(const GameDesc &desc)
 			ImGuiSystem::render();
 
 			SDL_GL_SwapWindow(mainWindow->getSDLHandle());
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			graphicsContext->clear(BufferMask::COLOR_BUFFER | BufferMask::DEPTH_BUFFER);
 
 			// Add fps sample
 			if(deltaTime != 0.0f)

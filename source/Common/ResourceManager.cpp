@@ -50,20 +50,20 @@ ResourceManager::ResourceManager(const string &resourceFile)
 			if(name)
 			{
 				string type = resourceNode->Value();
-				if(type == "texture")
-				{
-					tinyxml2::XMLElement *path = resourceNode->FirstChildElement("path");
-					tinyxml2::XMLElement *premul = resourceNode->FirstChildElement("premultiplyAlpha");
-					if(path)
-					{
-						m_resourceDesc[name->GetText()] =
-							new TextureResourceDesc(
-								name->GetText(),
-								path->GetText(),
-								premul && string(premul->GetText()) == "true"
-								);
-					}
-				}
+				//if(type == "texture")
+				//{
+				//	tinyxml2::XMLElement *path = resourceNode->FirstChildElement("path");
+				//	tinyxml2::XMLElement *premul = resourceNode->FirstChildElement("premultiplyAlpha");
+				//	if(path)
+				//	{
+				//		m_resourceDesc[name->GetText()] =
+				//			new TextureResourceDesc(
+				//				name->GetText(),
+				//				path->GetText(),
+				//				premul && string(premul->GetText()) == "true"
+				//				);
+				//	}
+				//}
 				//else if(type == "font") // TODO: Fonts
 				//{
 				//	tinyxml2::XMLElement *path = resourceNode->FirstChildElement("path");
@@ -77,16 +77,16 @@ ResourceManager::ResourceManager(const string &resourceFile)
 				//			);
 				//	}
 				//}
-				else if(type == "shader")
-				{
-					tinyxml2::XMLElement *vertexFilePath = resourceNode->FirstChildElement("vertexFilePath");
-					tinyxml2::XMLElement *fragmentFilePath = resourceNode->FirstChildElement("fragmentFilePath");
-					tinyxml2::XMLElement *geometryFilePath = resourceNode->FirstChildElement("geometryFilePath");
-					if(vertexFilePath && fragmentFilePath)
-					{
-						m_resourceDesc[name->GetText()] = new ShaderResourceDesc(name->GetText(), vertexFilePath->GetText(), fragmentFilePath->GetText(), geometryFilePath ? geometryFilePath->GetText() : "");
-					}
-				}
+				//else if(type == "shader")
+				//{
+				//	tinyxml2::XMLElement *vertexFilePath = resourceNode->FirstChildElement("vertexFilePath");
+				//	tinyxml2::XMLElement *fragmentFilePath = resourceNode->FirstChildElement("fragmentFilePath");
+				//	tinyxml2::XMLElement *geometryFilePath = resourceNode->FirstChildElement("geometryFilePath");
+				//	if(vertexFilePath && fragmentFilePath)
+				//	{
+				//		m_resourceDesc[name->GetText()] = new ShaderResourceDesc(name->GetText(), vertexFilePath->GetText(), fragmentFilePath->GetText(), geometryFilePath ? geometryFilePath->GetText() : "");
+				//	}
+				//}
 			}
 
 			// Next resource
