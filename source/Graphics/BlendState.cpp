@@ -15,29 +15,29 @@
 BEGIN_SAUCE_NAMESPACE
 
 BlendState::BlendState(const BlendPreset preset)
-	: m_src(BlendFactor::BLEND_ZERO)
-	, m_alphaSrc(BlendFactor::BLEND_ZERO)
-	, m_dst(BlendFactor::BLEND_ZERO)
-	, m_alphaDst(BlendFactor::BLEND_ZERO)
+	: m_src(BlendFactor::Zero)
+	, m_alphaSrc(BlendFactor::Zero)
+	, m_dst(BlendFactor::Zero)
+	, m_alphaDst(BlendFactor::Zero)
 {
 	switch(preset)
 	{
-	case BlendPreset::PRESET_ALPHA_BLEND:
-		m_src = m_alphaSrc = BlendFactor::BLEND_SRC_ALPHA;
-		m_dst = m_alphaDst = BlendFactor::BLEND_ONE_MINUS_SRC_ALPHA;
+	case BlendPreset::AlphaBlend:
+		m_src = m_alphaSrc = BlendFactor::SrcAlpha;
+		m_dst = m_alphaDst = BlendFactor::OneMinusSrcAlpha;
 		break;
-	case BlendPreset::PRESET_OPAQUE:
-	case BlendPreset::PRESET_ADDITIVE:
-		m_src = m_alphaSrc = BlendFactor::BLEND_SRC_ALPHA;
-		m_dst = m_alphaDst = BlendFactor::BLEND_ONE;
+	case BlendPreset::Opaque:
+	case BlendPreset::Additive:
+		m_src = m_alphaSrc = BlendFactor::SrcAlpha;
+		m_dst = m_alphaDst = BlendFactor::One;
 		break;
-	case BlendPreset::PRESET_MULTIPLY:
-		m_src = m_alphaSrc = BlendFactor::BLEND_DST_COLOR;
-		m_dst = m_alphaDst = BlendFactor::BLEND_ZERO;
+	case BlendPreset::Multiply:
+		m_src = m_alphaSrc = BlendFactor::DstColor;
+		m_dst = m_alphaDst = BlendFactor::Zero;
 		break;
-	case BlendPreset::PRESET_PREMULTIPLIED_ALPHA:
-		m_src = m_alphaSrc = BlendFactor::BLEND_ONE;
-		m_dst = m_alphaDst = BlendFactor::BLEND_ONE_MINUS_SRC_ALPHA;
+	case BlendPreset::PremultipliedAlpha:
+		m_src = m_alphaSrc = BlendFactor::One;
+		m_dst = m_alphaDst = BlendFactor::OneMinusSrcAlpha;
 		break;
 	}
 }

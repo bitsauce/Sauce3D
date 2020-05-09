@@ -12,28 +12,28 @@ BEGIN_SAUCE_NAMESPACE
 enum class PixelComponents : uint32
 {
 	R,
-	RG,
-	RGB,
-	RGBA,
-	INVALID_COMPONENTS
+	Rg,
+	Rgb,
+	Rgba,
+	Invalid
 };
 
 enum class PixelDatatype : uint32
 {
-	INT,
-	UNSIGNED_INT,
-	BYTE,
-	UNSIGNED_BYTE,
-	FLOAT,
-	INVALID_DATA_TYPE
+	Int8,
+	Uint8,
+	Int32,
+	Uint32,
+	Float,
+	Invalid
 };
 
 class SAUCE_API PixelFormat
 {
 public:
 	PixelFormat()
-		: m_components(PixelComponents::INVALID_COMPONENTS)
-		, m_datatype(PixelDatatype::INVALID_DATA_TYPE)
+		: m_components(PixelComponents::Invalid)
+		, m_datatype(PixelDatatype::Invalid)
 	{
 	}
 

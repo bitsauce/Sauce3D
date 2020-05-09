@@ -204,9 +204,9 @@ void ImGuiSystem::render()
     ImDrawData* imDrawData = ImGui::GetDrawData();
     {
         VertexFormat fmt;
-        fmt.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::Float);
-        fmt.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
-        fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
+        fmt.set(VertexAttribute::Position, 2, Datatype::Float);
+        fmt.set(VertexAttribute::Color, 4, Datatype::Uint8);
+        fmt.set(VertexAttribute::TexCoord, 2, Datatype::Float);
 
         // Setup desired GL state
         // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
@@ -236,9 +236,9 @@ void ImGuiSystem::render()
                 for (uint32 i = 0; i < vertexCount; ++i)
                 {
                     const uint8* col = (const uint8*)&imVbo[i].col;
-                    vertices[i].set2f(VertexAttribute::VERTEX_POSITION, imVbo[i].pos.x, imVbo[i].pos.y);
-                    vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, col[0], col[1], col[2], col[3]);
-                    vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, imVbo[i].uv.x, imVbo[i].uv.y);
+                    vertices[i].set2f(VertexAttribute::Position, imVbo[i].pos.x, imVbo[i].pos.y);
+                    vertices[i].set4ub(VertexAttribute::Color, col[0], col[1], col[2], col[3]);
+                    vertices[i].set2f(VertexAttribute::TexCoord, imVbo[i].uv.x, imVbo[i].uv.y);
                 }
             }
 
@@ -297,7 +297,7 @@ void ImGuiSystem::render()
 //                    }
 
                     g_ImGuiShader->setSampler2D("u_Texture", *(Texture2DRef*)pcmd->TextureId);
-                    graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, vertexCount, indices, indexCount);
+                    graphicsContext->drawIndexedPrimitives(PrimitiveType::Triangles, vertices, vertexCount, indices, indexCount);
                 }
             }
 
@@ -362,7 +362,7 @@ bool createFontsTexture()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
     Texture2DDesc textureDesc;
-    Pixmap pixmap(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixels);
+    Pixmap pixmap(width, height, PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8), pixels);
     textureDesc.pixmap = &pixmap;
     g_FontTexture = CreateNew<Texture2D>(textureDesc);
 

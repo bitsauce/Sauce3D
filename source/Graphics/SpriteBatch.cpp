@@ -97,7 +97,7 @@ void SpriteBatch::end()
 	{
 		switch(m_state.mode)
 		{
-			case SpriteSortMode::DEFERRED:
+			case SpriteSortMode::Deferred:
 			{
 				// Sprites are not drawn until end() is called. end() will apply graphics
 				// device settings and draw all the sprites in one batch, in the same
@@ -137,7 +137,7 @@ void SpriteBatch::end()
 						{
 							// Draw textured primitives
 							m_graphicsContext->setTexture(itr2->first);
-							m_graphicsContext->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
+							m_graphicsContext->drawIndexedPrimitives(PrimitiveType::Triangles, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
 							spriteCount = 0;
 						}
 					}
@@ -145,7 +145,7 @@ void SpriteBatch::end()
 			}
 			break;
 
-			case SpriteSortMode::TEXTURE:
+			case SpriteSortMode::Texture:
 			{
 				// Sort sprites by texture. Draw forwards and batch together
 				// similar textures, as long as they don't overlap a different texture.

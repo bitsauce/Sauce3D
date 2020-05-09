@@ -33,20 +33,20 @@ void Camera::onMouseEvent(MouseEvent *e)
 {
 	switch((MouseEventType)e->getType())
 	{
-		case MouseEventType::DOWN:
+		case MouseEventType::Down:
 		{
 			m_dragging = true;
 			m_previousMousePosition = e->getPosition();
 		}
 		break;
 
-		case MouseEventType::UP:
+		case MouseEventType::Up:
 		{
 			m_dragging = false;
 		}
 		break;
 
-		case MouseEventType::MOVE:
+		case MouseEventType::Move:
 		{
 			if(m_dragging)
 			{
@@ -64,7 +64,7 @@ void Camera::onMouseEvent(MouseEvent *e)
 
 void Camera::onKeyEvent(KeyEvent *e)
 {
-	const bool pressed = (KeyEventType)e->getType() != KeyEventType::UP;
+	const bool pressed = (KeyEventType)e->getType() != KeyEventType::Up;
 	switch(e->getKeycode())
 	{
 		case SAUCE_KEY_W: m_inputState.forward = pressed; break;

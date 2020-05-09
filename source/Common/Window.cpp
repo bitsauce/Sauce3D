@@ -224,14 +224,14 @@ bool Window::handleEvent(SDL_Event &event, Game *game)
 
 			// Send a window size changed event
 			{
-				WindowEvent windowEvent(WindowEventType::SIZE_CHANGED, this, width, height);
+				WindowEvent windowEvent(WindowEventType::SizeChanged, this, width, height);
 				game->onEvent(&windowEvent);
 			}
 
 			// Send a mouse move event
 			{
 				Vector2I position = game->getInputManager()->getPosition();
-				MouseEvent mouseEvent(MouseEventType::MOVE, game->getInputManager(), position.x, position.y, SAUCE_MOUSE_BUTTON_NONE, 0, 0);
+				MouseEvent mouseEvent(MouseEventType::Move, game->getInputManager(), position.x, position.y, SAUCE_MOUSE_BUTTON_NONE, 0, 0);
 				game->onEvent(&mouseEvent);
 			}
 		}

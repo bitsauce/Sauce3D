@@ -23,9 +23,9 @@ bool Mesh::initialize(MeshDesc meshDesc)
 	}
 
 	VertexFormat fmt;
-	fmt.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::Float);
-	fmt.set(VertexAttribute::VERTEX_NORMAL, 3, Datatype::Float);
-	fmt.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
+	fmt.set(VertexAttribute::Position, 3, Datatype::Float);
+	fmt.set(VertexAttribute::Normal, 3, Datatype::Float);
+	fmt.set(VertexAttribute::TexCoord, 2, Datatype::Float);
 
 	// Loop over shapes
 	for (size_t s = 0; s < shapes.size(); ++s)
@@ -57,9 +57,9 @@ bool Mesh::initialize(MeshDesc meshDesc)
 				// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
 				// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 				// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
-				vertices[index_offset + v].set3f(VertexAttribute::VERTEX_POSITION, vx, vy, vz);
-				vertices[index_offset + v].set3f(VertexAttribute::VERTEX_NORMAL, nx, ny, nz);
-				vertices[index_offset + v].set2f(VertexAttribute::VERTEX_TEX_COORD, tx, ty);
+				vertices[index_offset + v].set3f(VertexAttribute::Position, vx, vy, vz);
+				vertices[index_offset + v].set3f(VertexAttribute::Normal, nx, ny, nz);
+				vertices[index_offset + v].set2f(VertexAttribute::TexCoord, tx, ty);
 			}
 			index_offset += fv;
 

@@ -5,19 +5,20 @@
 #pragma once
 
 #include <Sauce/Config.h>
+#include <Sauce/Input/Keycodes.h>
 
 BEGIN_SAUCE_NAMESPACE
 
 /*********************************************************************
 **	Event types														**
 **********************************************************************/
-#define START_EVENT_ENUM PREV_MAX_EVENT_ID = (uint32)LAST_DEFINED_EVENT_ENUM::MAX_EVENT_ID
-#define END_EVENT_ENUM MAX_EVENT_ID
+#define START_EVENT_ENUM _StartEventID = (uint32)LAST_DEFINED_EVENT_ENUM::_MaxEventID
+#define END_EVENT_ENUM _MaxEventID
 
 enum class InvalidEventType : int32
 {
-	INVALID      = -1,
-	MAX_EVENT_ID = 0
+	Invalid     = -1,
+	_MaxEventID = 0
 };
 #undef LAST_DEFINED_EVENT_ENUM
 #define LAST_DEFINED_EVENT_ENUM InvalidEventType
@@ -25,10 +26,10 @@ enum class InvalidEventType : int32
 enum class CoreEventType : int32
 {
 	START_EVENT_ENUM,
-	TICK,
-	DRAW,
-	TEXT_INPUT,
-	CONTROLLER_AXIS,
+	Tick,
+	Draw,
+	TextInput,
+	ControllerAxis,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -37,7 +38,7 @@ enum class CoreEventType : int32
 enum class WindowEventType : int32
 {
 	START_EVENT_ENUM,
-	SIZE_CHANGED,
+	SizeChanged,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -46,8 +47,8 @@ enum class WindowEventType : int32
 enum class GameEventType : int32
 {
 	START_EVENT_ENUM,
-	START,
-	END,
+	Start,
+	End,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -56,8 +57,8 @@ enum class GameEventType : int32
 enum class StepEventType : int32
 {
 	START_EVENT_ENUM,
-	BEGIN,
-	END,
+	Begin,
+	End,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -66,9 +67,9 @@ enum class StepEventType : int32
 enum class KeyEventType : int32
 {
 	START_EVENT_ENUM,
-	DOWN,
-	UP,
-	REPEAT,
+	Down,
+	Up,
+	Repeat,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -77,10 +78,10 @@ enum class KeyEventType : int32
 enum class MouseEventType : int32
 {
 	START_EVENT_ENUM,
-	MOVE,
-	DOWN,
-	UP,
-	WHEEL,
+	Move,
+	Down,
+	Up,
+	Wheel,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -89,9 +90,9 @@ enum class MouseEventType : int32
 enum class ControllerButtonEventType : int32
 {
 	START_EVENT_ENUM,
-	DOWN,
-	UP,
-	REPEAT,
+	Down,
+	Up,
+	Repeat,
 	END_EVENT_ENUM
 };
 #undef LAST_DEFINED_EVENT_ENUM
@@ -131,7 +132,7 @@ class SAUCE_API TextEvent : public Event
 {
 public:
 	TextEvent(const char c) :
-		Event((int32)CoreEventType::TEXT_INPUT),
+		Event((int32)CoreEventType::TextInput),
 		m_char(c)
 	{
 	}
@@ -149,7 +150,7 @@ class SAUCE_API DrawEvent : public Event
 {
 public:
 	DrawEvent(const float alpha, const float delta, class GraphicsContext *graphicsContext) :
-		Event((int32)CoreEventType::DRAW),
+		Event((int32)CoreEventType::Draw),
 		m_alpha(alpha),
 		m_delta(delta),
 		m_graphicsContext(graphicsContext)
@@ -180,7 +181,7 @@ class SAUCE_API TickEvent : public Event
 {
 public:
 	TickEvent(const float delta) :
-		Event((int32)CoreEventType::TICK),
+		Event((int32)CoreEventType::Tick),
 		m_delta(delta)
 	{
 	}
@@ -279,22 +280,6 @@ protected:
 class SAUCE_API KeyEvent : public InputEvent
 {
 public:
-	enum Modifier
-	{
-		NONE = KMOD_NONE,
-		NUMLOCK = KMOD_NUM,
-		CAPSLOCK = KMOD_CAPS,
-		LCONTROL = KMOD_LCTRL,
-		RCONTROL = KMOD_RCTRL,
-		RSHIFT = KMOD_RSHIFT,
-		LSHIFT = KMOD_LSHIFT,
-		RALT = KMOD_RALT,
-		LALT = KMOD_LALT,
-		CTRL = KMOD_CTRL,
-		SHIFT = KMOD_SHIFT,
-		ALT = KMOD_ALT
-	};
-
 	KeyEvent(const KeyEventType type, InputManager *inputManager, const InputButton inputButton, const Uint16 modifiers) :
 		InputEvent((int32)type, inputManager, inputButton),
 		m_modifiers(modifiers)
@@ -377,7 +362,7 @@ class SAUCE_API ControllerAxisEvent : public InputEvent
 {
 public:
 	ControllerAxisEvent(InputManager *inputManager, const ControllerAxis axis, const short value) :
-		InputEvent((int32)CoreEventType::CONTROLLER_AXIS, inputManager),
+		InputEvent((int32)CoreEventType::ControllerAxis, inputManager),
 		m_axis(axis),
 		m_value(value)
 	{

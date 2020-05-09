@@ -23,7 +23,7 @@ TextureAtlas::TextureAtlas(GraphicsContext *graphicsContext, const int width, co
 {
 	// Create a texture for the atlas
 	Texture2DDesc textureDesc;
-	Pixmap pixmap(width, height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE));
+	Pixmap pixmap(width, height, PixelFormat(PixelComponents::Rgba, PixelDatatype::Int8));
 	textureDesc.pixmap = &pixmap;
 	m_texture = CreateNew<Texture2D>(textureDesc);
 	m_rectanglePacker.setMaxWidth(width);
@@ -40,10 +40,10 @@ TextureAtlas::~TextureAtlas()
 	}
 }
 
-void TextureAtlas::add(const string &key, Resource<Texture2D> texture)
-{
-	add(key, texture->getPixmap());
-}
+//void TextureAtlas::add(const string &key, Resource<Texture2D> texture)
+//{
+//	add(key, texture->getPixmap());
+//}
 
 void TextureAtlas::add(const string & key, const Pixmap & pixmap)
 {
@@ -92,7 +92,7 @@ void TextureAtlas::create()
 		}
 	}
 	m_result = result;
-	m_texture->updatePixmap(Pixmap(m_width, m_height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE), pixels));
+	m_texture->updatePixmap(Pixmap(m_width, m_height, PixelFormat(PixelComponents::Rgba, PixelDatatype::Int8), pixels));
 }
 
 END_SAUCE_NAMESPACE

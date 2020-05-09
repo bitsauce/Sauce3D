@@ -17,7 +17,7 @@ public:
 	TextureAtlas(GraphicsContext *graphicsContext, const int width = 2048, const int height = 2048, const int border = 1);
 	~TextureAtlas();
 
-	void add(const string &key, Resource<Texture2D> texture);
+	//void add(const string &key, Resource<Texture2D> texture);
 	void add(const string &key, const Pixmap &pixmap);
 
 	TextureRegion get(const string &key) const;

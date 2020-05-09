@@ -21,9 +21,9 @@ uint PixelFormat::getComponentCount() const
 	switch (m_components)
 	{
 		case PixelComponents::R: return 1;
-		case PixelComponents::RG: return 2;
-		case PixelComponents::RGB: return 3;
-		case PixelComponents::RGBA: return 4;
+		case PixelComponents::Rg: return 2;
+		case PixelComponents::Rgb: return 3;
+		case PixelComponents::Rgba: return 4;
 	}
 	return 0;
 }
@@ -32,9 +32,9 @@ uint PixelFormat::getDataTypeSizeInBytes() const
 {
 	switch (m_datatype)
 	{
-		case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return 4;
-		case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: return 1;
-		case PixelDatatype::FLOAT: return 4;
+		case PixelDatatype::Uint32: case PixelDatatype::Int32: return 4;
+		case PixelDatatype::Uint8: case PixelDatatype::Int8: return 1;
+		case PixelDatatype::Float: return 4;
 	}
 	return 0;
 }
@@ -167,8 +167,8 @@ PixelFormat Pixmap::getFormat() const
 bool Pixmap::isValid() const
 {
 	return m_data != nullptr && m_width > 0 && m_height > 0 &&
-		m_format.getDataType() != PixelDatatype::INVALID_DATA_TYPE &&
-		m_format.getComponents() != PixelComponents::INVALID_COMPONENTS;
+		m_format.getDataType() != PixelDatatype::Invalid &&
+		m_format.getComponents() != PixelComponents::Invalid;
 }
 
 void Pixmap::getPixel(const uint x, const uint y, void *data) const
@@ -226,7 +226,7 @@ void Pixmap::clear()
 
 void Pixmap::saveToFile(string path) const
 {
-	if(m_format.getDataType() != PixelDatatype::BYTE && m_format.getDataType() != PixelDatatype::UNSIGNED_BYTE)
+	if(m_format.getDataType() != PixelDatatype::Int8 && m_format.getDataType() != PixelDatatype::Uint8)
 	{
 		LOG("Cannot export a pixmap with a pixel data type different from byte or unsigned byte");
 		return;
@@ -282,7 +282,7 @@ Pixmap Pixmap::loadFromFile(const string& imageFile)
 		FreeImage_FlipVertical(bitmap);
 
 		// Create pixmap data
-		newPixmap.m_format = PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE);
+		newPixmap.m_format = PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8);
 		newPixmap.m_width = FreeImage_GetWidth(bitmap);
 		newPixmap.m_height = FreeImage_GetHeight(bitmap);
 		assert(newPixmap.m_width >= 0 && newPixmap.m_height >= 0);

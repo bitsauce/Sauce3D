@@ -24,7 +24,7 @@ struct SAUCE_API RenderTarget2DDesc : public GraphicsDeviceObjectDesc
 	uint32           width           = 0;
 	uint32           height          = 0;
 	uint32           targetCount     = 1;
-	PixelFormat      pixelFormat     = PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE);
+	PixelFormat      pixelFormat     = PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8);
 	Texture2DRef*    targetTextures  = nullptr;
 };
 

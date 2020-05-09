@@ -13,11 +13,11 @@ BEGIN_SAUCE_NAMESPACE
 
 enum class InputButtonType : uint32
 {
-	NONE,
-	KEYBOARD,
-	MOUSE,
-	CONTROLLER_BUTTON,
-	CONTROLLER_AXIS
+	None,
+	Keyboard,
+	Mouse,
+	ControllerButton,
+	ControllerAxis
 };
 
 class SAUCE_API InputButton

@@ -26,7 +26,7 @@ VertexFormat::VertexFormat() :
 
 VertexFormat::VertexFormat(const VertexFormat &other)
 {
-	for(uint32 i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	for(uint32 i = 0; i < (uint32)VertexAttribute::Max; i++)
 	{
 		m_attributes[i] = other.m_attributes[i];
 	}
@@ -41,7 +41,7 @@ void VertexFormat::set(const VertexAttribute attrib, const int size, const Datat
 		m_attributes[(uint32)attrib].datatype = datatype;
 
 		m_vertexByteSize = 0;
-		for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+		for(int i = 0; i < (uint32)VertexAttribute::Max; i++)
 		{
 			VertexAttribute at = VertexAttribute(i);
 			if(isAttributeEnabled(at))
@@ -107,7 +107,7 @@ Vertex *VertexFormat::createVertices(const uint32 count) const
 
 VertexFormat &VertexFormat::operator=(const VertexFormat &other)
 {
-	for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	for(int i = 0; i < (uint32)VertexAttribute::Max; i++)
 	{
 		m_attributes[i] = other.m_attributes[i];
 	}
@@ -117,7 +117,7 @@ VertexFormat &VertexFormat::operator=(const VertexFormat &other)
 
 bool VertexFormat::operator==(const VertexFormat &other)
 {
-	for(int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	for(int i = 0; i < (uint32)VertexAttribute::Max; i++)
 	{
 		if(m_attributes[i] != other.m_attributes[i])
 			return false;
@@ -568,7 +568,7 @@ Vertex &Vertex::operator=(const Vertex &other)
 
 void Vertex::print()
 {
-	for (int i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	for (int i = 0; i < (uint32)VertexAttribute::Max; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
 		if(m_format.isAttributeEnabled(attrib))
@@ -577,10 +577,10 @@ void Vertex::print()
 			ss << "Attrib: ";
 			switch(attrib)
 			{
-				case VertexAttribute::VERTEX_POSITION: ss << "Position: "; break;
-				case VertexAttribute::VERTEX_COLOR: ss << "Color: "; break;
-				case VertexAttribute::VERTEX_TEX_COORD: ss << "Tex Coord: "; break;
-				case VertexAttribute::VERTEX_NORMAL: ss << "Normal: "; break;
+				case VertexAttribute::Position: ss << "Position: "; break;
+				case VertexAttribute::Color: ss << "Color: "; break;
+				case VertexAttribute::TexCoord: ss << "Tex Coord: "; break;
+				case VertexAttribute::Normal: ss << "Normal: "; break;
 			}
 
 			for(int j = 0; j < m_format.getElementCount(attrib); j++)

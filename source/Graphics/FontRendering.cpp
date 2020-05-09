@@ -255,7 +255,7 @@ private:
 		// Create sdf map
 		const int32 sdfMapSizeX = extents.x / m_subdivisionsPerSDFPixel;
 		const int32 sdfMapSizeY = extents.y / m_subdivisionsPerSDFPixel;
-		Pixmap sdfAtlas(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelComponents::R, PixelDatatype::UNSIGNED_BYTE));
+		Pixmap sdfAtlas(sdfMapSizeX, sdfMapSizeY, PixelFormat(PixelComponents::R, PixelDatatype::Uint8));
 		{
 			for (int32 sdfMapY = 0; sdfMapY < sdfMapSizeY; ++sdfMapY)
 			{
@@ -365,7 +365,7 @@ private:
 
 		Texture2DDesc textureDesc;
 		textureDesc.pixmap = &sdfAtlas;
-		textureDesc.filtering = TextureFiltering::LINEAR;
+		textureDesc.filtering = TextureFiltering::Linear;
 		m_sdfTextureAtlas = CreateNew<Texture2D>(textureDesc);
 
 		delete[] glyphAtlasData;
@@ -465,9 +465,9 @@ bool FontRenderingSystem::Initialize(GraphicsContext* context)
 	g_fontShader = CreateNew<Shader>(shaderDesc);
 
 	// Set font vertex format
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::Float);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
-	g_fontVertexFormat.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
+	g_fontVertexFormat.set(VertexAttribute::Position, 2, Datatype::Float);
+	g_fontVertexFormat.set(VertexAttribute::TexCoord, 2, Datatype::Float);
+	g_fontVertexFormat.set(VertexAttribute::Color, 4, Datatype::Uint8);
 
 	// Register all cached fonts
 	util::FileSystemIterator cachedFontsDir("DataCache/Fonts", "*", (uint32)util::FileSystemIteratorFlag::IncludeFiles);
@@ -618,21 +618,21 @@ public:
 
 				const Vector2F currentTL = currentPos + glyphDesc->pixelDrawOffset;
 				const Vector2F currentBR = currentPos + glyphDesc->pixelSize + glyphDesc->pixelDrawOffset;
-				m_vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentTL.y);
-				m_vertices[i * 4 + 0].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv0.x, glyphDesc->uv0.y);
-				m_vertices[i * 4 + 0].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+				m_vertices[i * 4 + 0].set2f(VertexAttribute::Position, currentTL.x, currentTL.y);
+				m_vertices[i * 4 + 0].set2f(VertexAttribute::TexCoord, glyphDesc->uv0.x, glyphDesc->uv0.y);
+				m_vertices[i * 4 + 0].set4ub(VertexAttribute::Color, 255, 255, 255, 255);
 
-				m_vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentTL.y);
-				m_vertices[i * 4 + 1].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv1.x, glyphDesc->uv0.y);
-				m_vertices[i * 4 + 1].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+				m_vertices[i * 4 + 1].set2f(VertexAttribute::Position, currentBR.x, currentTL.y);
+				m_vertices[i * 4 + 1].set2f(VertexAttribute::TexCoord, glyphDesc->uv1.x, glyphDesc->uv0.y);
+				m_vertices[i * 4 + 1].set4ub(VertexAttribute::Color, 255, 255, 255, 255);
 
-				m_vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_POSITION, currentTL.x, currentBR.y);
-				m_vertices[i * 4 + 2].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv0.x, glyphDesc->uv1.y);
-				m_vertices[i * 4 + 2].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+				m_vertices[i * 4 + 2].set2f(VertexAttribute::Position, currentTL.x, currentBR.y);
+				m_vertices[i * 4 + 2].set2f(VertexAttribute::TexCoord, glyphDesc->uv0.x, glyphDesc->uv1.y);
+				m_vertices[i * 4 + 2].set4ub(VertexAttribute::Color, 255, 255, 255, 255);
 
-				m_vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_POSITION, currentBR.x, currentBR.y);
-				m_vertices[i * 4 + 3].set2f(VertexAttribute::VERTEX_TEX_COORD, glyphDesc->uv1.x, glyphDesc->uv1.y);
-				m_vertices[i * 4 + 3].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+				m_vertices[i * 4 + 3].set2f(VertexAttribute::Position, currentBR.x, currentBR.y);
+				m_vertices[i * 4 + 3].set2f(VertexAttribute::TexCoord, glyphDesc->uv1.x, glyphDesc->uv1.y);
+				m_vertices[i * 4 + 3].set4ub(VertexAttribute::Color, 255, 255, 255, 255);
 
 				m_indices[i * 6 + 0] = i * 4 + 0;
 				m_indices[i * 6 + 1] = i * 4 + 2;
@@ -682,7 +682,7 @@ public:
 
 		// Draw text
 		context->pushMatrix(drawTransform);
-		context->drawIndexedPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, m_vertices, numChars * 4, m_indices, numChars * 6);
+		context->drawIndexedPrimitives(PrimitiveType::Triangles, m_vertices, numChars * 4, m_indices, numChars * 6);
 		context->popMatrix();
 
 		// Clean up

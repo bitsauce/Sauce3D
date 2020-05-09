@@ -33,8 +33,8 @@ namespace util
 
 	enum class UnicodeByteOrder : uint32
 	{
-		DECODE_LITTLE_ENDIAN,
-		DECODE_BIG_ENDIAN,
+		LittleEndian,
+		BigEndian,
 	};
 
 	// This function will attempt to decode a UTF-8 encoded character in the buffer.
@@ -47,11 +47,11 @@ namespace util
 
 	// This function will attempt to decode a UTF-16 encoded character in the buffer.
 	// If the encoding is invalid, the function returns -1.
-	int decodeUTF16(const char* encodedBuffer, unsigned int* outCharLength, UnicodeByteOrder byteOrder = UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
+	int decodeUTF16(const char* encodedBuffer, unsigned int* outCharLength, UnicodeByteOrder byteOrder = UnicodeByteOrder::LittleEndian);
 
 	// This function will encode the value into the buffer.
 	// If the value is invalid, the function returns -1, else the encoded length.
-	int encodeUTF16(unsigned int value, char* outEncodedBuffer, unsigned int* outCharLength, UnicodeByteOrder byteOrder = UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
+	int encodeUTF16(unsigned int value, char* outEncodedBuffer, unsigned int* outCharLength, UnicodeByteOrder byteOrder = UnicodeByteOrder::LittleEndian);
 
 	SAUCE_API std::string ByteArrayMD5(const std::string& str);
 

@@ -204,7 +204,7 @@ InputManager::InputManager(string contextFile) :
 				if(name && key)
 				{
 					InputButton inputButton = toInputButton(key->GetText());
-					if(inputButton.getType() != InputButtonType::NONE)
+					if(inputButton.getType() != InputButtonType::None)
 					{
 						Keybind *kb = new Keybind(inputButton);
 						inputContext->addKeybind(name->GetText(), kb);
@@ -362,15 +362,15 @@ bool InputManager::getKeyState(const InputButton inputButton, ControllerDevice *
 	//if(m_game->isEnabled(SAUCE_BLOCK_BACKGROUND_INPUT) && !m_game->getWindow()->checkFlags(SDL_WINDOW_INPUT_FOCUS)) return false;
 	switch(inputButton.getType())
 	{
-		case InputButtonType::KEYBOARD: return SDL_GetKeyboardState(NULL)[inputButton.getCode()];
-		case InputButtonType::MOUSE: return (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(inputButton.getCode())) != 0;
-		case InputButtonType::CONTROLLER_BUTTON:
+		case InputButtonType::Keyboard: return SDL_GetKeyboardState(NULL)[inputButton.getCode()];
+		case InputButtonType::Mouse: return (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(inputButton.getCode())) != 0;
+		case InputButtonType::ControllerButton:
 		{
 			if(inputButton.getCode() == SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER) return m_leftTrigger/*[controller]*/;
 			else if(inputButton.getCode() == SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER) return m_rightTrigger/*[controller]*/;
 			else return SDL_GameControllerGetButton(static_cast<SDL_GameController*>(controller ? controller : m_defaultController), (SDL_GameControllerButton)inputButton.getCode()) != 0;
 		}
-		case InputButtonType::CONTROLLER_AXIS: return getAxisValue((const ControllerAxis)inputButton.getCode(), controller) > m_triggerThreshold;
+		case InputButtonType::ControllerAxis: return getAxisValue((const ControllerAxis)inputButton.getCode(), controller) > m_triggerThreshold;
 	}
 	return false;
 }

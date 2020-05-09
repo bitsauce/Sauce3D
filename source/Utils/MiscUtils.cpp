@@ -221,7 +221,7 @@ int util::decodeUTF16(const char *encodedBuffer, unsigned int *outLength, util::
 {
 	const unsigned char *buf = (const unsigned char *) encodedBuffer;
 	int value = 0;
-	if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
+	if(byteOrder == util::UnicodeByteOrder::LittleEndian)
 	{
 		value += buf[0];
 		value += (unsigned int) (buf[1]) << 8;
@@ -244,7 +244,7 @@ int util::decodeUTF16(const char *encodedBuffer, unsigned int *outLength, util::
 
 		// Read the second surrogate word
 		int value2 = 0;
-		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::LittleEndian)
 		{
 			value2 += buf[2];
 			value2 += (unsigned int) (buf[3]) << 8;
@@ -272,7 +272,7 @@ int util::encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *
 {
 	if(value < 0x10000)
 	{
-		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::LittleEndian)
 		{
 			outEncodedBuffer[0] = (value & 0xFF);
 			outEncodedBuffer[1] = ((value >> 8) & 0xFF);
@@ -292,7 +292,7 @@ int util::encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *
 		int surrogate1 = ((value >> 10) & 0x3FF) + 0xD800;
 		int surrogate2 = (value & 0x3FF) + 0xDC00;
 
-		if(byteOrder == util::UnicodeByteOrder::DECODE_LITTLE_ENDIAN)
+		if(byteOrder == util::UnicodeByteOrder::LittleEndian)
 		{
 			outEncodedBuffer[0] = (surrogate1 & 0xFF);
 			outEncodedBuffer[1] = ((surrogate1 >> 8) & 0xFF);

@@ -16,72 +16,72 @@ BEGIN_SAUCE_NAMESPACE
 
 InputButton::InputButton() :
 	code(0),
-	type(InputButtonType::NONE)
+	type(InputButtonType::None)
 {
 }
 
 InputButton::InputButton(const Keycode keycode) :
 	code(SDL_GetScancodeFromKey((SDL_Keycode) keycode)),
-	type(InputButtonType::KEYBOARD)
+	type(InputButtonType::Keyboard)
 {
 }
 
 InputButton::InputButton(const Scancode scancode) :
 	code(scancode),
-	type(InputButtonType::KEYBOARD)
+	type(InputButtonType::Keyboard)
 {
 }
 
 InputButton::InputButton(const MouseButton mouseButton) :
 	code(mouseButton),
-	type(InputButtonType::MOUSE)
+	type(InputButtonType::Mouse)
 {
 }
 
 InputButton::InputButton(const ControllerButton controllerButton) :
 	code(controllerButton),
-	type(InputButtonType::CONTROLLER_BUTTON)
+	type(InputButtonType::ControllerButton)
 {
 }
 
 InputButton::InputButton(const ControllerAxis axis) :
 	code(axis),
-	type(InputButtonType::CONTROLLER_AXIS)
+	type(InputButtonType::ControllerAxis)
 {
 }
 
 InputButton &InputButton::operator=(const Scancode scancode)
 {
 	code = scancode;
-	type = InputButtonType::KEYBOARD;
+	type = InputButtonType::Keyboard;
 	return *this;
 }
 
 InputButton &InputButton::operator=(const Keycode keycode)
 {
 	code = SDL_GetScancodeFromKey((SDL_Keycode) keycode);
-	type = InputButtonType::KEYBOARD;
+	type = InputButtonType::Keyboard;
 	return *this;
 }
 
 InputButton &InputButton::operator=(const MouseButton mouseButton)
 {
 	code = mouseButton;
-	type = InputButtonType::MOUSE;
+	type = InputButtonType::Mouse;
 	return *this;
 }
 
 InputButton &InputButton::operator=(const ControllerButton controllerButton)
 {
 	code = controllerButton;
-	type = InputButtonType::CONTROLLER_BUTTON;
+	type = InputButtonType::ControllerButton;
 	return *this;
 }
 
 InputButton &InputButton::operator=(const ControllerAxis axis)
 {
 	code = axis;
-	type = InputButtonType::CONTROLLER_AXIS;
+	type = InputButtonType::ControllerAxis;
 	return *this;
 }
 
@@ -92,27 +92,27 @@ bool InputButton::operator==(const InputButton inputButton)
 
 bool InputButton::operator==(const Scancode scancode)
 {
-	return type == InputButtonType::KEYBOARD && code == scancode;
+	return type == InputButtonType::Keyboard && code == scancode;
 }
 
 bool InputButton::operator==(const Keycode keycode)
 {
-	return type == InputButtonType::KEYBOARD && code == SDL_GetScancodeFromKey((SDL_Keycode) keycode);
+	return type == InputButtonType::Keyboard && code == SDL_GetScancodeFromKey((SDL_Keycode) keycode);
 }
 
 bool InputButton::operator==(const MouseButton mouseButton)
 {
-	return type == InputButtonType::MOUSE && code == mouseButton;
+	return type == InputButtonType::Mouse && code == mouseButton;
 }
 
 bool InputButton::operator==(const ControllerButton controllerButton)
 {
-	return type == InputButtonType::CONTROLLER_BUTTON && code == controllerButton;
+	return type == InputButtonType::ControllerButton && code == controllerButton;
 }
 
 bool InputButton::operator==(const ControllerAxis axis)
 {
-	return type == InputButtonType::CONTROLLER_AXIS && code == axis;
+	return type == InputButtonType::ControllerAxis && code == axis;
 }
 
 InputButtonType InputButton::getType() const

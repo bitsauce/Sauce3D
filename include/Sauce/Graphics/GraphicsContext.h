@@ -25,13 +25,13 @@ class IndexBuffer;
  */
 enum class PrimitiveType : uint32
 {
-	PRIMITIVE_POINTS,         ///< Points. 1 vertex per primitive.
-	PRIMITIVE_LINES,          ///< Lines. 2 vertex per primitive.
-	PRIMITIVE_LINE_STRIP,     ///< Line strip. 2 vertex for the first primitive, 1 for the next.
-	PRIMITIVE_LINE_LOOP,      ///< Line loop. n lines
-	PRIMITIVE_TRIANGLES,      ///< Triangles. 3 vertex per primitive.
-	PRIMITIVE_TRIANGLE_STRIP, ///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
-	PRIMITIVE_TRIANGLE_FAN    ///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
+	Points,        ///< Points. 1 vertex per primitive.
+	Lines,         ///< Lines. 2 vertex per primitive.
+	LineStrip,     ///< Line strip. 2 vertex for the first primitive, 1 for the next.
+	LineLoop,      ///< Line loop. n lines
+	Triangles,     ///< Triangles. 3 vertex per primitive.
+	TriangleStrip, ///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
+	TriangleFan    ///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
 };
 
 /**
@@ -40,9 +40,9 @@ enum class PrimitiveType : uint32
  */
 enum class BufferMask : uint32
 {
-	COLOR_BUFFER   = 1 << 0,          ///< %Color buffer
-	DEPTH_BUFFER   = 1 << 1,          ///< Depth buffer
-	STENCIL_BUFFER = 1 << 2           ///< Stencil buffer
+	Color   = 1 << 0,          ///< %Color buffer
+	Depth   = 1 << 1,          ///< Depth buffer
+	Stencil = 1 << 2           ///< Stencil buffer
 };
 ENUM_CLASS_ADD_BITWISE_OPERATORS(BufferMask);
 
@@ -52,17 +52,17 @@ ENUM_CLASS_ADD_BITWISE_OPERATORS(BufferMask);
   */
 enum class Capability : uint32
 {
-	BLEND,					///< Back buffer blending
-	DEPTH_TEST,				///< Depth testing
-	FACE_CULLING,			///< Back face culling
-	LINE_SMOOTH,			///< Smooth lines
-	POLYGON_SMOOTH,			///< Smooth polygons
-	MULTISAMPLE,			///< Multisample?
-	TEXTURE_1D,				///< 1D textures
-	TEXTURE_2D,				///< 2D textures
-	TEXTURE_3D,				///< 3D textures
-	VSYNC,
-	WIREFRAME
+	Blend,                  ///< Back buffer blending
+	DepthTest,              ///< Depth testing
+	FaceCulling,            ///< Back face culling
+	LineSmoothing,          ///< Smooth lines
+	PolygonSmoothing,       ///< Smooth polygons
+	Multisample,            ///< Multisample?
+	Texture1D,              ///< 1D textures
+	Texture2D,              ///< 2D textures
+	Texture3D,              ///< 3D textures
+	Vsync,                  ///< VSync
+	Wireframe               ///< Wireframe
 };
 
 /**
@@ -89,7 +89,7 @@ public:
 			, height(0)
 			, texture(nullptr)
 			, shader(nullptr)
-			, blendState(BlendPreset::PRESET_ALPHA_BLEND)
+			, blendState(BlendPreset::AlphaBlend)
 			, renderTarget(nullptr)
 		{
 			transformationMatrixStack.push(Matrix4());

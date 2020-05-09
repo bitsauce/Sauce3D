@@ -27,16 +27,16 @@ public:
 
 	enum class SpriteSortMode : uint32
 	{
-		BACK_TO_FRONT,
-		DEFERRED,
-		FRONT_TO_BACK,
-		IMMEDIATE,
-		TEXTURE
+		BackToFront,
+		Deferred,
+		FrontToBack,
+		Immediate,
+		Texture
 	};
 
 	struct State
 	{
-		State(const SpriteSortMode mode=SpriteSortMode::DEFERRED, const BlendState blendState=BlendPreset::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix=Matrix4(), ShaderRef shader=nullptr) :
+		State(const SpriteSortMode mode=SpriteSortMode::Deferred, const BlendState blendState=BlendPreset::AlphaBlend, const Matrix4 &transformationMatix=Matrix4(), ShaderRef shader=nullptr) :
 			mode(mode),
 			blendState(blendState),
 			transformationMatix(transformationMatix),

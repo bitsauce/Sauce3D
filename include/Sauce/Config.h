@@ -172,10 +172,10 @@ BEGIN_SAUCE_NAMESPACE
 **********************************************************************/
 enum class RetCode : int32
 {
-	SAUCE_OK					=  0,
-	SAUCE_RUNTIME_EXCEPTION		= -1,
-	SAUCE_INVALID_CONFIG		= -2,
-	SAUCE_UNKNOWN_EXCEPTION		= -3
+	Ok               =  0,
+	RuntimeException = -1,
+	InvalidConfig    = -2,
+	UnknownException = -3
 };
 
 /*********************************************************************
@@ -183,11 +183,11 @@ enum class RetCode : int32
 **********************************************************************/
 enum class EngineFlag : uint32
 {
-	SAUCE_EXPORT_LOG				= 1 << 0, ///< Export the output log to a log file.
-	SAUCE_RUN_IN_BACKGROUND			= 1 << 1, ///< This will allow the program to run while not focused.
-	SAUCE_BLOCK_BACKGROUND_INPUT	= 1 << 2, ///< If SAUCE_RUN_IN_BACKGROUND is set, this will block input while program is out of focus. 
-	SAUCE_VERBOSE					= 1 << 4, ///< This will make the engine produce more verbose messages from engine calls.
-	SAUCE_WINDOW_RESIZABLE			= 1 << 5
+	ExportLog                  = 1 << 0, ///< Export the output log to a log file.
+	RunInBackground            = 1 << 1, ///< This will allow the program to run while not focused.
+	CaptureInputWhenOutOfFocus = 1 << 2, ///< If SAUCE_RUN_IN_BACKGROUND is set, this will block input while program is out of focus. 
+	Verbose                    = 1 << 4, ///< This will make the engine produce more verbose messages from engine calls.
+	ResizableWindow            = 1 << 5
 };
 ENUM_CLASS_ADD_BITWISE_OPERATORS(EngineFlag);
 
@@ -196,9 +196,9 @@ ENUM_CLASS_ADD_BITWISE_OPERATORS(EngineFlag);
 **********************************************************************/
 enum MessageType
 {
-	SAUCE_INFO_MSG,
-	SAUCE_WARN_MSG,
-	SAUCE_ERR_MSG
+	Info,
+	Warning,
+	Error
 };
 
 /*********************************************************************
@@ -206,10 +206,10 @@ enum MessageType
 **********************************************************************/
 enum class GraphicsBackend : uint32
 {
-	SAUCE_OPENGL_3,
-	SAUCE_OPENGL_4,
-	SAUCE_DIRECTX,
-	SAUCE_VULKAN
+	OpenGL3,
+	OpenGL4,
+	DirectX12,
+	Vulkan_VERSION
 };
 
 /*********************************************************************

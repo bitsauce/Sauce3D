@@ -113,13 +113,13 @@ GLenum toPrimitiveType(const PrimitiveType primitiveType)
 {
 	switch (primitiveType)
 	{
-		case PrimitiveType::PRIMITIVE_POINTS:         return GL_POINTS;
-		case PrimitiveType::PRIMITIVE_LINES:          return GL_LINES;
-		case PrimitiveType::PRIMITIVE_LINE_STRIP:     return GL_LINE_STRIP;
-		case PrimitiveType::PRIMITIVE_LINE_LOOP:      return GL_LINE_LOOP;
-		case PrimitiveType::PRIMITIVE_TRIANGLES:      return GL_TRIANGLES;
-		case PrimitiveType::PRIMITIVE_TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
-		case PrimitiveType::PRIMITIVE_TRIANGLE_FAN:   return GL_TRIANGLE_FAN;
+		case PrimitiveType::Points:        return GL_POINTS;
+		case PrimitiveType::Lines:         return GL_LINES;
+		case PrimitiveType::LineStrip:     return GL_LINE_STRIP;
+		case PrimitiveType::LineLoop:      return GL_LINE_LOOP;
+		case PrimitiveType::Triangles:     return GL_TRIANGLES;
+		case PrimitiveType::TriangleStrip: return GL_TRIANGLE_STRIP;
+		case PrimitiveType::TriangleFan:   return GL_TRIANGLE_FAN;
 	}
 	return GL_TRIANGLES;
 }
@@ -128,17 +128,17 @@ GLenum toBlendFactor(const BlendFactor blendFactor)
 {
 	switch (blendFactor)
 	{
-		case BlendFactor::BLEND_ZERO: return GL_ZERO;
-		case BlendFactor::BLEND_ONE: return GL_ONE;
-		case BlendFactor::BLEND_SRC_COLOR: return GL_SRC_COLOR;
-		case BlendFactor::BLEND_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-		case BlendFactor::BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
-		case BlendFactor::BLEND_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-		case BlendFactor::BLEND_DST_ALPHA: return GL_DST_ALPHA;
-		case BlendFactor::BLEND_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-		case BlendFactor::BLEND_DST_COLOR: return GL_DST_COLOR;
-		case BlendFactor::BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
-		case BlendFactor::BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
+		case BlendFactor::Zero:             return GL_ZERO;
+		case BlendFactor::One:              return GL_ONE;
+		case BlendFactor::SrcColor:         return GL_SRC_COLOR;
+		case BlendFactor::OneMinusSrcColor: return GL_ONE_MINUS_SRC_COLOR;
+		case BlendFactor::SrcAlpha:         return GL_SRC_ALPHA;
+		case BlendFactor::OneMinusSrcAlpha: return GL_ONE_MINUS_SRC_ALPHA;
+		case BlendFactor::DstAlpha:         return GL_DST_ALPHA;
+		case BlendFactor::OneMinusDstAlpha: return GL_ONE_MINUS_DST_ALPHA;
+		case BlendFactor::DstColor:         return GL_DST_COLOR;
+		case BlendFactor::OneMinusDstColor: return GL_ONE_MINUS_DST_COLOR;
+		case BlendFactor::SrcAlphaSaturate: return GL_SRC_ALPHA_SATURATE;
 	}
 	return GL_ZERO;
 }
@@ -162,47 +162,47 @@ GLint toPixelInternalFormat(const PixelComponents& fmt, const PixelDatatype& dt)
 		{
 			switch (dt)
 			{
-				case PixelDatatype::INT: return GL_R32I;
-				case PixelDatatype::UNSIGNED_INT: return GL_R32UI;
-				case PixelDatatype::BYTE: return GL_R8_SNORM;
-				case PixelDatatype::UNSIGNED_BYTE: return GL_R8;
-				case PixelDatatype::FLOAT: return GL_R32F;
+				case PixelDatatype::Int32: return GL_R32I;
+				case PixelDatatype::Uint32: return GL_R32UI;
+				case PixelDatatype::Int8: return GL_R8_SNORM;
+				case PixelDatatype::Uint8: return GL_R8;
+				case PixelDatatype::Float: return GL_R32F;
 			}
 		}
 		break;
-		case PixelComponents::RG:
+		case PixelComponents::Rg:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::INT: return GL_RG32I;
-				case PixelDatatype::UNSIGNED_INT: return GL_RG32UI;
-				case PixelDatatype::BYTE: return GL_RG8_SNORM;
-				case PixelDatatype::UNSIGNED_BYTE: return GL_RG8;
-				case PixelDatatype::FLOAT: return GL_RG32F;
+				case PixelDatatype::Int32: return GL_RG32I;
+				case PixelDatatype::Uint32: return GL_RG32UI;
+				case PixelDatatype::Int8: return GL_RG8_SNORM;
+				case PixelDatatype::Uint8: return GL_RG8;
+				case PixelDatatype::Float: return GL_RG32F;
 			}
 		}
 		break;
-		case PixelComponents::RGB:
+		case PixelComponents::Rgb:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::INT: return GL_RGB32I;
-				case PixelDatatype::UNSIGNED_INT: return GL_RGB32UI;
-				case PixelDatatype::BYTE: return GL_RGB8_SNORM;
-				case PixelDatatype::UNSIGNED_BYTE: return GL_RGB8;
-				case PixelDatatype::FLOAT: return GL_RGB32F;
+				case PixelDatatype::Int32: return GL_RGB32I;
+				case PixelDatatype::Uint32: return GL_RGB32UI;
+				case PixelDatatype::Int8: return GL_RGB8_SNORM;
+				case PixelDatatype::Uint8: return GL_RGB8;
+				case PixelDatatype::Float: return GL_RGB32F;
 			}
 		}
 		break;
-		case PixelComponents::RGBA:
+		case PixelComponents::Rgba:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::INT: return GL_RGBA32I;
-				case PixelDatatype::UNSIGNED_INT: return GL_RGBA32UI;
-				case PixelDatatype::BYTE: return GL_RGBA8_SNORM;
-				case PixelDatatype::UNSIGNED_BYTE: return GL_RGBA8;
-				case PixelDatatype::FLOAT: return GL_RGBA32F;
+				case PixelDatatype::Int32: return GL_RGBA32I;
+				case PixelDatatype::Uint32: return GL_RGBA32UI;
+				case PixelDatatype::Int8: return GL_RGBA8_SNORM;
+				case PixelDatatype::Uint8: return GL_RGBA8;
+				case PixelDatatype::Float: return GL_RGBA32F;
 			}
 		}
 		break;
@@ -218,35 +218,35 @@ GLenum toPixelFormat(const PixelComponents& fmt, const PixelDatatype& dt)
 		{
 			switch (dt)
 			{
-				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RED;
-				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RED_INTEGER;
+				case PixelDatatype::Uint8: case PixelDatatype::Int8: case PixelDatatype::Float: return GL_RED;
+				case PixelDatatype::Uint32: case PixelDatatype::Int32: return GL_RED_INTEGER;
 			}
 		}
 		break;
-		case PixelComponents::RG:
+		case PixelComponents::Rg:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RG;
-				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RG_INTEGER;
+				case PixelDatatype::Uint8: case PixelDatatype::Int8: case PixelDatatype::Float: return GL_RG;
+				case PixelDatatype::Uint32: case PixelDatatype::Int32: return GL_RG_INTEGER;
 			}
 		}
 		break;
-		case PixelComponents::RGB:
+		case PixelComponents::Rgb:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RGB;
-				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RGB_INTEGER;
+				case PixelDatatype::Uint8: case PixelDatatype::Int8: case PixelDatatype::Float: return GL_RGB;
+				case PixelDatatype::Uint32: case PixelDatatype::Int32: return GL_RGB_INTEGER;
 			}
 		}
 		break;
-		case PixelComponents::RGBA:
+		case PixelComponents::Rgba:
 		{
 			switch (dt)
 			{
-				case PixelDatatype::UNSIGNED_BYTE: case PixelDatatype::BYTE: case PixelDatatype::FLOAT: return GL_RGBA;
-				case PixelDatatype::UNSIGNED_INT: case PixelDatatype::INT: return GL_RGBA_INTEGER;
+				case PixelDatatype::Uint8: case PixelDatatype::Int8: case PixelDatatype::Float: return GL_RGBA;
+				case PixelDatatype::Uint32: case PixelDatatype::Int32: return GL_RGBA_INTEGER;
 			}
 		}
 		break;
@@ -258,11 +258,11 @@ GLenum toPixelDatatype(const PixelDatatype& dt)
 {
 	switch (dt)
 	{
-		case PixelDatatype::INT: return GL_INT;
-		case PixelDatatype::UNSIGNED_INT: return GL_UNSIGNED_INT;
-		case PixelDatatype::BYTE: return GL_BYTE;
-		case PixelDatatype::UNSIGNED_BYTE: return GL_UNSIGNED_BYTE;
-		case PixelDatatype::FLOAT: return GL_FLOAT;
+		case PixelDatatype::Int32: return GL_INT;
+		case PixelDatatype::Uint32: return GL_UNSIGNED_INT;
+		case PixelDatatype::Int8: return GL_BYTE;
+		case PixelDatatype::Uint8: return GL_UNSIGNED_BYTE;
+		case PixelDatatype::Float: return GL_FLOAT;
 	}
 	return 0;
 }
@@ -271,8 +271,8 @@ GLint toTextureMagFilter(const TextureFiltering filtering)
 {
 	switch (filtering)
 	{
-		case TextureFiltering::NEAREST: return GL_NEAREST;
-		case TextureFiltering::LINEAR: return GL_LINEAR;
+		case TextureFiltering::Nearest: return GL_NEAREST;
+		case TextureFiltering::Linear: return GL_LINEAR;
 	}
 	return GL_NEAREST;
 }
@@ -281,8 +281,8 @@ GLint toTextureMinFilter(const TextureFiltering filtering, const bool hasMipmaps
 {
 	switch (filtering)
 	{
-		case TextureFiltering::NEAREST: return hasMipmaps ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST;
-		case TextureFiltering::LINEAR: return hasMipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+		case TextureFiltering::Nearest: return hasMipmaps ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST;
+		case TextureFiltering::Linear: return hasMipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
 	}
 	return hasMipmaps ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST;
 }
@@ -291,10 +291,10 @@ GLint toTextureWrapping(const TextureWrapping wrapping)
 {
 	switch (wrapping)
 	{
-		case TextureWrapping::CLAMP_TO_BORDER: return GL_CLAMP_TO_BORDER;
-		case TextureWrapping::CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
-		case TextureWrapping::REPEAT: return GL_REPEAT;
-		case TextureWrapping::MIRRORED_REPEAT: return GL_MIRRORED_REPEAT;
+		case TextureWrapping::ClampToBorder:  return GL_CLAMP_TO_BORDER;
+		case TextureWrapping::ClampToEdge:    return GL_CLAMP_TO_EDGE;
+		case TextureWrapping::Repeat:         return GL_REPEAT;
+		case TextureWrapping::MirroredRepeat: return GL_MIRRORED_REPEAT;
 	}
 	return GL_CLAMP_TO_BORDER;
 }
@@ -355,19 +355,19 @@ void OpenGLContext::enable(const Capability cap)
 {
 	switch(cap)
 	{
-		case Capability::BLEND:          GL_CALL(glEnable(GL_BLEND)); break;
-		case Capability::DEPTH_TEST:     GL_CALL(glEnable(GL_DEPTH_TEST)); break;
-		case Capability::FACE_CULLING:   GL_CALL(glEnable(GL_CULL_FACE)); break;
-		case Capability::LINE_SMOOTH:    GL_CALL(glEnable(GL_LINE_SMOOTH)); break;
-		case Capability::POLYGON_SMOOTH: GL_CALL(glEnable(GL_POLYGON_SMOOTH)); break;
-		case Capability::MULTISAMPLE:    GL_CALL(glEnable(GL_MULTISAMPLE)); break;
-		case Capability::TEXTURE_1D:     GL_CALL(glEnable(GL_TEXTURE_1D)); break;
-		case Capability::TEXTURE_2D:     GL_CALL(glEnable(GL_TEXTURE_2D)); break;
-		case Capability::TEXTURE_3D:     GL_CALL(glEnable(GL_TEXTURE_3D)); break;
-		case Capability::VSYNC:
+		case Capability::Blend:            GL_CALL(glEnable(GL_BLEND)); break;
+		case Capability::DepthTest:        GL_CALL(glEnable(GL_DEPTH_TEST)); break;
+		case Capability::FaceCulling:      GL_CALL(glEnable(GL_CULL_FACE)); break;
+		case Capability::LineSmoothing:    GL_CALL(glEnable(GL_LINE_SMOOTH)); break;
+		case Capability::PolygonSmoothing: GL_CALL(glEnable(GL_POLYGON_SMOOTH)); break;
+		case Capability::Multisample:      GL_CALL(glEnable(GL_MULTISAMPLE)); break;
+		case Capability::Texture1D:        GL_CALL(glEnable(GL_TEXTURE_1D)); break;
+		case Capability::Texture2D:        GL_CALL(glEnable(GL_TEXTURE_2D)); break;
+		case Capability::Texture3D:        GL_CALL(glEnable(GL_TEXTURE_3D)); break;
+		case Capability::Vsync:
 			SDL_GL_SetSwapInterval(1);
 			break;
-		case Capability::WIREFRAME:
+		case Capability::Wireframe:
 			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 			break;
 	}
@@ -377,19 +377,19 @@ void OpenGLContext::disable(const Capability cap)
 {
 	switch(cap)
 	{
-		case Capability::BLEND:          GL_CALL(glDisable(GL_BLEND)); break;
-		case Capability::DEPTH_TEST:     GL_CALL(glDisable(GL_DEPTH_TEST)); break;
-		case Capability::FACE_CULLING:   GL_CALL(glDisable(GL_CULL_FACE)); break;
-		case Capability::LINE_SMOOTH:    GL_CALL(glDisable(GL_LINE_SMOOTH)); break;
-		case Capability::POLYGON_SMOOTH: GL_CALL(glDisable(GL_POLYGON_SMOOTH)); break;
-		case Capability::MULTISAMPLE:    GL_CALL(glDisable(GL_MULTISAMPLE)); break;
-		case Capability::TEXTURE_1D:     GL_CALL(glDisable(GL_TEXTURE_1D)); break;
-		case Capability::TEXTURE_2D:     GL_CALL(glDisable(GL_TEXTURE_2D)); break;
-		case Capability::TEXTURE_3D:     GL_CALL(glDisable(GL_TEXTURE_3D)); break;
-		case Capability::VSYNC:
+		case Capability::Blend:            GL_CALL(glDisable(GL_BLEND)); break;
+		case Capability::DepthTest:        GL_CALL(glDisable(GL_DEPTH_TEST)); break;
+		case Capability::FaceCulling:      GL_CALL(glDisable(GL_CULL_FACE)); break;
+		case Capability::LineSmoothing:    GL_CALL(glDisable(GL_LINE_SMOOTH)); break;
+		case Capability::PolygonSmoothing: GL_CALL(glDisable(GL_POLYGON_SMOOTH)); break;
+		case Capability::Multisample:      GL_CALL(glDisable(GL_MULTISAMPLE)); break;
+		case Capability::Texture1D:        GL_CALL(glDisable(GL_TEXTURE_1D)); break;
+		case Capability::Texture2D:        GL_CALL(glDisable(GL_TEXTURE_2D)); break;
+		case Capability::Texture3D:        GL_CALL(glDisable(GL_TEXTURE_3D)); break;
+		case Capability::Vsync:
 			SDL_GL_SetSwapInterval(0);
 			break;
-		case Capability::WIREFRAME:
+		case Capability::Wireframe:
 			GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 			break;
 	}
@@ -414,19 +414,19 @@ void OpenGLContext::setLineWidth(const float lineWidth)
 void OpenGLContext::clear(const uint32 clearMask, const Color& clearColor, const double clearDepth, const int32 clearStencil)
 {
 	uint32 glClearMask = 0x0;
-	if (clearMask & BufferMask::COLOR_BUFFER)
+	if (clearMask & BufferMask::Color)
 	{
 		GL_CALL(glClearColor(clearColor.getR() / 255.0f, clearColor.getG() / 255.0f, clearColor.getB() / 255.0f, clearColor.getA() / 255.0f));
 		glClearMask |= GL_COLOR_BUFFER_BIT;
 	}
 
-	if (clearMask & BufferMask::DEPTH_BUFFER)
+	if (clearMask & BufferMask::Depth)
 	{
 		GL_CALL(glClearDepth(clearDepth));
 		glClearMask |= GL_DEPTH_BUFFER_BIT;
 	}
 
-	if (clearMask & BufferMask::STENCIL_BUFFER)
+	if (clearMask & BufferMask::Stencil)
 	{
 		GL_CALL(glClearStencil(clearStencil));
 		glClearMask |= GL_STENCIL_BUFFER_BIT;
@@ -455,7 +455,7 @@ void OpenGLContext::saveScreenshot(string path)
 	GL_CALL(glReadBuffer(GL_BACK));
 
 	// NOTE: This function is not tested!
-	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelComponents::RGBA, PixelDatatype::BYTE), data);
+	Pixmap pixmap(m_currentState->width, m_currentState->height, PixelFormat(PixelComponents::Rgba, PixelDatatype::Int8), data);
 	pixmap.flipY();
 	pixmap.saveToFile(path);
 
@@ -641,7 +641,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	{
 		uint8 pixel[4];
 		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-		Pixmap pixmap(1, 1, PixelFormat(PixelComponents::RGBA, PixelDatatype::UNSIGNED_BYTE), pixel);
+		Pixmap pixmap(1, 1, PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8), pixel);
 
 		Texture2DDesc textureDesc;
 		textureDesc.debugName = "DefaultTexture";
@@ -739,13 +739,13 @@ void OpenGLContext::setupContext()
 void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 {
 	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	for (uint32 i = 0; i < (uint32)VertexAttribute::VERTEX_ATTRIB_MAX; i++)
+	for (uint32 i = 0; i < (uint32)VertexAttribute::Max; i++)
 	{
 		VertexAttribute attrib = VertexAttribute(i);
 		const uint64 attribOffset = fmt.getAttributeOffset(attrib);
 		switch (attrib)
 		{
-			case VertexAttribute::VERTEX_POSITION:
+			case VertexAttribute::Position:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
@@ -759,7 +759,7 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VertexAttribute::VERTEX_COLOR:
+			case VertexAttribute::Color:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
@@ -773,7 +773,7 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VertexAttribute::VERTEX_TEX_COORD:
+			case VertexAttribute::TexCoord:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{
@@ -787,7 +787,7 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 			}
 			break;
 
-			case VertexAttribute::VERTEX_NORMAL:
+			case VertexAttribute::Normal:
 			{
 				if (fmt.isAttributeEnabled(attrib))
 				{

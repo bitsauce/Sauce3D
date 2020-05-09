@@ -13,11 +13,11 @@ BEGIN_SAUCE_NAMESPACE
 **********************************************************************/
 enum class VertexAttribute : uint32
 {
-	VERTEX_POSITION,
-	VERTEX_COLOR,
-	VERTEX_TEX_COORD,
-	VERTEX_NORMAL,
-	VERTEX_ATTRIB_MAX
+	Position,
+	Color,
+	TexCoord,
+	Normal,
+	Max
 };
 
 /*********************************************************************
@@ -69,7 +69,7 @@ private:
 		}
 	};
 
-	Attribute m_attributes[(uint32)VertexAttribute::VERTEX_ATTRIB_MAX];
+	Attribute m_attributes[(uint32)VertexAttribute::Max];
 	uint m_vertexByteSize;
 };
 

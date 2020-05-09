@@ -14,16 +14,16 @@ public:
 
 		static Vertex vertices[3];
 		
-		vertices[0].set2f(VertexAttribute::VERTEX_POSITION, center.x - 200.0f, center.y + 200.0f);
-		vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, 255, 0, 0, 255);
+		vertices[0].set2f(VertexAttribute::Position, center.x - 200.0f, center.y + 200.0f);
+		vertices[0].set4ub(VertexAttribute::Color, 255, 0, 0, 255);
 
-		vertices[1].set2f(VertexAttribute::VERTEX_POSITION, center.x + 000.0f, center.y - 200.0f);
-		vertices[1].set4ub(VertexAttribute::VERTEX_COLOR, 0, 255, 0, 255);
+		vertices[1].set2f(VertexAttribute::Position, center.x + 000.0f, center.y - 200.0f);
+		vertices[1].set4ub(VertexAttribute::Color, 0, 255, 0, 255);
 
-		vertices[2].set2f(VertexAttribute::VERTEX_POSITION, center.x + 200.0f, center.y + 200.0f);
-		vertices[2].set4ub(VertexAttribute::VERTEX_COLOR, 0, 0, 255, 255);
+		vertices[2].set2f(VertexAttribute::Position, center.x + 200.0f, center.y + 200.0f);
+		vertices[2].set4ub(VertexAttribute::Color, 0, 0, 255, 255);
 
-		context->drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, 3);
+		context->drawPrimitives(PrimitiveType::Triangles, vertices, 3);
 
 		Game::onDraw(e);
 	}

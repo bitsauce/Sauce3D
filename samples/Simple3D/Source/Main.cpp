@@ -8,6 +8,12 @@
 
 using namespace sauce;
 
+// TODO:
+// [ ] Implement a way to pass struct uniforms to shader more easily
+// [ ] Move classes that are general purpose (Mesh, maybe Lights, Camera, and drawCube) to Sauce3D
+// [ ] Fix ImGui backface culling
+// [ ] Make GraphicsContext's "enable/disable" states push/pop-able
+
 Vector4F CUBE_VERTICES[36] = {
 	// Back
 	Vector4F(-1.0f, -1.0f, -1.0f, 1.0f),
@@ -111,9 +117,9 @@ Vector2F CUBE_TEX_COORDS[36] = {
 void drawCube(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d)
 {
 	VertexFormat format;
-	format.set(VertexAttribute::VERTEX_POSITION, 3, Datatype::Float);
-	format.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::Uint8);
-	format.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::Float);
+	format.set(VertexAttribute::Position, 3, Datatype::Float);
+	format.set(VertexAttribute::Color, 4, Datatype::Uint8);
+	format.set(VertexAttribute::TexCoord, 2, Datatype::Float);
 	
 	Vertex *vertices = format.createVertices(36);
 
@@ -123,13 +129,13 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 	for(int i = 0; i < 36; i++) {
 		Vector4F pos = mat * CUBE_VERTICES[i];
 		Vector2F tex = CUBE_TEX_COORDS[i];
-		vertices[i].set3f(VertexAttribute::VERTEX_POSITION, pos.x, pos.y, pos.z);
-		vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, tex.x, tex.y);
-		vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, 255, 255, 255, 255);
+		vertices[i].set3f(VertexAttribute::Position, pos.x, pos.y, pos.z);
+		vertices[i].set2f(VertexAttribute::TexCoord, tex.x, tex.y);
+		vertices[i].set4ub(VertexAttribute::Color, 255, 255, 255, 255);
 	}
 
 	// Draw triangles
-	graphicsContext->drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, vertices, 36);
+	graphicsContext->drawPrimitives(PrimitiveType::Triangles, vertices, 36);
 
 	delete[] vertices;
 }
@@ -137,7 +143,7 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
 {
 	//m_phongShader->setUniformMatrix4f();
-	graphicsContext->drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLES, mesh->getVertexBuffer());
+	graphicsContext->drawPrimitives(PrimitiveType::Triangles, mesh->getVertexBuffer());
 }
 
 class Simple3DGame : public Game
@@ -162,7 +168,7 @@ public:
 
 		Texture2DDesc textureDesc;
 		textureDesc.filePath = "Texture.png";
-		textureDesc.wrapping = TextureWrapping::REPEAT;
+		textureDesc.wrapping = TextureWrapping::Repeat;
 		m_texture = CreateNew<Texture2D>(textureDesc);
 
 		MeshDesc meshDesc;
@@ -204,8 +210,8 @@ public:
 		// Push 3D rendering state
 		graphicsContext->pushState();
 		{
-			graphicsContext->enable(Capability::DEPTH_TEST);
-			graphicsContext->enable(Capability::FACE_CULLING);
+			graphicsContext->enable(Capability::DepthTest);
+			graphicsContext->enable(Capability::FaceCulling);
 
 			// Set shader
 			m_phongShader->setSampler2D("u_Texture", m_texture);
@@ -235,9 +241,9 @@ public:
 		graphicsContext->popState();
 
 		// Draw UI
-		graphicsContext->disable(Capability::DEPTH_TEST);
-		graphicsContext->disable(Capability::FACE_CULLING);
-		graphicsContext->disable(Capability::VSYNC);
+		graphicsContext->disable(Capability::DepthTest);
+		graphicsContext->disable(Capability::FaceCulling);
+		graphicsContext->disable(Capability::Vsync);
 		{
 			ImGui::Begin("Simple 3D");
 			ImGui::Text("FPS: %.2f", Game::Get()->getFPS());
@@ -263,7 +269,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	GameDesc desc;
 	desc.name = "Simple3D Sample";
 	desc.workingDirectory = "../Assets";
-	desc.graphicsBackend = GraphicsBackend::SAUCE_OPENGL_4;
+	desc.graphicsBackend = GraphicsBackend::OpenGL4;
 
 	Simple3DGame game;
 	return game.run(desc);

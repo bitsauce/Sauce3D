@@ -13,16 +13,16 @@ BEGIN_SAUCE_NAMESPACE
 
 enum class TextureFiltering : uint32
 {
-	NEAREST,
-	LINEAR
+	Nearest,
+	Linear
 };
 
 enum class TextureWrapping : uint32
 {
-	CLAMP_TO_BORDER,
-	CLAMP_TO_EDGE,
-	REPEAT,
-	MIRRORED_REPEAT
+	ClampToBorder,
+	ClampToEdge,
+	Repeat,
+	MirroredRepeat
 };
 
 struct SAUCE_API Texture2DDeviceObject
@@ -31,8 +31,8 @@ struct SAUCE_API Texture2DDeviceObject
 
 	uint32           width       = 0;
 	uint32           height      = 0;
-	TextureFiltering filtering   = TextureFiltering::NEAREST;
-	TextureWrapping  wrapping    = TextureWrapping::CLAMP_TO_BORDER;
+	TextureFiltering filtering   = TextureFiltering::Nearest;
+	TextureWrapping  wrapping    = TextureWrapping::ClampToBorder;
 	PixelFormat      pixelFormat = PixelFormat();
 	bool             hasMipmaps  = false;
 };
@@ -41,8 +41,8 @@ struct SAUCE_API Texture2DDesc : public GraphicsDeviceObjectDesc
 {
 	string           filePath        = "";
 	Pixmap*          pixmap          = nullptr;
-	TextureFiltering filtering       = TextureFiltering::NEAREST;
-	TextureWrapping  wrapping        = TextureWrapping::CLAMP_TO_BORDER;
+	TextureFiltering filtering       = TextureFiltering::Nearest;
+	TextureWrapping  wrapping        = TextureWrapping::ClampToBorder;
 	bool             mipmaps         = false;
 };
 
