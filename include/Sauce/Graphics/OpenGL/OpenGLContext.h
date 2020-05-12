@@ -25,6 +25,7 @@ private:
 	~OpenGLContext();
 
 	void setupContext();
+	void setUniformsRecursive(const struct ShaderUniform* shaderUniform, const struct ShaderUniformLayout& uniformLayout, int32 &currentTextureTarget);
 	void setupVertexAttributePointers(const VertexFormat& fmt);
 
 public:

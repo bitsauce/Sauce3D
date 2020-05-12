@@ -64,8 +64,7 @@
 	#include <queue>
 	#include <chrono>
 	#include <filesystem>
-	//#include "..\3rdparty\gl3w\include\GL\gl3w.h"
-	//#include "..\3rdparty\gl3w\include\GL\wglext.h"
+	#include <regex>
 #elif __LINUX__
 	#include <string>
 	#include <vector>
@@ -224,7 +223,9 @@ enum class Datatype : uint32
 	Int16,
 	Uint8,
 	Int8,
-	Matrix4
+
+	Matrix4,
+	Struct
 };
 
 END_SAUCE_NAMESPACE

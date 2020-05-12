@@ -13,10 +13,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\projects\Sauce3D.ruleset" />
-    <None Include="..\Data\Phong.vert">
+    <None Include="..\Assets\Phong.frag">
       <Filter>Assets</Filter>
     </None>
-    <None Include="..\Data\Phong.frag">
+    <None Include="..\Assets\Phong.vert">
       <Filter>Assets</Filter>
     </None>
   </ItemGroup>

@@ -38,34 +38,64 @@ GLubyte* g_zeroedTextureDataArray = nullptr;
 string s_glslVersion;
 
 /**************************************************
- * Device object definitions                      *
+ * Shader uniform classes                         *
  **************************************************/
-struct OpenGLTexture2DDeviceObject : public Texture2DDeviceObject
+struct StructMemberKey
 {
-	GLuint id = 0;
+	string memberName;
+	uint32 order;
+
+	StructMemberKey(string memberName, uint32 order)
+		: memberName(memberName)
+		, order(order)
+	{
+	}
+
+	bool operator==(const StructMemberKey& other) const { return memberName == other.memberName; }
+	bool operator<(const StructMemberKey& other) const
+	{
+		if (order < other.order) return true;
+		if (order > other.order) return false;
+		if (memberName < other.memberName) return true;
+		if (memberName > other.memberName) return false;
+		return false;
+	}
+};
+
+struct ShaderUniformLayout
+{
+	GLint  location    = INT_MAX;
+	GLenum datatype    = GL_NONE;
+	GLint  numElements = 0;
+	int32  dwordCount  = 0;
+	int32  dataOffset  = 0;
+	bool   isStruct    = false;
+
+
+
+	vector<map<StructMemberKey, ShaderUniformLayout>> perElementMemberMaps;
 };
 
 struct ShaderUniform
 {
-	ShaderUniform() :
-		type(0),
-		loc(0),
-		count(0),
-		data(nullptr),
-		texture(nullptr)
-	{
-	}
-
 	~ShaderUniform()
 	{
 		delete[] data;
 	}
 
-	GLenum type;
-	int loc;
-	int count;
-	void* data;
-	Texture2DRef texture;
+	uint8*       data     = nullptr;
+	uint32       dataSize = 0;
+	Texture2DRef texture  = nullptr;
+
+	ShaderUniformLayout layout;
+};
+
+/**************************************************
+ * Device object definitions                      *
+ **************************************************/
+struct OpenGLTexture2DDeviceObject : public Texture2DDeviceObject
+{
+	GLuint id = 0;
 };
 
 struct OpenGLShaderDeviceObject : public ShaderDeviceObject
@@ -693,45 +723,63 @@ void OpenGLContext::setupContext()
 	Matrix4 modelViewProjection = m_currentState->projectionMatrix * m_currentState->transformationMatrixStack.top();
 	shader->setUniformMatrix4f("u_ModelViewProj", modelViewProjection.get());
 
-	GLuint target = 0;
-
 	// Set all uniforms
+	int32 currentTextureTarget = 0;
 	for(unordered_map<string, ShaderUniform*>::iterator itr = shaderDeviceObject->uniforms.begin(); itr != shaderDeviceObject->uniforms.end(); ++itr)
 	{
-		const ShaderUniform *uniform = itr->second;
-		switch(uniform->type)
+		const ShaderUniform* uniform = itr->second;
+		setUniformsRecursive(uniform, uniform->layout, currentTextureTarget);
+	}
+}
+
+void OpenGLContext::setUniformsRecursive(const ShaderUniform* shaderUniform, const ShaderUniformLayout& uniformLayout, int32& currentTextureTarget)
+{
+	const vector<map<StructMemberKey, ShaderUniformLayout>>& perElementMembers = uniformLayout.perElementMemberMaps;
+
+	// Is this a leaf node?
+	if (perElementMembers.empty())
+	{
+		switch (uniformLayout.datatype)
 		{
-			case GL_INT: case GL_BOOL: GL_CALL(glUniform1iv(uniform->loc, uniform->count, (const GLint*) uniform->data)); break;
-			case GL_INT_VEC2: case GL_BOOL_VEC2: GL_CALL(glUniform2i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1])); break;
-			case GL_INT_VEC3: case GL_BOOL_VEC3: GL_CALL(glUniform3i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2])); break;
-			case GL_INT_VEC4: case GL_BOOL_VEC4: GL_CALL(glUniform4i(uniform->loc, ((GLint*) uniform->data)[0], ((GLint*) uniform->data)[1], ((GLint*) uniform->data)[2], ((GLint*) uniform->data)[3])); break;
-
-			case GL_UNSIGNED_INT: GL_CALL(glUniform1ui(uniform->loc, ((GLuint*) uniform->data)[0])); break;
-			case GL_UNSIGNED_INT_VEC2: GL_CALL(glUniform2ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1])); break;
-			case GL_UNSIGNED_INT_VEC3: GL_CALL(glUniform3ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2])); break;
-			case GL_UNSIGNED_INT_VEC4: GL_CALL(glUniform4ui(uniform->loc, ((GLuint*) uniform->data)[0], ((GLuint*) uniform->data)[1], ((GLuint*) uniform->data)[2], ((GLuint*) uniform->data)[3])); break;
-
-			case GL_FLOAT: GL_CALL(glUniform1f(uniform->loc, ((GLfloat*) uniform->data)[0])); break;
-			case GL_FLOAT_VEC2: GL_CALL(glUniform2fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data)); break;
-			case GL_FLOAT_VEC3: GL_CALL(glUniform3f(uniform->loc, ((GLfloat*) uniform->data)[0], ((GLfloat*) uniform->data)[1], ((GLfloat*) uniform->data)[2])); break;
-			case GL_FLOAT_VEC4: GL_CALL(glUniform4fv(uniform->loc, uniform->count, (const GLfloat*) uniform->data)); break;
-
-			case GL_FLOAT_MAT4: GL_CALL(glUniformMatrix4fv(uniform->loc, 1, GL_FALSE, (GLfloat*) uniform->data)); break;
-
+			case GL_INT: case GL_BOOL:           GL_CALL(glUniform1iv(uniformLayout.location, uniformLayout.numElements, (const GLint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_INT_VEC2: case GL_BOOL_VEC2: GL_CALL(glUniform2iv(uniformLayout.location, uniformLayout.numElements, (const GLint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_INT_VEC3: case GL_BOOL_VEC3: GL_CALL(glUniform3iv(uniformLayout.location, uniformLayout.numElements, (const GLint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_INT_VEC4: case GL_BOOL_VEC4: GL_CALL(glUniform4iv(uniformLayout.location, uniformLayout.numElements, (const GLint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_UNSIGNED_INT:                GL_CALL(glUniform1uiv(uniformLayout.location, uniformLayout.numElements, (const GLuint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_UNSIGNED_INT_VEC2:           GL_CALL(glUniform2uiv(uniformLayout.location, uniformLayout.numElements, (const GLuint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_UNSIGNED_INT_VEC3:           GL_CALL(glUniform3uiv(uniformLayout.location, uniformLayout.numElements, (const GLuint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_UNSIGNED_INT_VEC4:           GL_CALL(glUniform4uiv(uniformLayout.location, uniformLayout.numElements, (const GLuint*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_FLOAT:                       GL_CALL(glUniform1fv(uniformLayout.location, uniformLayout.numElements, (const GLfloat*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_FLOAT_VEC2:                  GL_CALL(glUniform2fv(uniformLayout.location, uniformLayout.numElements, (const GLfloat*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_FLOAT_VEC3:                  GL_CALL(glUniform3fv(uniformLayout.location, uniformLayout.numElements, (const GLfloat*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_FLOAT_VEC4:                  GL_CALL(glUniform4fv(uniformLayout.location, uniformLayout.numElements, (const GLfloat*)(shaderUniform->data + uniformLayout.dataOffset))); break;
+			case GL_FLOAT_MAT4:                  GL_CALL(glUniformMatrix4fv(uniformLayout.location, 1, GL_FALSE, (const GLfloat*)(shaderUniform->data + uniformLayout.dataOffset))); break;
 			case GL_UNSIGNED_INT_SAMPLER_2D:
 			case GL_INT_SAMPLER_2D:
 			case GL_SAMPLER_2D:
 			{
 				Texture2DDeviceObject* textureDeviceObjectBase;
-				texture2D_getDeviceObject(uniform->texture, textureDeviceObjectBase);
+				texture2D_getDeviceObject(shaderUniform->texture, textureDeviceObjectBase);
 				OpenGLTexture2DDeviceObject* textureDeviceObject = dynamic_cast<OpenGLTexture2DDeviceObject*>(textureDeviceObjectBase);
 				assert(textureDeviceObject);
 
-				GL_CALL(glActiveTexture(GL_TEXTURE0 + target));
+				GL_CALL(glActiveTexture(GL_TEXTURE0 + currentTextureTarget));
 				GL_CALL(glBindTexture(GL_TEXTURE_2D, textureDeviceObject->id));
-				GL_CALL(glUniform1i(uniform->loc, target++));
+				GL_CALL(glUniform1i(uniformLayout.location, currentTextureTarget));
+				currentTextureTarget++;
 			}
 			break;
+		}
+	}
+	else
+	{
+		for (const map<StructMemberKey, ShaderUniformLayout>& memberMap : perElementMembers)
+		{
+			for (const pair<const StructMemberKey, ShaderUniformLayout>& kv : memberMap)
+			{
+				const ShaderUniformLayout& layout = kv.second;
+				setUniformsRecursive(shaderUniform, layout, currentTextureTarget);
+			}
 		}
 	}
 }
@@ -1159,6 +1207,59 @@ void OpenGLContext::shader_destroyDeviceObject(ShaderDeviceObject*& outShaderDev
 	outShaderDeviceObject = nullptr;
 }
 
+void calculateUniformBufferSizeWithAlignmentRecursive(ShaderUniformLayout& layout, int32& totalDataSize, int32& currentDwordOffset)
+{
+	const int32 DWORD_SIZE = 4;
+
+	// Is this layout object a leaf node?
+	if (layout.perElementMemberMaps.empty())
+	{
+		// Add padding if we will exceed the 4-dword alignment requirement
+		if (currentDwordOffset != 0 && currentDwordOffset + layout.dwordCount > 4)
+		{
+			const int32 dwordPadding = 4 - currentDwordOffset;
+			totalDataSize += dwordPadding * DWORD_SIZE;
+			currentDwordOffset = 0;
+		}
+
+		// Update data size
+		layout.dataOffset = totalDataSize;
+		totalDataSize += layout.dwordCount * DWORD_SIZE;
+		currentDwordOffset = (currentDwordOffset + layout.dwordCount) % 4;
+	}
+	else
+	{
+		// Calculate size of nested layout structures
+		for (map<StructMemberKey, ShaderUniformLayout>& memberMap : layout.perElementMemberMaps)
+		{
+			for (pair<const StructMemberKey, ShaderUniformLayout>& kv : memberMap)
+			{
+				ShaderUniformLayout& memberLayout = kv.second;
+				calculateUniformBufferSizeWithAlignmentRecursive(memberLayout, totalDataSize, currentDwordOffset);
+			}
+
+			// Also add padding at the end of structs, if needed
+			if (currentDwordOffset != 0)
+			{
+				int32 dwordPadding = 4 - currentDwordOffset;
+				totalDataSize += dwordPadding * DWORD_SIZE;
+				currentDwordOffset = 0;
+			}
+		}
+	}
+}
+
+int32 calculateUniformBufferSizeWithAlignment(ShaderUniform* shaderUniform)
+{
+	int32 totalDataSize = 0;
+	int32 currentDwordOffset = 0;
+
+	// Recursively calculate the total datasize of the uniform buffer
+	// If the uniform is an array, this returns the size of a single element in the array
+	calculateUniformBufferSizeWithAlignmentRecursive(shaderUniform->layout, totalDataSize, currentDwordOffset);
+	return totalDataSize;
+};
+
 void OpenGLContext::shader_compileShader(ShaderDeviceObject* shaderDeviceObjectBase, const string& vsSource, const string& psSource, const string& gsSource)
 {
 	OpenGLShaderDeviceObject* shaderDeviceObject = dynamic_cast<OpenGLShaderDeviceObject*>(shaderDeviceObjectBase);
@@ -1277,14 +1378,168 @@ void OpenGLContext::shader_compileShader(ShaderDeviceObject* shaderDeviceObjectB
 		}
 	}
 
-	// Setup uniform mapping
+	//--------------------------------------------------------------------
+	// Post-compile uniform metadata generation
+	//--------------------------------------------------------------------
+
+	// First we need to parse the shader code files and find all structs and their members
+	//
+	// This is unfortunately needed because we want to be able to pass pointers to
+	// the raw data of struct objects, without having to set each member individually
+	// through setUniform*() calls.
+	//
+	// To achieve this, we need to know what order each member variable appears in in the
+	// GLSL shaders, so that we can later know where to start to read data for GLSL
+	// struct members during the uniform binding stage
+
+	// Parse shader structs; note that the current version is a little primitive and will fail in special cases
+	unordered_map<string, unordered_map<string, uint32>> shaderStructsMemberOrder;
+	{
+		auto parseShaderStructs = [](
+			string shaderCode,
+			unordered_map<string, unordered_map<string, uint32>>& shaderStructsMemberOrder)
+		{
+			const regex structPattern(R"(\s+struct\s+|.*//|.*/\*)");
+			smatch structMatch;
+			while (regex_search(shaderCode, structMatch, structPattern))
+			{
+				// Strip code up until the end of the pattern match
+				const string& keyword = structMatch.str();
+				shaderCode = structMatch.suffix();
+
+				// Skip comments
+				if (keyword.back() == '/')
+				{
+					smatch endOfLineMatch;
+					if (regex_search(shaderCode, endOfLineMatch, regex(R"(\n)")))
+					{
+						shaderCode = endOfLineMatch.suffix();
+						shaderCode.insert(shaderCode.begin(), '\n');
+						continue;
+					}
+				}
+				else if (keyword.back() == '*')
+				{
+					smatch endCommentMatch;
+					if (regex_search(shaderCode, endCommentMatch, regex(R"(\*/)")))
+					{
+						shaderCode = endCommentMatch.suffix();
+						shaderCode.insert(shaderCode.begin(), '\n');
+						continue;
+					}
+				}
+
+				// Parse struct name
+				const regex structNamePattern(R"([a-zA-Z0-9_]*)");
+				smatch structNameMatch;
+				if (regex_search(shaderCode, structNameMatch, structNamePattern))
+				{
+					const string& structName = structNameMatch.str();
+					shaderCode = structNameMatch.suffix();
+
+					unordered_map<string, uint32> memberOrder;
+					uint32 memberIndex = 0;
+
+					// Verify that { is next
+					const regex firstNonWhitespacePattern(R"(\s*\S)");
+					smatch firstNonWhitespaceMatch;
+					if (regex_search(shaderCode, firstNonWhitespaceMatch, firstNonWhitespacePattern))
+					{
+						if (firstNonWhitespaceMatch.str().back() != '{')
+						{
+							break;
+						}
+						shaderCode = firstNonWhitespaceMatch.suffix();
+
+						bool isStructEnd = false;
+						const regex memberDatatypePattern(R"(\s*[a-zA-Z0-9_]+\s+|.*//|.*/\*)");
+						smatch memberDatatypeMatch;
+						while (!isStructEnd && regex_search(shaderCode, memberDatatypeMatch, memberDatatypePattern))
+						{
+							const char lastMatchChar = memberDatatypeMatch.str().back();
+							shaderCode = memberDatatypeMatch.suffix();
+
+							// Skip comments
+							if (lastMatchChar == '/')
+							{
+								smatch endOfLineMatch;
+								if (regex_search(shaderCode, endOfLineMatch, regex(R"(\n)")))
+								{
+									shaderCode = endOfLineMatch.suffix();
+									shaderCode.insert(shaderCode.begin(), '\n');
+									continue;
+								}
+							}
+							else if (lastMatchChar == '*')
+							{
+								smatch endCommentMatch;
+								if (regex_search(shaderCode, endCommentMatch, regex(R"(\*/)")))
+								{
+									shaderCode = endCommentMatch.suffix();
+									shaderCode.insert(shaderCode.begin(), '\n');
+									continue;
+								}
+							}
+
+							// Parse member variable name
+							const regex memberVariableNamePattern(R"([a-zA-Z0-9_]*)");
+							smatch memberVariableNameMatch;
+							if (regex_search(shaderCode, memberVariableNameMatch, memberVariableNamePattern))
+							{
+								const string& memberName = memberVariableNameMatch.str();
+								shaderCode = memberVariableNameMatch.suffix();
+
+								memberOrder[memberName] = memberIndex++;
+							}
+
+							// Find next ;
+							while (regex_search(shaderCode, firstNonWhitespaceMatch, firstNonWhitespacePattern))
+							{
+								const char nonWhitespaceChar = firstNonWhitespaceMatch.str().back();
+								shaderCode = firstNonWhitespaceMatch.suffix();
+								if (nonWhitespaceChar == ';')
+								{
+									break;
+								}
+							}
+
+							// Check if next char is }
+							if (regex_search(shaderCode, firstNonWhitespaceMatch, firstNonWhitespacePattern))
+							{
+								const char nonWhitespaceChar = firstNonWhitespaceMatch.str().back();
+								if (nonWhitespaceChar == '}')
+								{
+									shaderCode = firstNonWhitespaceMatch.suffix();
+									isStructEnd = true;
+									break;
+								}
+							}
+						}
+					}
+
+					// Add member order list
+					shaderStructsMemberOrder[structName] = memberOrder;
+				}
+			}
+		};
+
+		parseShaderStructs(psSourceModified, shaderStructsMemberOrder);
+		parseShaderStructs(vsSourceModified, shaderStructsMemberOrder);
+		parseShaderStructs(gsSourceModified, shaderStructsMemberOrder);
+	}
+
+	// ShaderUniform - First pass:
+	//
+	// Generate metadata for all uniforms in the shader
+	// Some of this metadata is later used to calculate expected size (if struct uniform)
+	unordered_map<string, ShaderUniform*>& uniformMap = shaderDeviceObject->uniforms;
 	{
 		GLint uniformCount;
 		GL_CALL(glGetProgramiv(shaderDeviceObject->id, GL_ACTIVE_UNIFORMS, &uniformCount));
 		GLint uniformNameLength, uniformArraySize;
 		GLenum uniformType;
 		GLchar uniformName[256];
-		for (int uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
+		for (int32 uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
 		{
 			GL_CALL(glGetActiveUniform(
 				shaderDeviceObject->id,
@@ -1296,64 +1551,219 @@ void OpenGLContext::shader_compileShader(ShaderDeviceObject* shaderDeviceObjectB
 				uniformName)
 			);
 
-			string uniformNameStr = uniformName;
-			
 			// Skip gl_ uniforms
+			string uniformNameStr = uniformName;
 			if (uniformNameStr.substr(0, 3) == "gl_")
 			{
 				continue;
 			}
+			GLint uniformLocation = GL_CALL(glGetUniformLocation(shaderDeviceObject->id, uniformName));
 
-			// Strip trailing "[0]"s
-			if (uniformNameStr.length() > 3 && uniformNameStr.substr(uniformNameStr.length() - 3) == "[0]")
+			// If this uniform is a struct type uniform, we expect names like:
+			// "StructUniform.Member1", "StructUniform.Member2", "StructUniform.Member3"
+			//
+			// Here we parse member variables of struct uniforms, if there's any
+			string structMemberName;
 			{
-				uniformNameStr = uniformNameStr.substr(0, uniformNameStr.length() - 3);
+				const int32 firstDotIndex = uniformNameStr.find_first_of(".");
+				if (firstDotIndex != string::npos)
+				{
+					structMemberName = uniformNameStr.substr(firstDotIndex + 1);
+
+					// Remove member variable from uniform name
+					uniformNameStr = uniformNameStr.substr(0, firstDotIndex);
+				}
+			}
+			const bool isStructMember = !structMemberName.empty();
+
+			// If this uniform is an array, we expect uniform names like:
+			// "ArrayUniform[0]", "ArrayUniform[...]", "ArrayUniform[N]"
+			//
+			// Here we parse the index value from this string
+			int32 arrayIndexValue = -1;
+			{
+				const int32 firstBracketIndex = uniformNameStr.find_first_of('[');
+				if (firstBracketIndex != string::npos)
+				{
+					string arrayIndexStr = "";
+					int32 currentIndex = firstBracketIndex + 1;
+					while (uniformNameStr[currentIndex] != ']')
+					{
+						arrayIndexStr += uniformNameStr[currentIndex];
+						currentIndex++;
+					}
+					arrayIndexValue = stoi(arrayIndexStr);
+
+					// Remove trailing brackets from uniform name
+					uniformNameStr = uniformNameStr.substr(0, firstBracketIndex);
+				}
+			}
+			const bool isArrayElement = arrayIndexValue >= 0;
+
+			// Determine how many dwords is needed by this uniform
+			int32 dwordCount = 0;
+			{
+				switch (uniformType)
+				{
+					case GL_SAMPLER_2D:
+					case GL_INT_SAMPLER_2D:
+					case GL_UNSIGNED_INT_SAMPLER_2D: dwordCount = 0; break;
+
+					case GL_INT: case GL_BOOL:           dwordCount = 1; break;
+					case GL_INT_VEC2: case GL_BOOL_VEC2: dwordCount = 2; break;
+					case GL_INT_VEC3: case GL_BOOL_VEC3: dwordCount = 3; break;
+					case GL_INT_VEC4: case GL_BOOL_VEC4: dwordCount = 4; break;
+
+					case GL_UNSIGNED_INT:      dwordCount = 1; break;
+					case GL_UNSIGNED_INT_VEC2: dwordCount = 2; break;
+					case GL_UNSIGNED_INT_VEC3: dwordCount = 3; break;
+					case GL_UNSIGNED_INT_VEC4: dwordCount = 4; break;
+
+					case GL_FLOAT:      dwordCount = 1; break;
+					case GL_FLOAT_VEC2: dwordCount = 2; break;
+					case GL_FLOAT_VEC3: dwordCount = 3; break;
+					case GL_FLOAT_VEC4: dwordCount = 4; break;
+					case GL_FLOAT_MAT4: dwordCount = 16; break;
+
+					default:
+						LOG("Unknown uniform type encountered");
+						break;
+				}
 			}
 
-			ShaderUniform* uniform = new ShaderUniform;
-			uniform->type = uniformType;
-			uniform->loc = GL_CALL(glGetUniformLocation(shaderDeviceObject->id, uniformName));
-			uniform->count = uniformArraySize;
-
-			const uint32 INT_SIZE   = sizeof(GLint);
-			const uint32 FLOAT_SIZE = sizeof(GLfloat);
-			const uint32 PTR_SIZE   = sizeof(void*);
-
-			uint32 elementDataSize = 0;
-			switch (uniformType)
+			// Check if we already have a metadata object for this uniform
+			ShaderUniform* shaderUniform;
 			{
-				case GL_SAMPLER_2D:
-				case GL_INT_SAMPLER_2D:
-				case GL_UNSIGNED_INT_SAMPLER_2D: elementDataSize = 0; break;
-
-				case GL_INT: case GL_BOOL:           elementDataSize = INT_SIZE * 1; break;
-				case GL_INT_VEC2: case GL_BOOL_VEC2: elementDataSize = INT_SIZE * 2; break;
-				case GL_INT_VEC3: case GL_BOOL_VEC3: elementDataSize = INT_SIZE * 3; break;
-				case GL_INT_VEC4: case GL_BOOL_VEC4: elementDataSize = INT_SIZE * 4; break;
-
-				case GL_UNSIGNED_INT:      elementDataSize = INT_SIZE * 1; break;
-				case GL_UNSIGNED_INT_VEC2: elementDataSize = INT_SIZE * 2; break;
-				case GL_UNSIGNED_INT_VEC3: elementDataSize = INT_SIZE * 3; break;
-				case GL_UNSIGNED_INT_VEC4: elementDataSize = INT_SIZE * 4; break;
-
-				case GL_FLOAT:      elementDataSize = FLOAT_SIZE * 1; break;
-				case GL_FLOAT_VEC2: elementDataSize = FLOAT_SIZE * 2; break;
-				case GL_FLOAT_VEC3: elementDataSize = FLOAT_SIZE * 3; break;
-				case GL_FLOAT_VEC4: elementDataSize = FLOAT_SIZE * 4; break;
-				case GL_FLOAT_MAT4: elementDataSize = FLOAT_SIZE * 16; break;
-
-				default:
-					LOG("Unknown uniform type encountered");
-					break;
+				unordered_map<string, ShaderUniform*>::const_iterator itr = uniformMap.find(uniformNameStr);
+				if (itr == uniformMap.end())
+				{
+					// Setup shader uniform
+					shaderUniform = new ShaderUniform();
+					ShaderUniformLayout& uniformLayout = shaderUniform->layout;
+					if (isStructMember)
+					{
+						uniformLayout.dwordCount = 0;
+						uniformLayout.datatype = GL_NONE;
+						uniformLayout.location = GL_NONE;
+						uniformLayout.numElements = uniformArraySize;
+						uniformLayout.isStruct = true;
+					}
+					else
+					{
+						uniformLayout.dwordCount = dwordCount;
+						uniformLayout.datatype = uniformType;
+						uniformLayout.location = uniformLocation;
+						uniformLayout.numElements = uniformArraySize;
+						uniformLayout.isStruct = false;
+					}
+					uniformMap[uniformNameStr] = shaderUniform;
+				}
+				shaderUniform = uniformMap[uniformNameStr];
 			}
 
-			if (elementDataSize > 0)
+			// If the currently processed uniform is a struct member, add it as member of the parent metadata object
+			if (isStructMember)
 			{
-				uniform->data = new uint8[elementDataSize * uniformArraySize];
-			}
+				// Store uniform info under index 0 if it's not an array of structs
+				if (!isArrayElement)
+				{
+					arrayIndexValue = 0;
+				}
 
-			shaderDeviceObject->uniforms[uniformNameStr] = uniform;
+				// Resize the members array to the largest element index
+				vector<map<StructMemberKey, ShaderUniformLayout>>& perElementMemberMaps = shaderUniform->layout.perElementMemberMaps;
+				if (arrayIndexValue + 1 > perElementMemberMaps.size())
+				{
+					perElementMemberMaps.resize(arrayIndexValue + 1);
+					shaderUniform->layout.numElements = arrayIndexValue + 1;
+				}
+
+				// Store member info
+				StructMemberKey memberKey(structMemberName, 0);
+				map<StructMemberKey, ShaderUniformLayout>& memberMap = perElementMemberMaps[arrayIndexValue];
+				map<StructMemberKey, ShaderUniformLayout>::const_iterator itr = memberMap.find(memberKey);
+				if (itr == memberMap.end())
+				{
+					ShaderUniformLayout& memberLayout = memberMap[memberKey];
+					memberLayout.dwordCount = dwordCount;
+					memberLayout.location = uniformLocation;
+					memberLayout.datatype = uniformType;
+					memberLayout.numElements = uniformArraySize;
+				}
+			}
 		}
+	}
+
+	// ShaderUniform - Second pass:
+	//
+	// Sort struct uniforms' members according to the order in which they appeared in shader code
+	//
+	// Since OpenGL won't tell us what the typename is for struct types,
+	// we need to iterate over all the struct uniforms to find out which
+	// struct type corresponds to which uniform
+	//
+	// This is done by simply matching the set of the names of each struct uniform's members
+	// with the member variable names of structs we found while parsing
+	for (pair<const string, ShaderUniform*>& uniformKV : uniformMap)
+	{
+		ShaderUniform* shaderUniform = uniformKV.second;
+		ShaderUniformLayout& uniformLayout = shaderUniform->layout;
+		if (uniformLayout.isStruct)
+		{
+			for (map<StructMemberKey, ShaderUniformLayout>& memberMap : uniformLayout.perElementMemberMaps)
+			{
+				map<StructMemberKey, ShaderUniformLayout> memberMapSorted;
+				set<string> memberSet;
+				for (const pair<const StructMemberKey, ShaderUniformLayout>& memberKV : memberMap)
+				{
+					const string& memberName = memberKV.first.memberName;
+					memberSet.insert(memberName);
+				}
+
+				string structName = "";
+				for (const pair<const string, unordered_map<string, uint32>>& shaderStruct : shaderStructsMemberOrder)
+				{
+					set<string> structMemberSet;
+					for (const pair<const string, uint32>& structMember : shaderStruct.second)
+					{
+						structMemberSet.insert(structMember.first);
+					}
+
+					if (memberSet == structMemberSet)
+					{
+						structName = shaderStruct.first;
+					}
+				}
+				
+				if (!structName.empty())
+				{
+					for (const pair<const StructMemberKey, ShaderUniformLayout>& memberKV : memberMap)
+					{
+						const string& memberName = memberKV.first.memberName;
+						const uint32 memberOrder = shaderStructsMemberOrder[structName][memberName];
+						StructMemberKey memberKey(memberName, memberOrder);
+						memberMapSorted[memberKey] = memberKV.second;
+					}
+					memberMap = memberMapSorted;
+				}
+			}
+		}
+	}
+
+	// ShaderUniform - Third pass:
+	//
+	// Give each struct uniform member a 4-dword aligned data offset
+	// These offsets are used to read out data when binding struct uniforms
+	for (pair<const string, ShaderUniform*>& kv : uniformMap)
+	{
+		ShaderUniform* shaderUniform = kv.second;
+		ShaderUniformLayout& uniformLayout = shaderUniform->layout;
+		const string& uniformName = kv.first;
+
+		// Allocate the data for the uniform buffer
+		const int32 uniformBufferSize = calculateUniformBufferSizeWithAlignment(shaderUniform);
+		shaderUniform->dataSize = uniformBufferSize;
+		shaderUniform->data = new uint8[uniformBufferSize];
 	}
 }
 
@@ -1366,6 +1776,7 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 	if (itr != shaderDeviceObject->uniforms.end())
 	{
 		ShaderUniform* uniform = itr->second;
+		const ShaderUniformLayout& uniformLayout = uniform->layout;
 
 		bool doesDatatypeMatch = false;
 		int32 datatypeInBytes = util::GetDatatypeSize(datatype);
@@ -1377,10 +1788,10 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 			{
 				switch (numComponentsPerElement)
 				{
-					case 1: doesDatatypeMatch = uniform->type == GL_INT || uniform->type == GL_BOOL; break;
-					case 2: doesDatatypeMatch = uniform->type == GL_INT_VEC2 || uniform->type == GL_BOOL_VEC2; break;
-					case 3: doesDatatypeMatch = uniform->type == GL_INT_VEC3 || uniform->type == GL_BOOL_VEC3; break;
-					case 4: doesDatatypeMatch = uniform->type == GL_INT_VEC4 || uniform->type == GL_BOOL_VEC4; break;
+					case 1: doesDatatypeMatch = uniformLayout.datatype == GL_INT || uniformLayout.datatype == GL_BOOL; break;
+					case 2: doesDatatypeMatch = uniformLayout.datatype == GL_INT_VEC2 || uniformLayout.datatype == GL_BOOL_VEC2; break;
+					case 3: doesDatatypeMatch = uniformLayout.datatype == GL_INT_VEC3 || uniformLayout.datatype == GL_BOOL_VEC3; break;
+					case 4: doesDatatypeMatch = uniformLayout.datatype == GL_INT_VEC4 || uniformLayout.datatype == GL_BOOL_VEC4; break;
 					default:
 						LOG("shader_setUniform(): numComponentsPerElement must be 1-4");
 						break;
@@ -1393,10 +1804,10 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 			{
 				switch (numComponentsPerElement)
 				{
-					case 1: doesDatatypeMatch = uniform->type == GL_UNSIGNED_INT; break;
-					case 2: doesDatatypeMatch = uniform->type == GL_UNSIGNED_INT_VEC2; break;
-					case 3: doesDatatypeMatch = uniform->type == GL_UNSIGNED_INT_VEC3; break;
-					case 4: doesDatatypeMatch = uniform->type == GL_UNSIGNED_INT_VEC4; break;
+					case 1: doesDatatypeMatch = uniformLayout.datatype == GL_UNSIGNED_INT; break;
+					case 2: doesDatatypeMatch = uniformLayout.datatype == GL_UNSIGNED_INT_VEC2; break;
+					case 3: doesDatatypeMatch = uniformLayout.datatype == GL_UNSIGNED_INT_VEC3; break;
+					case 4: doesDatatypeMatch = uniformLayout.datatype == GL_UNSIGNED_INT_VEC4; break;
 					default:
 						LOG("shader_setUniform(): numComponentsPerElement must be 1-4");
 						break;
@@ -1407,10 +1818,10 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 			{
 				switch (numComponentsPerElement)
 				{
-					case 1: doesDatatypeMatch = uniform->type == GL_FLOAT; break;
-					case 2: doesDatatypeMatch = uniform->type == GL_FLOAT_VEC2; break;
-					case 3: doesDatatypeMatch = uniform->type == GL_FLOAT_VEC3; break;
-					case 4: doesDatatypeMatch = uniform->type == GL_FLOAT_VEC4; break;
+					case 1: doesDatatypeMatch = uniformLayout.datatype == GL_FLOAT; break;
+					case 2: doesDatatypeMatch = uniformLayout.datatype == GL_FLOAT_VEC2; break;
+					case 3: doesDatatypeMatch = uniformLayout.datatype == GL_FLOAT_VEC3; break;
+					case 4: doesDatatypeMatch = uniformLayout.datatype == GL_FLOAT_VEC4; break;
 					default:
 						LOG("shader_setUniform(): numComponentsPerElement must be 1-4");
 						break;
@@ -1422,7 +1833,7 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 				switch (numComponentsPerElement)
 				{
 					case 16:
-						doesDatatypeMatch = uniform->type == GL_FLOAT_MAT4;
+						doesDatatypeMatch = uniformLayout.datatype == GL_FLOAT_MAT4;
 						datatypeInBytes = 4;
 						break;
 					default:
@@ -1431,17 +1842,27 @@ void OpenGLContext::shader_setUniform(ShaderDeviceObject* shaderDeviceObjectBase
 				}
 			}
 			break;
+			case Datatype::Struct:
+			{
+				// We'll just assume the user has set up their data ptrs correctly
+				doesDatatypeMatch = true;
+			}
+			break;
 		}
 
 		if (doesDatatypeMatch)
 		{
-			if (uniform->count == numElements)
+			if (uniformLayout.isStruct)
+			{
+				memcpy(uniform->data, data, uniform->dataSize);
+			}
+			else if (uniformLayout.numElements == numElements)
 			{
 				memcpy(uniform->data, data, datatypeInBytes * numComponentsPerElement * numElements);
 			}
 			else
 			{
-				LOG("shader_setUniform(): Uniform array '%s' has %i elements, got %i", uniformName.c_str(), uniform->count, numElements);
+				LOG("shader_setUniform(): Uniform array '%s' has %i elements, got %i", uniformName.c_str(), uniformLayout.numElements, numElements);
 			}
 		}
 		else
@@ -1464,10 +1885,11 @@ void OpenGLContext::shader_setSampler2D(ShaderDeviceObject* shaderDeviceObjectBa
 	if (itr != shaderDeviceObject->uniforms.end())
 	{
 		ShaderUniform* uniform = itr->second;
+		const ShaderUniformLayout& uniformLayout = uniform->layout;
 
-		if (uniform->type == GL_SAMPLER_2D ||
-			uniform->type == GL_INT_SAMPLER_2D ||
-			uniform->type == GL_UNSIGNED_INT_SAMPLER_2D)
+		if (uniformLayout.datatype == GL_SAMPLER_2D ||
+			uniformLayout.datatype == GL_INT_SAMPLER_2D ||
+			uniformLayout.datatype == GL_UNSIGNED_INT_SAMPLER_2D)
 		{
 			uniform->texture = texture;
 		}

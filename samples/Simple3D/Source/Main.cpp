@@ -217,14 +217,7 @@ public:
 			m_phongShader->setSampler2D("u_Texture", m_texture);
 			//m_phongShader->setUniform3f("u_DirLight.direction", 0,0,0);
 			//m_phongShader->setUniform3f("u_DirLight.color", 1.0, 0.5, 0.5);
-			for(int i = 0; i < m_pointLights.size(); i++)
-			{
-				const PointLight &light = m_pointLights[i];
-				const string uniformPrefix = "u_PointLight[" + std::to_string(i) + "]";
-				m_phongShader->setUniform3f(uniformPrefix + ".position", light.position.x, light.position.y, light.position.z);
-				m_phongShader->setUniform3f(uniformPrefix + ".color", light.color.x, light.color.y, light.color.z);
-				m_phongShader->setUniform1f(uniformPrefix + ".radius", light.radius);
-			}
+			m_phongShader->setUniformStruct("u_PointLight", (uint8*)m_pointLights.data());
 			m_phongShader->setUniform1i("u_NumPointLights", m_pointLights.size());
 			m_phongShader->setUniformMatrix4f("u_ModelMatrix", Matrix4().get());
 			graphicsContext->setShader(m_phongShader);

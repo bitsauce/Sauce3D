@@ -101,6 +101,11 @@ public:
 	 */
 	void setUniformMatrix4f(const string& uniformName, const float* mat);
 
+	/**
+	 * Struct
+	 */
+	void setUniformStruct(const string& uniformName, const uint8* structData);
+
 private:
 	GraphicsContext* m_graphicsContext;
 	ShaderDeviceObject* m_deviceObject;

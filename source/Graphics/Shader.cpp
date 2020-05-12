@@ -355,4 +355,12 @@ void Shader::setUniformMatrix4f(const string& uniformName, const float* mat)
 	m_graphicsContext->shader_setUniform(m_deviceObject, uniformName, Datatype::Matrix4, 16, 1, mat);
 }
 
+/**
+ * Struct
+ */
+void Shader::setUniformStruct(const string& uniformName, const uint8* structData)
+{
+	m_graphicsContext->shader_setUniform(m_deviceObject, uniformName, Datatype::Struct, 0, 1, structData);
+}
+
 END_SAUCE_NAMESPACE
