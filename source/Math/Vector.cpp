@@ -12,7 +12,7 @@
 
 #include <Sauce/Math/Vector.h>
 
-template<typename T> const Vector2<T> Vector2<T>::Zero = Vector2<T>(T(0));
+BEGIN_SAUCE_NAMESPACE
 
 const Color Color::White = Color(255, 255, 255);
 const Color Color::Black = Color(0, 0, 0);
@@ -30,3 +30,5 @@ Color::Color(const uchar r, const uchar g, const uchar b, const uchar a) :
 	Vector4<uchar>(r, g, b, a)
 {
 }
+
+END_SAUCE_NAMESPACE

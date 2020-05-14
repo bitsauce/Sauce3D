@@ -17,20 +17,16 @@
     <ClCompile Include="$(SolutionDir)source\Common\FileSystem.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Math.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\ResourceManager.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Common\Timer.cpp" />
     <ClCompile Include="$(SolutionDir)source\common\tinyxml2.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Common\Utilities.cpp" />
     <ClCompile Include="$(SolutionDir)source\Common\Window.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Animation.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\BlendState.cpp" />
     <ClCompile Include="..\source\Common\Exception.cpp" />
+    <ClCompile Include="..\source\Common\Timer.cpp" />
     <ClCompile Include="..\source\Graphics\FontRendering.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\GraphicsContext.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLContext.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLRenderTarget.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLShader.cpp" />
-    <ClCompile Include="$(SolutionDir)source\Graphics\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Pixmap.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\RenderTarget.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Shader.cpp" />
@@ -55,6 +51,9 @@
     <ClCompile Include="..\source\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\source\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\source\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="..\source\Utils\FileSystemUtils.cpp" />
+    <ClCompile Include="..\source\Utils\MD5.cpp" />
+    <ClCompile Include="..\source\Utils\MiscUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)include\Sauce\Audio.h" />
@@ -73,12 +72,10 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\BlendState.h" />
     <ClInclude Include="..\include\Sauce\Common\Exception.h" />
     <ClInclude Include="..\include\Sauce\Common\ImGui.h" />
+    <ClInclude Include="..\include\Sauce\Common\SauceObject.h" />
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLRenderTarget.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLShader.h" />
-    <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Pixmap.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\RenderTarget.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\Shader.h" />
@@ -103,14 +100,19 @@
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\RectanglePacker.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Math\Vector.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Sauce.h" />
+    <ClInclude Include="..\include\Sauce\Graphics\GraphicsDeviceObjectDesc.h" />
     <ClInclude Include="..\include\Sauce\ImGui.h" />
     <ClInclude Include="..\include\Sauce\ImGui\imconfig.h" />
     <ClInclude Include="..\include\Sauce\ImGui\imgui_library.h" />
+    <ClInclude Include="..\include\Sauce\Utils.h" />
+    <ClInclude Include="..\include\Sauce\Utils\FileSystemUtils.h" />
+    <ClInclude Include="..\include\Sauce\Utils\MiscUtils.h" />
     <ClInclude Include="..\source\ImGui\ImGuiSystem.h" />
     <ClInclude Include="..\source\ImGui\imgui_internal.h" />
     <ClInclude Include="..\source\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\source\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\source\ImGui\imstb_truetype.h" />
+    <ClInclude Include="..\source\Utils\MD5.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\include\Sauce\ImGui\LICENSE.txt" />
@@ -176,6 +178,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
@@ -206,6 +209,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>

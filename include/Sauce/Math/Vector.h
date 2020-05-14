@@ -5,6 +5,9 @@
 #pragma once
 
 #include <Sauce/Config.h>
+#include <Sauce/Utils/FileSystemUtils.h>
+
+BEGIN_SAUCE_NAMESPACE
 
 /** \brief A class which holds a 2 dimensional vector
  *
@@ -252,10 +255,24 @@ public:
 		return os;
 	}
 
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const Vector2<T>& v)
+	{
+		out << v.x << v.y;
+		return out;
+	}
+
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, Vector2<T>& v)
+	{
+		in >> v.x >> v.y;
+		return in;
+	}
+
 	static const Vector2<T> Zero;
 
     T x, y;
 };
+
+template<typename T> const Vector2<T> Vector2<T>::Zero = Vector2<T>(T(0));
 
 typedef Vector2<bool> Vector2B;
 typedef Vector2<float> Vector2F;
@@ -844,3 +861,5 @@ public:
 	static const Color Blue;
 	static const Color Yellow;
 };
+
+END_SAUCE_NAMESPACE

@@ -1,2 +1,0 @@
-/** \page collision Simple collision
-  */

@@ -5,113 +5,97 @@
 #pragma once
 
 #include <Sauce/Common.h>
+#include <Sauce/Graphics/Vertex.h>
 
 BEGIN_SAUCE_NAMESPACE
 
 class Vertex;
 
-// TODO: Remove OpenGL dependency
 enum class BufferUsage : uint32
 {
-	Static = GL_STATIC_DRAW,
-	Dynamic = GL_DYNAMIC_DRAW,
-	Stream = GL_STREAM_DRAW
+	Static,
+	Dynamic,
+	Stream
 };
 
 /*********************************************************************
 **	Vertex buffer													**
 **********************************************************************/
-class SAUCE_API VertexBuffer
+
+struct SAUCE_API VertexBufferDeviceObject
 {
-	friend class OpenGLContext;
+	virtual ~VertexBufferDeviceObject() { }
+	
+	BufferUsage  bufferUsage  = BufferUsage::Static;
+	VertexFormat vertexFormat = VertexFormat();
+	uint32       vertexCount  = 0;
+};
+
+struct SAUCE_API VertexBufferDesc : public GraphicsDeviceObjectDesc
+{
+	BufferUsage  bufferUsage = BufferUsage::Static;
+	VertexArray* vertices    = nullptr;
+	uint32       vertexCount = 0;
+};
+
+class SAUCE_API VertexBuffer : public SauceObject
+{
+	friend class GraphicsContext;
 public:
+	SAUCE_REF_TYPE(VertexBuffer);
+
+	VertexBuffer();
 	virtual ~VertexBuffer();
 
-	// Add vertices and indices to the batch
-	void setData(const Vertex *vertices, const uint vertexCount);
-	char *getData() const;
+	bool initialize(VertexBufferDesc vertexBufferDesc);
 
-	// Get vertex/vertex format/vertex count
+	void modifyData(const uint32 startIndex, const VertexArray& vertices, const uint vertexCount);
+
 	VertexFormat getVertexFormat() const;
-	uint getSize() const { return m_size; }
-
-protected:
-	VertexBuffer(const BufferUsage usage);
-
-	// Buffer ID
-	GLuint m_id;
-
-	// Vertex format
-	VertexFormat m_format;
+	uint32 getVertexCount() const;
 
 private:
-	// Buffer usage
-	BufferUsage m_usage;
-
-	// Size
-	uint m_size;
+	GraphicsContext* m_graphicsContext;
+	VertexBufferDeviceObject* m_deviceObject;
 };
-
-class SAUCE_API DynamicVertexBuffer : public VertexBuffer
-{
-public:
-	DynamicVertexBuffer();
-	DynamicVertexBuffer(const Vertex *vertices, const uint vertexCount);
-
-	void modifyData(const uint startIdx, Vertex *vertex, const uint vertexCount);
-};
-
-class SAUCE_API StaticVertexBuffer : public VertexBuffer
-{
-public:
-	StaticVertexBuffer();
-	StaticVertexBuffer(const Vertex *vertices, const uint vertexCount);
-};
+SAUCE_REF_TYPE_TYPEDEFS(VertexBuffer);
 
 /*********************************************************************
 **	Index buffer													**
 **********************************************************************/
-class SAUCE_API IndexBuffer
+
+struct SAUCE_API IndexBufferDeviceObject
 {
-	friend class OpenGLContext;
+	virtual ~IndexBufferDeviceObject() { }
+
+	BufferUsage bufferUsage = BufferUsage::Static;
+	uint32      indexCount  = 0;
+};
+
+struct SAUCE_API IndexBufferDesc : public GraphicsDeviceObjectDesc
+{
+	BufferUsage bufferUsage = BufferUsage::Static;
+	uint32*     indices     = nullptr;
+	uint32      indexCount  = 0;
+};
+
+class SAUCE_API IndexBuffer : public SauceObject
+{
+	friend class GraphicsContext;
 public:
+	SAUCE_REF_TYPE(IndexBuffer);
+
+	IndexBuffer();
 	virtual ~IndexBuffer();
 
-	// Add vertices and indices to the batch
-	void setData(const uint *indices, const uint indexCount);
-	char *getData() const;
+	bool initialize(IndexBufferDesc indexBufferDesc);
 
-	// Get size
-	uint getSize() const { return m_size; }
-
-protected:
-	IndexBuffer(const BufferUsage usage);
-
-	// Buffer ID
-	GLuint m_id;
+	uint32 getIndexCount() const;
 
 private:
-	// Buffer type
-	BufferUsage m_usage;
-
-	// Size
-	uint m_size;
+	GraphicsContext* m_graphicsContext;
+	IndexBufferDeviceObject* m_deviceObject;
 };
-
-class SAUCE_API DynamicIndexBuffer : public IndexBuffer
-{
-public:
-	DynamicIndexBuffer();
-	DynamicIndexBuffer(const uint *vertices, const uint indexCount);
-
-	void modifyData(const uint startIdx, uint *indices, const uint indexCount);
-};
-
-class SAUCE_API StaticIndexBuffer : public IndexBuffer
-{
-public:
-	StaticIndexBuffer();
-	StaticIndexBuffer(const uint *vertices, const uint indexCount);
-};
+SAUCE_REF_TYPE_TYPEDEFS(IndexBuffer);
 
 END_SAUCE_NAMESPACE

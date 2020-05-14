@@ -15,24 +15,28 @@
 BEGIN_SAUCE_NAMESPACE
 
 // Default shader. Used when no shader is set.
-shared_ptr<Shader> GraphicsContext::s_defaultShader = 0;
+ShaderRef GraphicsContext::s_defaultShader = 0;
 
 // Default texture. Empty texture used when no texture is set.
-shared_ptr<Texture2D> GraphicsContext::s_defaultTexture = 0;
+Texture2DRef GraphicsContext::s_defaultTexture = 0;
 
-Vertex *GraphicsContext::getVertices(const uint vertexCount)
-{
-	if(vertexCount > m_vertices.size())
-	{
-		m_vertices.resize(vertexCount);
-	}
-	return &m_vertices[0];
-}
+// Singleton pointer
+GraphicsContext* GraphicsContext::s_this = nullptr;
 
 GraphicsContext::GraphicsContext()
 	: m_context(nullptr)
 	, m_window(nullptr)
 {
+	assert(s_this == nullptr);
+	s_this = this;
+
+	// Setup default vertex format
+	VertexFormat::s_vtc.set(VertexAttribute::Position, 3, Datatype::Float);
+	VertexFormat::s_vtc.set(VertexAttribute::TexCoord, 2, Datatype::Float);
+	VertexFormat::s_vtc.set(VertexAttribute::Color, 4, Datatype::Uint8);
+	m_tempVertices = VertexFormat::s_vtc.createVertices(1);
+
+	// Add initial rendering state
 	State state;
 	m_stateStack.push(state);
 	m_currentState = &m_stateStack.top();
@@ -42,24 +46,33 @@ GraphicsContext::~GraphicsContext()
 {
 }
 
-void GraphicsContext::pushRenderTarget(RenderTarget2D *renderTarget)
+GraphicsContext* GraphicsContext::GetContext()
+{
+	return s_this;
+}
+
+void GraphicsContext::pushRenderTarget(RenderTarget2DRef renderTarget)
 {
 	// Unbind previous render target
 	if(m_currentState->renderTarget)
 	{
-		m_currentState->renderTarget->unbind();
+		// TODO: Is it necessary to unbind here every time?
+		renderTarget2D_bindRenderTarget(nullptr);
 	}
 
 	// Push state
 	pushState();
 
 	// Bind render target
-	m_currentState->renderTarget = renderTarget;
-	m_currentState->renderTarget->bind();
+	{
+		renderTarget2D_bindRenderTarget(renderTarget->m_deviceObject);
+		m_currentState->renderTarget = renderTarget;
+	}
 
 	// Resize viewport
-	setProjectionMatrix(createOrtographicMatrix(0, renderTarget->m_width, renderTarget->m_height, 0)); // TODO: Maybe this shouldn't be here?
-	setSize(renderTarget->m_width, renderTarget->m_height);
+	Texture2DRef targetTexture = renderTarget->getTargetTexture();
+	setProjectionMatrix(createOrtographicMatrix(0, targetTexture->getWidth(), targetTexture->getHeight(), 0)); // TODO: Maybe this shouldn't be here?
+	setSize(targetTexture->getWidth(), targetTexture->getHeight());
 }
 
 void GraphicsContext::popRenderTarget()
@@ -67,7 +80,8 @@ void GraphicsContext::popRenderTarget()
 	// Unbind previous render target
 	if(m_currentState->renderTarget)
 	{
-		m_currentState->renderTarget->unbind();
+		// TODO: Is it necessary to unbind here every time?
+		renderTarget2D_bindRenderTarget(nullptr);
 	}
 
 	// Pop state
@@ -77,11 +91,13 @@ void GraphicsContext::popRenderTarget()
 	if(m_currentState->renderTarget)
 	{
 		// Bind render target
-		m_currentState->renderTarget->bind();
+		RenderTarget2DRef renderTarget = m_currentState->renderTarget;
+		renderTarget2D_bindRenderTarget(renderTarget->m_deviceObject);
 
 		// Resize viewport
-		setProjectionMatrix(createOrtographicMatrix(0, m_currentState->renderTarget->m_width, m_currentState->renderTarget->m_height, 0)); // TODO: Maybe this shouldn't be here?
-		setSize(m_currentState->renderTarget->m_width, m_currentState->renderTarget->m_height);
+		Texture2DRef targetTexture = renderTarget->getTargetTexture();
+		setProjectionMatrix(createOrtographicMatrix(0, targetTexture->getWidth(), targetTexture->getHeight(), 0)); // TODO: Maybe this shouldn't be here?
+		setSize(targetTexture->getWidth(), targetTexture->getHeight());
 	}
 	else
 	{
@@ -128,22 +144,22 @@ void GraphicsContext::clearMatrixStack()
 	while(popMatrix());
 }
 
-void GraphicsContext::setTexture(shared_ptr<Texture2D> texture)
+void GraphicsContext::setTexture(Texture2DRef texture)
 {
 	m_currentState->texture = texture;
 }
 
-shared_ptr<Texture2D> GraphicsContext::getTexture() const
+Texture2DRef GraphicsContext::getTexture() const
 {
 	return m_currentState->texture;
 }
 
-void GraphicsContext::setShader(shared_ptr<Shader> shader)
+void GraphicsContext::setShader(ShaderRef shader)
 {
 	m_currentState->shader = shader;
 }
 
-shared_ptr<Shader> GraphicsContext::getShader() const
+ShaderRef GraphicsContext::getShader() const
 {
 	return m_currentState->shader;
 }
@@ -176,28 +192,24 @@ void GraphicsContext::setProjectionMatrix(const Matrix4 matrix)
 
 void GraphicsContext::drawRectangle(const float x, const float y, const float width, const float height, const Color &color, const TextureRegion &textureRegion)
 {
-	// Make sure we have enough vertices
-	if(m_vertices.size() < 4)
-	{
-		m_vertices.resize(4);
-	}
+	VertexArray& tmpVerexArray = getTempVertexArray(4);
 
-	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
-	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
-	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
-	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
+	tmpVerexArray[0].set2f(VertexAttribute::Position, x, y);
+	tmpVerexArray[1].set2f(VertexAttribute::Position, x, y + height);
+	tmpVerexArray[2].set2f(VertexAttribute::Position, x + width, y);
+	tmpVerexArray[3].set2f(VertexAttribute::Position, x + width, y + height);
 
-	m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[1].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[2].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-	m_vertices[3].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
+	tmpVerexArray[0].set4ub(VertexAttribute::Color, color.getR(), color.getG(), color.getB(), color.getA());
+	tmpVerexArray[1].set4ub(VertexAttribute::Color, color.getR(), color.getG(), color.getB(), color.getA());
+	tmpVerexArray[2].set4ub(VertexAttribute::Color, color.getR(), color.getG(), color.getB(), color.getA());
+	tmpVerexArray[3].set4ub(VertexAttribute::Color, color.getR(), color.getG(), color.getB(), color.getA());
 
-	m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv0.y);
-	m_vertices[1].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv0.x, textureRegion.uv1.y);
-	m_vertices[2].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv0.y);
-	m_vertices[3].set2f(VertexAttribute::VERTEX_TEX_COORD, textureRegion.uv1.x, textureRegion.uv1.y);
+	tmpVerexArray[0].set2f(VertexAttribute::TexCoord, textureRegion.uv0.x, textureRegion.uv0.y);
+	tmpVerexArray[1].set2f(VertexAttribute::TexCoord, textureRegion.uv0.x, textureRegion.uv1.y);
+	tmpVerexArray[2].set2f(VertexAttribute::TexCoord, textureRegion.uv1.x, textureRegion.uv0.y);
+	tmpVerexArray[3].set2f(VertexAttribute::TexCoord, textureRegion.uv1.x, textureRegion.uv1.y);
 
-	drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLE_STRIP, &m_vertices[0], 4);
+	drawPrimitives(PrimitiveType::TriangleStrip, tmpVerexArray, 4);
 }
 
 void GraphicsContext::drawRectangle(const Vector2F &pos, const Vector2F &size, const Color &color, const TextureRegion &textureRegion)
@@ -212,31 +224,27 @@ void GraphicsContext::drawRectangle(const Rect<float> &rect, const Color &color,
 
 void GraphicsContext::drawRectangleOutline(const float x, const float y, const float width, const float height, const Color &color, const TextureRegion &textureRegion)
 {
-	// Make sure we have enough vertices
-	if(m_vertices.size() < 8)
-	{
-		m_vertices.resize(8);
-	}
+	VertexArray& tmpVerexArray = getTempVertexArray(8);
 
-	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
-	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
+	tmpVerexArray[0].set2f(VertexAttribute::Position, x, y);
+	tmpVerexArray[1].set2f(VertexAttribute::Position, x, y + height);
 
-	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x, y + height);
-	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
+	tmpVerexArray[2].set2f(VertexAttribute::Position, x, y + height);
+	tmpVerexArray[3].set2f(VertexAttribute::Position, x + width, y + height);
 	
-	m_vertices[4].set2f(VertexAttribute::VERTEX_POSITION, x + width, y + height);
-	m_vertices[5].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
+	tmpVerexArray[4].set2f(VertexAttribute::Position, x + width, y + height);
+	tmpVerexArray[5].set2f(VertexAttribute::Position, x + width, y);
 
-	m_vertices[6].set2f(VertexAttribute::VERTEX_POSITION, x + width, y);
-	m_vertices[7].set2f(VertexAttribute::VERTEX_POSITION, x, y);
+	tmpVerexArray[6].set2f(VertexAttribute::Position, x + width, y);
+	tmpVerexArray[7].set2f(VertexAttribute::Position, x, y);
 
 	for(int i = 0; i < 8; i++)
 	{
-		m_vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, color.getR(), color.getG(), color.getB(), color.getA());
-		m_vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.0f, 0.0f);
+		tmpVerexArray[i].set4ub(VertexAttribute::Color, color.getR(), color.getG(), color.getB(), color.getA());
+		tmpVerexArray[i].set2f(VertexAttribute::TexCoord, 0.0f, 0.0f);
 	}
 
-	drawPrimitives(PrimitiveType::PRIMITIVE_LINES, &m_vertices[0], 8);
+	drawPrimitives(PrimitiveType::Lines, tmpVerexArray, 8);
 }
 
 void GraphicsContext::drawRectangleOutline(const Vector2F &pos, const Vector2F &size, const Color &color, const TextureRegion &textureRegion)
@@ -251,25 +259,21 @@ void GraphicsContext::drawRectangleOutline(const Rect<float> &rect, const Color 
 
 void GraphicsContext::drawCircleGradient(const float x, const float y, const float radius, const uint segments, const Color &center, const Color &outer)
 {
-	// Make sure we have enough vertices
-	if(m_vertices.size() < segments + 2)
-	{
-		m_vertices.resize(segments + 2);
-	}
+	VertexArray& tmpVerexArray = getTempVertexArray(segments + 2);
 
-	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x, y);
-	m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, center.getR(), center.getG(), center.getB(), center.getA());
-	m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.5f, 0.5f);
+	tmpVerexArray[0].set2f(VertexAttribute::Position, x, y);
+	tmpVerexArray[0].set4ub(VertexAttribute::Color, center.getR(), center.getG(), center.getB(), center.getA());
+	tmpVerexArray[0].set2f(VertexAttribute::TexCoord, 0.5f, 0.5f);
 
 	for(uint i = 1; i < segments + 2; ++i)
 	{
 		float r = (2.0f * PI * i) / segments;
-		m_vertices[i].set2f(VertexAttribute::VERTEX_POSITION, x + cos(r) * radius, y + sin(r) * radius);
-		m_vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, outer.getR(), outer.getG(), outer.getB(), outer.getA());
-		m_vertices[i].set2f(VertexAttribute::VERTEX_TEX_COORD, (1.0f + cos(r)) / 2.0f, (1.0f + sin(r)) / 2.0f);
+		tmpVerexArray[i].set2f(VertexAttribute::Position, x + cos(r) * radius, y + sin(r) * radius);
+		tmpVerexArray[i].set4ub(VertexAttribute::Color, outer.getR(), outer.getG(), outer.getB(), outer.getA());
+		tmpVerexArray[i].set2f(VertexAttribute::TexCoord, (1.0f + cos(r)) / 2.0f, (1.0f + sin(r)) / 2.0f);
 	}
 
-	drawPrimitives(PrimitiveType::PRIMITIVE_TRIANGLE_FAN, &m_vertices[0], segments + 2);
+	drawPrimitives(PrimitiveType::TriangleFan, tmpVerexArray, segments + 2);
 }
 
 void GraphicsContext::drawCircleGradient(const Vector2F &pos, const float radius, const uint segments, const Color &center, const Color &outer)
@@ -289,11 +293,10 @@ void GraphicsContext::drawCircle(const Vector2F &pos, const float radius, const 
 
 void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, const float y1, const float arrowHeadSize, const Color &color)
 {
-	// Make sure we have enough vertices
-	if(m_vertices.size() < 6) m_vertices.resize(6);
+	VertexArray& tmpVerexArray = getTempVertexArray(6);
 
-	m_vertices[0].set2f(VertexAttribute::VERTEX_POSITION, x0, y0); m_vertices[0].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[1].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[1].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[1].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	tmpVerexArray[0].set2f(VertexAttribute::Position, x0, y0); tmpVerexArray[0].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[0].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
+	tmpVerexArray[1].set2f(VertexAttribute::Position, x1, y1); tmpVerexArray[1].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[1].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
 
 	Vector2F p0 = (Vector2F(x0, y0) - Vector2F(x1, y1)).normalized() * arrowHeadSize;
 	Vector2F p1 = p0;
@@ -304,24 +307,48 @@ void GraphicsContext::drawArrow(const float x0, const float y0, const float x1, 
 	p0 += Vector2F(x1, y1);
 	p1 += Vector2F(x1, y1);
 
-	m_vertices[2].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[2].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[2].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[3].set2f(VertexAttribute::VERTEX_POSITION, p0.x, p0.y); m_vertices[3].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[3].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	tmpVerexArray[2].set2f(VertexAttribute::Position, x1, y1); tmpVerexArray[2].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[2].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
+	tmpVerexArray[3].set2f(VertexAttribute::Position, p0.x, p0.y); tmpVerexArray[3].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[3].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
 
-	m_vertices[4].set2f(VertexAttribute::VERTEX_POSITION, x1, y1); m_vertices[4].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[4].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
-	m_vertices[5].set2f(VertexAttribute::VERTEX_POSITION, p1.x, p1.y); m_vertices[5].set4ub(VertexAttribute::VERTEX_COLOR, color.x, color.y, color.z, color.w); m_vertices[5].set2f(VertexAttribute::VERTEX_TEX_COORD, 0.f, 0.f);
+	tmpVerexArray[4].set2f(VertexAttribute::Position, x1, y1); tmpVerexArray[4].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[4].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
+	tmpVerexArray[5].set2f(VertexAttribute::Position, p1.x, p1.y); tmpVerexArray[5].set4ub(VertexAttribute::Color, color.x, color.y, color.z, color.w); tmpVerexArray[5].set2f(VertexAttribute::TexCoord, 0.f, 0.f);
 
-	drawPrimitives(PrimitiveType::PRIMITIVE_LINES, &m_vertices[0], 6);
+	drawPrimitives(PrimitiveType::Lines, tmpVerexArray, 6);
 }
 
-Texture2D *GraphicsContext::createTexture(const uint width, const uint height, const PixelFormat& format, const uint8_t* data)
+VertexArray& GraphicsContext::getTempVertexArray(const uint32 vertexCount)
 {
-	Pixmap pixmap(width, height, format, data);
-	return createTexture(pixmap);
+	// Make sure we have enough vertices
+	if (m_tempVertices.getVertexCount() < vertexCount)
+	{
+		m_tempVertices.resize(vertexCount);
+	}
+	return m_tempVertices;
 }
 
-Texture2D *GraphicsContext::createTexture(const Texture2D &texture)
+void GraphicsContext::texture2D_getDeviceObject(Texture2DRef texture, Texture2DDeviceObject*& outTextureDeviceObject)
 {
-	return createTexture(texture.getPixmap());
+	outTextureDeviceObject = texture->m_deviceObject;
+}
+
+void GraphicsContext::shader_getDeviceObject(ShaderRef shader, ShaderDeviceObject*& outShaderDeviceObject)
+{
+	outShaderDeviceObject = shader->m_deviceObject;
+}
+
+void GraphicsContext::renderTarget2D_getDeviceObject(RenderTarget2DRef renderTarget, RenderTarget2DDeviceObject*& outRenderTargetDeviceObject)
+{
+	outRenderTargetDeviceObject = renderTarget->m_deviceObject;
+}
+
+void GraphicsContext::vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject)
+{
+	outVertexBufferDeviceObject = vertexBuffer->m_deviceObject;
+}
+
+void GraphicsContext::indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, IndexBufferDeviceObject*& outIndexBufferDeviceObject)
+{
+	outIndexBufferDeviceObject = indexBuffer->m_deviceObject;
 }
 
 END_SAUCE_NAMESPACE

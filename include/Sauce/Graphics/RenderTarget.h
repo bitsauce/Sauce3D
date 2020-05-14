@@ -6,30 +6,45 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/GraphicsContext.h>
+#include <Sauce/Graphics/GraphicsDeviceObjectDesc.h>
 #include <Sauce/Graphics/Texture.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-class SAUCE_API RenderTarget2D
+struct SAUCE_API RenderTarget2DDeviceObject
+{
+	virtual ~RenderTarget2DDeviceObject() { }
+
+	uint32        targetCount    = 0;
+	Texture2DRef* targetTextures = nullptr;
+};
+
+struct SAUCE_API RenderTarget2DDesc : public GraphicsDeviceObjectDesc
+{
+	uint32           width           = 0;
+	uint32           height          = 0;
+	uint32           targetCount     = 1;
+	PixelFormat      pixelFormat     = PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8);
+	Texture2DRef*    targetTextures  = nullptr;
+};
+
+class SAUCE_API RenderTarget2D final : public SauceObject
 {
 	friend class GraphicsContext;
-protected:
-	RenderTarget2D(GraphicsContext *graphicsContext, const uint width, const uint height, const uint targetCount = 1, const PixelFormat &fmt = PixelFormat());
-	RenderTarget2D(GraphicsContext *graphicsContext, shared_ptr<Texture2D> target);
-
 public:
+	SAUCE_REF_TYPE(RenderTarget2D);
+
+	RenderTarget2D();
 	virtual ~RenderTarget2D();
-	shared_ptr<Texture2D> getTexture(const uint target = 0) { if(target < m_textureCount) return m_textures[target]; else return nullptr; }
-	uint getWidth() const { return m_width; }
-	uint getHeight() const { return m_height; }
 
-protected:
-	virtual void bind() = 0;
-	virtual void unbind() = 0;
+	bool initialize(RenderTarget2DDesc renderTargetDesc);
 
-	uint m_width, m_height;
-	uint m_textureCount;
-	shared_ptr<Texture2D> *m_textures;
+	Texture2DRef getTargetTexture(const uint32 targetIndex = 0) const;
+
+private:
+	GraphicsContext* m_graphicsContext;
+	RenderTarget2DDeviceObject* m_deviceObject;
 };
+SAUCE_REF_TYPE_TYPEDEFS(RenderTarget2D);
 
 END_SAUCE_NAMESPACE

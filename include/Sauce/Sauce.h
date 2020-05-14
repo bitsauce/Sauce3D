@@ -10,3 +10,4 @@
 #include <Sauce/Input.h>
 #include <Sauce/Audio.h>
 #include <Sauce/Graphics.h>
+#include <Sauce/Utils.h>

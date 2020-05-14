@@ -12,7 +12,16 @@
 
 #include <Sauce/Math.h>
 
+BEGIN_SAUCE_NAMESPACE
+
 const float DEG2RAD = 3.141593f / 180;
+
+const Matrix4 Matrix4::Zero = Matrix4(
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+);
 
 /*********************************************************************
 **	3x3 Matrix														**
@@ -457,3 +466,5 @@ Matrix4& Matrix4::rotateZ(float angle)
 
     return *this;
 }
+
+END_SAUCE_NAMESPACE

@@ -4,20 +4,37 @@ using namespace sauce;
 
 class RandomNoiseGPU : public Game
 {
-	Resource<Shader> m_noiseShader;
-	Resource<Texture2D> m_gradientTexture;
-	RenderTarget2D *m_renderTarget;
+	ShaderRef m_noiseShader;
+	Texture2DRef m_gradientTexture;
+	RenderTarget2DRef m_renderTarget;
 	float m_time;
 
 public:
 	void onStart(GameEvent *e)
 	{
-		m_noiseShader = Resource<Shader>("Fractal2D");
-		//m_noiseShader = Resource<Shader>("Fractal2D_Gradient");
-		//m_noiseShader = Resource<Shader>("Voronoise");
-		m_gradientTexture = Resource<Texture2D>("Gradient");
+		ShaderDesc fractalShaderDesc;
+		fractalShaderDesc.shaderFileVS = "Shaders/Fractal2D.vert";
+		fractalShaderDesc.shaderFilePS = "Shaders/Fractal2D.frag";
+		m_noiseShader = CreateNew<Shader>(fractalShaderDesc);
+
+		//ShaderDesc fractalShaderDesc;
+		//fractalShaderDesc.shaderFileVS = "Shaders/Fractal2D_Gradient.vert";
+		//fractalShaderDesc.shaderFilePS = "Shaders/Fractal2D_Gradient.frag";
+		//m_noiseShader = CreateNew<Shader>(fractalShaderDesc);
+
+		//ShaderDesc voronoiseShaderDesc;
+		//voronoiseShaderDesc.shaderFileVS = "Shaders/Voronoise.vert";
+		//voronoiseShaderDesc.shaderFilePS = "Shaders/Voronoise.frag";
+		//m_noiseShader = CreateNew<Shader>(voronoiseShaderDesc);
+
+		Texture2DDesc gradientTextureDesc;
+		gradientTextureDesc.filePath = "Images/Gradient.png";
+		m_gradientTexture = CreateNew<Texture2D>(gradientTextureDesc);
 		
-		m_renderTarget = getWindow()->getGraphicsContext()->createRenderTarget(getWindow()->getWidth(), getWindow()->getHeight());
+		RenderTarget2DDesc renderTargetDesc;
+		renderTargetDesc.width = getWindow()->getWidth();
+		renderTargetDesc.height = getWindow()->getHeight();
+		m_renderTarget = CreateNew<RenderTarget2D>(renderTargetDesc);
 
 		m_noiseShader->setUniform1f("u_Frequency", 0.5f);
 		m_noiseShader->setUniform1f("u_Gain", 0.5f);
@@ -51,13 +68,13 @@ public:
 		context->setShader(0);
 		context->popRenderTarget();
 
-		context->setTexture(m_renderTarget->getTexture());
+		context->setTexture(m_renderTarget->getTargetTexture());
 		context->drawRectangle(Vector2F(0, 0), getWindow()->getSize());
 		context->setTexture(0);
 
 		if(getInputManager()->getKeyState(SAUCE_KEY_SPACE))
 		{
-			Pixmap pixmap = m_renderTarget->getTexture()->getPixmap();
+			Pixmap pixmap = m_renderTarget->getTargetTexture()->getPixmap();
 			uchar data[4];
 			uint histogram[256] = { 0 };
 			for(int y = 0; y < pixmap.getHeight(); y++)
@@ -76,14 +93,14 @@ public:
 				maxValue = max(histogram[i], maxValue);
 			}
 
-			Vertex vertices[256];
+			VertexArray& vertices = context->getTempVertexArray(256);
 			for(int i = 0; i < 256; i++)
 			{
-				vertices[i].set2f(VERTEX_POSITION, i, 256 - (histogram[i] / float(maxValue)) * 256);
-				vertices[i].set4ub(VERTEX_COLOR, 255, 0, 0, 255);
+				vertices[i].set2f(VertexAttribute::Position, i, 256 - (histogram[i] / float(maxValue)) * 256);
+				vertices[i].set4ub(VertexAttribute::Color, 255, 0, 0, 255);
 			}
 			context->drawRectangle(0, 0, 256, 256, Color(0, 0, 0, 200));
-			context->drawPrimitives(GraphicsContext::PRIMITIVE_LINE_STRIP, vertices, 256);
+			context->drawPrimitives(PrimitiveType::LineStrip, vertices, 256);
 		}
 
 		Game::onDraw(e);
@@ -94,9 +111,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 {
 	GameDesc desc;
 	desc.name = "RandomNoiseGPU Sample";
-	desc.workingDirectory = "../Data";
-	desc.flags = SAUCE_WINDOW_RESIZABLE;
-	desc.graphicsBackend = SAUCE_OPENGL_3;
+	desc.workingDirectory = "../Assets";
+	desc.flags = (uint32)EngineFlag::ResizableWindow;
+	desc.graphicsBackend = GraphicsBackend::OpenGL4;
 
 	RandomNoiseGPU game;
 	return game.run(desc);

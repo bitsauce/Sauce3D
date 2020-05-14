@@ -58,7 +58,7 @@ void Console::call_log(const char *msg, va_list args)
 #endif
 	
 	// Append message to log file
-	if(m_engine->isEnabled(EngineFlag::SAUCE_EXPORT_LOG))
+	if(m_engine->isEnabled(EngineFlag::ExportLog))
 	{
 		*m_output << out << endl;
 		m_output->flush();

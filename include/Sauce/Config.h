@@ -40,6 +40,8 @@
 **********************************************************************/
 #ifdef SAUCE_COMPILE_WINDOWS
 	#define NOMINMAX
+	#define _HAS_STD_BYTE 0
+	#define _HAS_STD_BOOLEAN 0
 	#include <string>
 	#include <vector>
 	#include <list>
@@ -61,8 +63,8 @@
 	#include <memory>
 	#include <queue>
 	#include <chrono>
-	#include "..\3rdparty\gl3w\include\GL\gl3w.h"
-	#include "..\3rdparty\gl3w\include\GL\wglext.h"
+	#include <filesystem>
+	#include <regex>
 #elif __LINUX__
 	#include <string>
 	#include <vector>
@@ -128,14 +130,40 @@ typedef double SFloat;
 BEGIN_SAUCE_NAMESPACE
 
 /*********************************************************************
+**	Ref types														**
+**********************************************************************/
+#define SAUCE_REF_TYPE(Class)                                     \
+	using RefType = shared_ptr<Class>;                            \
+	using DescType = Class ## Desc;                               \
+	typedef Class::RefType Class ## Ref;                          \
+	typedef Class::DescType Class ## Desc;                        \
+	bool initialize(SauceObjectDesc* objectDesc) override         \
+	{                                                             \
+		DescType* descType = dynamic_cast<DescType*>(objectDesc); \
+		assert(descType);                                         \
+		return descType ? initialize(*descType) : false;          \
+	}
+
+#define SAUCE_REF_TYPE_TYPEDEFS(Class) \
+	typedef Class::RefType Class ## Ref; \
+	typedef Class::DescType Class ## Desc
+
+/*********************************************************************
 **	Enum class utility												**
 **********************************************************************/
-#define ENUM_CLASS_ADD_BITWISE_OPERATORS(Enumclass)                       \
-	template<typename Other>                                              \
-	inline auto operator|(const Other& lhs, const Enumclass& rhs)         \
-	{                                                                     \
-		using T = std::underlying_type_t<Enumclass>;                      \
-		return static_cast<T>(static_cast<T>(lhs) | static_cast<T>(rhs)); \
+#define ENUM_CLASS_ADD_BITWISE_OPERATORS(Enumclass)                            \
+	template<typename Other>                                                   \
+	inline auto operator|(const Other& lhs, const Enumclass& rhs)              \
+	{                                                                          \
+		using T = std::underlying_type_t<Enumclass>;                           \
+		return static_cast<T>(static_cast<T>(lhs) | static_cast<T>(rhs));      \
+	}                                                                          \
+                                                                               \
+	template<typename Other>                                                   \
+	inline bool operator&(const Other& lhs, const Enumclass& rhs)              \
+	{                                                                          \
+		using T = std::underlying_type_t<Enumclass>;                           \
+		return static_cast<T>(static_cast<T>(lhs) & static_cast<T>(rhs)) != 0; \
 	}
 
 /*********************************************************************
@@ -143,10 +171,10 @@ BEGIN_SAUCE_NAMESPACE
 **********************************************************************/
 enum class RetCode : int32
 {
-	SAUCE_OK					=  0,
-	SAUCE_RUNTIME_EXCEPTION		= -1,
-	SAUCE_INVALID_CONFIG		= -2,
-	SAUCE_UNKNOWN_EXCEPTION		= -3
+	Ok               =  0,
+	RuntimeException = -1,
+	InvalidConfig    = -2,
+	UnknownException = -3
 };
 
 /*********************************************************************
@@ -154,11 +182,11 @@ enum class RetCode : int32
 **********************************************************************/
 enum class EngineFlag : uint32
 {
-	SAUCE_EXPORT_LOG				= 1 << 0, ///< Export the output log to a log file.
-	SAUCE_RUN_IN_BACKGROUND			= 1 << 1, ///< This will allow the program to run while not focused.
-	SAUCE_BLOCK_BACKGROUND_INPUT	= 1 << 2, ///< If SAUCE_RUN_IN_BACKGROUND is set, this will block input while program is out of focus. 
-	SAUCE_VERBOSE					= 1 << 4, ///< This will make the engine produce more verbose messages from engine calls.
-	SAUCE_WINDOW_RESIZABLE			= 1 << 5
+	ExportLog                  = 1 << 0, ///< Export the output log to a log file.
+	RunInBackground            = 1 << 1, ///< This will allow the program to run while not focused.
+	CaptureInputWhenOutOfFocus = 1 << 2, ///< If SAUCE_RUN_IN_BACKGROUND is set, this will block input while program is out of focus. 
+	Verbose                    = 1 << 4, ///< This will make the engine produce more verbose messages from engine calls.
+	ResizableWindow            = 1 << 5
 };
 ENUM_CLASS_ADD_BITWISE_OPERATORS(EngineFlag);
 
@@ -167,9 +195,9 @@ ENUM_CLASS_ADD_BITWISE_OPERATORS(EngineFlag);
 **********************************************************************/
 enum MessageType
 {
-	SAUCE_INFO_MSG,
-	SAUCE_WARN_MSG,
-	SAUCE_ERR_MSG
+	Info,
+	Warning,
+	Error
 };
 
 /*********************************************************************
@@ -177,67 +205,28 @@ enum MessageType
 **********************************************************************/
 enum class GraphicsBackend : uint32
 {
-	SAUCE_OPENGL_3,
-	SAUCE_OPENGL_4,
-	SAUCE_DIRECTX,
-	SAUCE_VULKAN
+	OpenGL3,
+	OpenGL4,
+	DirectX12,
+	Vulkan_VERSION
 };
 
 /*********************************************************************
-**	Global util functions											**
+**	Data type enum													**
 **********************************************************************/
-namespace util
+enum class Datatype : uint32
 {
-	// Split string
-	SAUCE_API vector<string> splitString(const string& src, const string& delim);
+	Float,
+	Uint32,
+	Int32,
+	Uint16,
+	Int16,
+	Uint8,
+	Int8,
 
-	// Replace all
-	SAUCE_API void replaceAll(string& str, string& from, string& to);
-	
-	// String case functions
-	SAUCE_API string toLower(string &str, const int begin = 0, const int end = 0);
-	SAUCE_API string toUpper(string &str, const int begin = 0, const int end = 0);
-
-	// String convertering
-	SAUCE_API int   strToInt(const string &str);
-	SAUCE_API float strToFloat(const string &str);
-	SAUCE_API bool  strToBool(const string &str);
-	SAUCE_API uchar strToAscii(const string&);
-
-	SAUCE_API string intToStr(const int);
-	SAUCE_API string floatToStr(const float);
-	SAUCE_API string boolToStr(const bool);
-	SAUCE_API string asciiToStr(const uchar);
-	
-	// File paths
-	SAUCE_API bool fileExists(string filePath);
-	SAUCE_API string getAbsoluteFilePath(const string &assetPath);
-	SAUCE_API void toAbsoluteFilePath(string &assetPath);
-	SAUCE_API void toDirectoryPath(string &path);
-	SAUCE_API string getWorkingDirectory();
-
-	enum class UnicodeByteOrder : uint32
-	{
-		DECODE_LITTLE_ENDIAN,
-		DECODE_BIG_ENDIAN,
-	};
-
-	// This function will attempt to decode a UTF-8 encoded character in the buffer.
-	// If the encoding is invalid, the function returns -1.
-	int decodeUTF8(const char *encodedBuffer, unsigned int *outCharLength);
-
-	// This function will encode the value into the buffer.
-	// If the value is invalid, the function returns -1, else the encoded length.
-	int encodeUTF8(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength);
-
-	// This function will attempt to decode a UTF-16 encoded character in the buffer.
-	// If the encoding is invalid, the function returns -1.
-	int decodeUTF16(const char *encodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder=UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
-
-	// This function will encode the value into the buffer.
-	// If the value is invalid, the function returns -1, else the encoded length.
-	int encodeUTF16(unsigned int value, char *outEncodedBuffer, unsigned int *outCharLength, UnicodeByteOrder byteOrder=UnicodeByteOrder::DECODE_LITTLE_ENDIAN);
-}
+	Matrix4,
+	Struct
+};
 
 END_SAUCE_NAMESPACE
 

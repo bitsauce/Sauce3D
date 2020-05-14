@@ -118,7 +118,7 @@ int Game::run(const GameDesc &desc)
 
 		m_console = new Console();
 		//m_fileSystem = new FileSystem();
-		if(isEnabled(EngineFlag::SAUCE_EXPORT_LOG))
+		if(isEnabled(EngineFlag::ExportLog))
 		{
 			m_console->m_output = new ofstream();
 			m_console->m_output->open("console.log");
@@ -130,6 +130,7 @@ int Game::run(const GameDesc &desc)
 		m_console->m_engine = this;
 
 		LOG("** Initializing Engine **");
+		LOG("** Current working dir: %s **", util::getWorkingDirectory().c_str());
 
 		// Initialize SDL
 		THROW_IF(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Unable to initialize SDL");
@@ -141,14 +142,11 @@ int Game::run(const GameDesc &desc)
 		// Set FreeImage message callback
 		FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
-		// Initialize font rendering system
-		FontRenderingSystem::initialize();
-
 		// Initialize resource manager
-		m_resourceManager = new ResourceManager("Resources.xml");
+		//m_resourceManager = new ResourceManager("Resources.xml");
 
 		Uint32 windowFlags = 0;
-		if(isEnabled(EngineFlag::SAUCE_WINDOW_RESIZABLE))
+		if(isEnabled(EngineFlag::ResizableWindow))
 		{
 			windowFlags |= SDL_WINDOW_RESIZABLE;
 		}
@@ -162,10 +160,8 @@ int Game::run(const GameDesc &desc)
 		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
 		m_windows.push_back(mainWindow);
 
-		// Setup default vertex format
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_POSITION, 2, Datatype::SAUCE_FLOAT);
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_COLOR, 4, Datatype::SAUCE_UBYTE);
-		VertexFormat::s_vct.set(VertexAttribute::VERTEX_TEX_COORD, 2, Datatype::SAUCE_FLOAT);
+		// Initialize font rendering system
+		FontRenderingSystem::Initialize(graphicsContext);
 
 		// Initialize input handler
 		m_inputManager = new InputManager("InputConfig.xml");
@@ -190,7 +186,7 @@ int Game::run(const GameDesc &desc)
 
 		// Call onStart event
 		{
-			GameEvent e(GameEventType::START);
+			GameEvent e(GameEventType::Start);
 			onEvent(&e);
 		}
 		
@@ -217,6 +213,7 @@ int Game::run(const GameDesc &desc)
 		{
 			// Event handling
 			SDL_Event event;
+			char textInputChar = '\0';
 			while(SDL_PollEvent(&event))
 			{
 				switch(event.type)
@@ -251,8 +248,8 @@ int Game::run(const GameDesc &desc)
 						// Send key input event
 						KeyEvent e(
 							event.type == SDL_KEYDOWN ?
-							(event.key.repeat == 0 ? KeyEventType::DOWN : KeyEventType::REPEAT) :
-							KeyEventType::UP,
+							(event.key.repeat == 0 ? KeyEventType::Down : KeyEventType::Repeat) :
+							KeyEventType::Up,
 							m_inputManager,
 							(Scancode)event.key.keysym.scancode,
 							event.key.keysym.mod);
@@ -270,6 +267,7 @@ int Game::run(const GameDesc &desc)
 							TextEvent e(event.text.text[0]);
 							onEvent(&e);
 						}
+						textInputChar = event.text.text[0];
 					}
 					break;
 
@@ -280,7 +278,7 @@ int Game::run(const GameDesc &desc)
 						m_inputManager->m_y = event.motion.y;
 
 						// Send mouse move event
-						MouseEvent e(MouseEventType::MOVE, m_inputManager, event.motion.x, event.motion.y, SAUCE_MOUSE_BUTTON_NONE, 0, 0);
+						MouseEvent e(MouseEventType::Move, m_inputManager, event.motion.x, event.motion.y, SAUCE_MOUSE_BUTTON_NONE, 0, 0);
 						onEvent(&e);
 					}
 					break;
@@ -288,11 +286,11 @@ int Game::run(const GameDesc &desc)
 					case SDL_MOUSEBUTTONDOWN:
 					{
 						// MouseEvent
-						MouseEvent mouseEvent(MouseEventType::DOWN, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, (const MouseButton) event.button.button, 0, 0);
+						MouseEvent mouseEvent(MouseEventType::Down, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, (const MouseButton) event.button.button, 0, 0);
 						onEvent(&mouseEvent);
 
 						// KeyEvent
-						KeyEvent keyEvent(KeyEventType::DOWN, m_inputManager, (const MouseButton) event.button.button, event.key.keysym.mod);
+						KeyEvent keyEvent(KeyEventType::Down, m_inputManager, (const MouseButton) event.button.button, event.key.keysym.mod);
 						onEvent(&keyEvent);
 						m_inputManager->updateKeybinds(&keyEvent);
 					}
@@ -301,11 +299,11 @@ int Game::run(const GameDesc &desc)
 					case SDL_MOUSEBUTTONUP:
 					{
 						// MouseEvent
-						MouseEvent mouseEvent(MouseEventType::UP, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, (const MouseButton) event.button.button, 0, 0);
+						MouseEvent mouseEvent(MouseEventType::Up, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, (const MouseButton) event.button.button, 0, 0);
 						onEvent(&mouseEvent);
 
 						// KeyEvent
-						KeyEvent keyEvent(KeyEventType::UP, m_inputManager, (const MouseButton) event.button.button, event.key.keysym.mod);
+						KeyEvent keyEvent(KeyEventType::Up, m_inputManager, (const MouseButton) event.button.button, event.key.keysym.mod);
 						onEvent(&keyEvent);
 						m_inputManager->updateKeybinds(&keyEvent);
 					}
@@ -314,7 +312,7 @@ int Game::run(const GameDesc &desc)
 					case SDL_MOUSEWHEEL:
 					{
 						// Scroll event
-						MouseEvent mouseEvent(MouseEventType::WHEEL, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, SAUCE_MOUSE_BUTTON_NONE, event.wheel.x, event.wheel.y);
+						MouseEvent mouseEvent(MouseEventType::Wheel, m_inputManager, m_inputManager->m_x, m_inputManager->m_y, SAUCE_MOUSE_BUTTON_NONE, event.wheel.x, event.wheel.y);
 						onEvent(&mouseEvent);
 					}
 					break;
@@ -338,7 +336,7 @@ int Game::run(const GameDesc &desc)
 					case SDL_CONTROLLERBUTTONDOWN:
 					{
 						// Send controller button event
-						ControllerButtonEvent e(ControllerButtonEventType::DOWN, m_inputManager, (const ControllerButton)event.cbutton.button);// , event.cbutton.which);
+						ControllerButtonEvent e(ControllerButtonEventType::Down, m_inputManager, (const ControllerButton)event.cbutton.button);// , event.cbutton.which);
 						onEvent(&e);
 						m_inputManager->updateKeybinds(&e);
 					}
@@ -347,7 +345,7 @@ int Game::run(const GameDesc &desc)
 					case SDL_CONTROLLERBUTTONUP:
 					{
 						// Send controller button event
-						ControllerButtonEvent e(ControllerButtonEventType::UP, m_inputManager, (const ControllerButton) event.cbutton.button);// , event.cbutton.which);
+						ControllerButtonEvent e(ControllerButtonEventType::Up, m_inputManager, (const ControllerButton) event.cbutton.button);// , event.cbutton.which);
 						onEvent(&e);
 						m_inputManager->updateKeybinds(&e);
 					}
@@ -365,7 +363,7 @@ int Game::run(const GameDesc &desc)
 								{
 									// Flag trigger as pressed and send controller button event
 									m_inputManager->m_rightTrigger = true;
-									ControllerButtonEvent e(ControllerButtonEventType::DOWN, m_inputManager, SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER);// , event.cbutton.which);
+									ControllerButtonEvent e(ControllerButtonEventType::Down, m_inputManager, SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER);// , event.cbutton.which);
 									onEvent(&e);
 									m_inputManager->updateKeybinds(&e);
 								}
@@ -375,7 +373,7 @@ int Game::run(const GameDesc &desc)
 								if(AXIS_VALUE_TO_FLOAT(event.caxis.value) < m_inputManager->m_triggerThreshold)
 								{
 									m_inputManager->m_rightTrigger = false;
-									ControllerButtonEvent e(ControllerButtonEventType::UP, m_inputManager, SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER);// , event.cbutton.which);
+									ControllerButtonEvent e(ControllerButtonEventType::Up, m_inputManager, SAUCE_CONTROLLER_BUTTON_RIGHT_TRIGGER);// , event.cbutton.which);
 									onEvent(&e);
 									m_inputManager->updateKeybinds(&e);
 								}
@@ -388,7 +386,7 @@ int Game::run(const GameDesc &desc)
 								if(event.caxis.value >= m_inputManager->m_triggerThreshold)
 								{
 									m_inputManager->m_leftTrigger = true;
-									ControllerButtonEvent e(ControllerButtonEventType::DOWN, m_inputManager, SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER);// , event.cbutton.which);
+									ControllerButtonEvent e(ControllerButtonEventType::Down, m_inputManager, SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER);// , event.cbutton.which);
 									onEvent(&e);
 									m_inputManager->updateKeybinds(&e);
 								}
@@ -398,7 +396,7 @@ int Game::run(const GameDesc &desc)
 								if(event.caxis.value < m_inputManager->m_triggerThreshold)
 								{
 									m_inputManager->m_leftTrigger = false;
-									ControllerButtonEvent e(ControllerButtonEventType::UP, m_inputManager, SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER);// , event.cbutton.which);
+									ControllerButtonEvent e(ControllerButtonEventType::Up, m_inputManager, SAUCE_CONTROLLER_BUTTON_LEFT_TRIGGER);// , event.cbutton.which);
 									onEvent(&e);
 									m_inputManager->updateKeybinds(&e);
 								}
@@ -415,7 +413,7 @@ int Game::run(const GameDesc &desc)
 			}
 
 			// Check if game is paused or out of focus
-			if(m_paused || (!isEnabled(EngineFlag::SAUCE_RUN_IN_BACKGROUND) && !mainWindow->checkFlags(SDL_WINDOW_INPUT_FOCUS)))
+			if(m_paused || (!isEnabled(EngineFlag::RunInBackground) && !mainWindow->checkFlags(SDL_WINDOW_INPUT_FOCUS)))
 			{
 				continue;
 			}
@@ -432,11 +430,11 @@ int Game::run(const GameDesc &desc)
 			}
 
 			// TODO: Make a scene object instead?
-			ImGuiSystem::processInputs(deltaTime);
+			ImGuiSystem::processInputs(deltaTime, textInputChar);
 
 			// Step begin
 			{
-				StepEvent e(StepEventType::BEGIN);
+				StepEvent e(StepEventType::Begin);
 				onEvent(&e);
 			}
 
@@ -466,7 +464,7 @@ int Game::run(const GameDesc &desc)
 			ImGuiSystem::render();
 
 			SDL_GL_SwapWindow(mainWindow->getSDLHandle());
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			graphicsContext->clear(BufferMask::Color | BufferMask::Depth);
 
 			// Add fps sample
 			if(deltaTime != 0.0f)
@@ -485,7 +483,7 @@ int Game::run(const GameDesc &desc)
 
 			// Step end
 			{
-				StepEvent e(StepEventType::END);
+				StepEvent e(StepEventType::End);
 				onEvent(&e);
 			}
 		}
@@ -497,7 +495,7 @@ gameloopend:
 
 		// Call onEnd event
 		{
-			GameEvent e(GameEventType::END);
+			GameEvent e(GameEventType::End);
 			onEvent(&e);
 		}
 	}
@@ -512,9 +510,9 @@ gameloopend:
 	}
 
 	// Free font rendering system
-	FontRenderingSystem::free();
+	FontRenderingSystem::Free();
 
-	return (uint32)RetCode::SAUCE_OK;
+	return (uint32)RetCode::Ok;
 }
 
 void Game::end()

@@ -2,42 +2,47 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-
-Mesh *loadMesh(const string &modelFile)
+bool Mesh::initialize(MeshDesc meshDesc)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
 	std::string err;
-	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, modelFile.c_str());
+	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, meshDesc.meshFilePath.c_str());
 
-	if(!err.empty()) { // `err` may contain warning message.
+	if (!err.empty())
+	{
+		// "err" may contain warning messages
 		LOG(err.c_str());
 	}
 
-	if(!ret) {
-		exit(1);
+	if (!ret)
+	{
+		return false;
 	}
 
 	VertexFormat fmt;
-	fmt.set(VERTEX_POSITION, 3, SAUCE_FLOAT);
-	fmt.set(VERTEX_NORMAL, 3, SAUCE_FLOAT);
-	fmt.set(VERTEX_TEX_COORD, 2, SAUCE_FLOAT);
+	fmt.set(VertexAttribute::Position, 3, Datatype::Float);
+	fmt.set(VertexAttribute::Normal, 3, Datatype::Float);
+	fmt.set(VertexAttribute::TexCoord, 2, Datatype::Float);
 
 	// Loop over shapes
-	for(size_t s = 0; s < shapes.size(); s++) {
+	for (size_t s = 0; s < shapes.size(); ++s)
+	{
 		// Create vertices
-		uint numVertices = shapes[s].mesh.indices.size();
-		Vertex *vertices = fmt.createVertices(numVertices);
+		uint32 vertexCount = shapes[s].mesh.indices.size();
+		VertexArray vertices = fmt.createVertices(vertexCount);
 
 		// Loop over faces(polygon)
 		size_t index_offset = 0;
-		for(size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+		{
 			int fv = shapes[s].mesh.num_face_vertices[f];
 
 			// Loop over vertices in the face.
-			for(size_t v = 0; v < fv; v++) {
+			for (size_t v = 0; v < fv; v++)
+			{
 				// access to vertex
 				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 				tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
@@ -52,9 +57,9 @@ Mesh *loadMesh(const string &modelFile)
 				// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
 				// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 				// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
-				vertices[index_offset + v].set3f(VERTEX_POSITION, vx, vy, vz);
-				vertices[index_offset + v].set3f(VERTEX_NORMAL, nx, ny, nz);
-				vertices[index_offset + v].set2f(VERTEX_TEX_COORD, tx, ty);
+				vertices[index_offset + v].set3f(VertexAttribute::Position, vx, vy, vz);
+				vertices[index_offset + v].set3f(VertexAttribute::Normal, nx, ny, nz);
+				vertices[index_offset + v].set2f(VertexAttribute::TexCoord, tx, ty);
 			}
 			index_offset += fv;
 
@@ -62,8 +67,12 @@ Mesh *loadMesh(const string &modelFile)
 			shapes[s].mesh.material_ids[f];
 		}
 
-		return new Mesh(vertices, numVertices);
-	}
+		VertexBufferDesc vertexBufferDesc;
+		vertexBufferDesc.vertices = &vertices;
+		vertexBufferDesc.vertexCount = vertexCount;
+		m_vertexBuffer = CreateNew<VertexBuffer>(vertexBufferDesc);
 
-	return nullptr;
+		return true;
+	}
+	return true;
 }

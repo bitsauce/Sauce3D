@@ -6,89 +6,88 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Pixmap.h>
+#include <Sauce/Graphics/GraphicsDeviceObjectDesc.h>
+#include <Sauce/Utils/FileSystemUtils.h>
 
 BEGIN_SAUCE_NAMESPACE
 
-// Texture filtering
 enum class TextureFiltering : uint32
 {
-	NEAREST = GL_NEAREST,
-	LINEAR = GL_LINEAR
+	Nearest,
+	Linear
 };
 
-// Texture wrapping
 enum class TextureWrapping : uint32
 {
-	CLAMP_TO_BORDER = GL_CLAMP_TO_BORDER,
-	CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
-	REPEAT = GL_REPEAT,
-	MIRRORED_REPEAT = GL_MIRRORED_REPEAT
+	ClampToBorder,
+	ClampToEdge,
+	Repeat,
+	MirroredRepeat
 };
 
-class SAUCE_API Texture2D
+struct SAUCE_API Texture2DDeviceObject
+{
+	virtual ~Texture2DDeviceObject() { }
+
+	uint32           width       = 0;
+	uint32           height      = 0;
+	TextureFiltering filtering   = TextureFiltering::Nearest;
+	TextureWrapping  wrapping    = TextureWrapping::ClampToBorder;
+	PixelFormat      pixelFormat = PixelFormat();
+	bool             hasMipmaps  = false;
+};
+
+struct SAUCE_API Texture2DDesc : public GraphicsDeviceObjectDesc
+{
+	string           filePath  = "";
+	Pixmap*          pixmap    = nullptr;
+	TextureFiltering filtering = TextureFiltering::Nearest;
+	TextureWrapping  wrapping  = TextureWrapping::ClampToEdge;
+	bool             mipmaps   = false;
+};
+
+class SAUCE_API Texture2D final : public SauceObject
 {
 	friend class RenderTarget2D;
 	friend class GraphicsContext;
 	friend class Shader;
 public:
+	SAUCE_REF_TYPE(Texture2D);
+
 	Texture2D();
-	virtual ~Texture2D();
+	~Texture2D();
+
+	bool initialize(Texture2DDesc textureDesc);
 
 	// Mipmapping
-	void enableMipmaps();
-	void disableMipmaps();
-	bool isMipmapsEnabled() const;
+	//void enableMipmaps();
+	//void disableMipmaps();
+	//bool isMipmapsEnabled() const;
 
-	void setFiltering(const TextureFiltering filter);
+	void setFiltering(const TextureFiltering filtering);
 	TextureFiltering getFiltering() const;
 
 	void setWrapping(const TextureWrapping wrapping);
 	TextureWrapping getWrapping() const;
 
 	// Size
-	uint getWidth() const;
-	uint getHeight() const;
+	uint32 getWidth() const;
+	uint32 getHeight() const;
 	Vector2I getSize() const { return Vector2I(getWidth(), getHeight()); }
 
 	// Texture data functions
-	virtual Pixmap getPixmap() const = 0;
-	virtual void updatePixmap(const Pixmap &pixmap) = 0;
-	virtual void updatePixmap(const uint x, const uint y, const Pixmap &pixmap) = 0;
-	virtual void clear() = 0;
+	Pixmap getPixmap() const;
+	void updatePixmap(const Pixmap &pixmap);
+	void updatePixmap(const uint32 x, const uint32 y, const Pixmap &pixmap);
+	void clear();
 
-	void exportToFile(string path);
-
-protected:
-	virtual void updateFiltering() = 0;
-
-	TextureFiltering m_filter;
-	TextureWrapping m_wrapping;
-
-	bool m_mipmaps;
-	bool m_mipmapsGenerated;
-
-	uint m_width;
-	uint m_height;
-	PixelFormat m_pixelFormat;
-};
-
-class TextureResourceDesc : public ResourceDesc
-{
-public:
-	TextureResourceDesc(const string &name, const string &path, const bool premultiplyAlpha) :
-		ResourceDesc(ResourceType::RESOURCE_TYPE_TEXTURE, name),
-		m_premultiplyAlpha(premultiplyAlpha),
-		m_path(path)
-	{
-	}
-
-	void *create() const;
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const Texture2DRef& texture);
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture);
 
 private:
-	const bool m_premultiplyAlpha;
-	const string m_path;
+	GraphicsContext* m_graphicsContext;
+	Texture2DDeviceObject* m_deviceObject;
 };
+SAUCE_REF_TYPE_TYPEDEFS(Texture2D);
 
 END_SAUCE_NAMESPACE
-
-template class SAUCE_API std::shared_ptr<sauce::Texture2D>;

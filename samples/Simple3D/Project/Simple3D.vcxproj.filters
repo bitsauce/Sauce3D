@@ -7,22 +7,18 @@
     <ClCompile Include="..\Source\Lights.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Data">
+    <Filter Include="Assets">
       <UniqueIdentifier>{dcf658a8-c693-4a06-bb40-ebd90fb1bee8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Data\Default.frag">
-      <Filter>Data</Filter>
+    <None Include="..\..\..\projects\Sauce3D.ruleset" />
+    <None Include="..\Assets\Phong.frag">
+      <Filter>Assets</Filter>
     </None>
-    <None Include="..\Data\Default.vert">
-      <Filter>Data</Filter>
+    <None Include="..\Assets\Phong.vert">
+      <Filter>Assets</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="..\Data\Resources.xml">
-      <Filter>Data</Filter>
-    </Xml>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Camera.h" />

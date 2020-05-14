@@ -27,16 +27,16 @@ public:
 
 	enum class SpriteSortMode : uint32
 	{
-		BACK_TO_FRONT,
-		DEFERRED,
-		FRONT_TO_BACK,
-		IMMEDIATE,
-		TEXTURE
+		BackToFront,
+		Deferred,
+		FrontToBack,
+		Immediate,
+		Texture
 	};
 
 	struct State
 	{
-		State(const SpriteSortMode mode=SpriteSortMode::DEFERRED, const BlendState blendState=BlendPreset::PRESET_ALPHA_BLEND, const Matrix4 &transformationMatix=Matrix4(), shared_ptr<Shader> shader=nullptr) :
+		State(const SpriteSortMode mode=SpriteSortMode::Deferred, const BlendState blendState=BlendPreset::AlphaBlend, const Matrix4 &transformationMatix=Matrix4(), ShaderRef shader=nullptr) :
 			mode(mode),
 			blendState(blendState),
 			transformationMatix(transformationMatix),
@@ -47,7 +47,7 @@ public:
 		SpriteSortMode mode;
 		BlendState blendState;
 		Matrix4 transformationMatix;
-		shared_ptr<Shader> shader;
+		ShaderRef shader;
 	};
 
 	void begin(GraphicsContext *graphicsContext, const State &state = State());
@@ -65,7 +65,7 @@ private:
 	State m_state;
 
 	// Vertex & index buffers
-	Vertex *m_vertices;
+	VertexArray m_vertices;
 	uint *m_indices;
 	Sprite *m_sprites;
 	uint m_spriteCount;

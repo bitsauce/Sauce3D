@@ -6,6 +6,9 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Graphics/Shader.h>
+#include <Sauce/Graphics/Texture.h>
+#include <Sauce/Graphics/RenderTarget.h>
+#include <Sauce/Graphics/VertexBuffer.h>
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/TextureRegion.h>
 
@@ -22,14 +25,44 @@ class IndexBuffer;
  */
 enum class PrimitiveType : uint32
 {
-	// TODO: Remove OpenGL dependency
-	PRIMITIVE_POINTS = GL_POINTS,					///< Points. 1 vertex per primitive.
-	PRIMITIVE_LINES = GL_LINES,						///< Lines. 2 vertex per primitive.
-	PRIMITIVE_LINE_STRIP = GL_LINE_STRIP,			///< Line strip. 2 vertex for the first primitive, 1 for the next.
-	PRIMITIVE_LINE_LOOP = GL_LINE_LOOP,				///< Line loop. n lines
-	PRIMITIVE_TRIANGLES = GL_TRIANGLES,				///< Triangles. 3 vertex per primitive.
-	PRIMITIVE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP,	///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
-	PRIMITIVE_TRIANGLE_FAN = GL_TRIANGLE_FAN		///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
+	Points,        ///< Points. 1 vertex per primitive.
+	Lines,         ///< Lines. 2 vertex per primitive.
+	LineStrip,     ///< Line strip. 2 vertex for the first primitive, 1 for the next.
+	LineLoop,      ///< Line loop. n lines
+	Triangles,     ///< Triangles. 3 vertex per primitive.
+	TriangleStrip, ///< Triangle strip. 3 vertex for the first primitive, 1 vertex for the next.
+	TriangleFan    ///< Triangle fan. 3 vertex for the first primitive, 1 vertex for the next.
+};
+
+/**
+ * Clearing buffer mask.
+ * Used for selecting how to clear the backbuffer.
+ */
+enum class BufferMask : uint32
+{
+	Color   = 1 << 0,          ///< %Color buffer
+	Depth   = 1 << 1,          ///< Depth buffer
+	Stencil = 1 << 2           ///< Stencil buffer
+};
+ENUM_CLASS_ADD_BITWISE_OPERATORS(BufferMask);
+
+/**
+  * Graphics capabilites.
+  * For enabling and disabling certain rendering options.
+  */
+enum class Capability : uint32
+{
+	Blend,                  ///< Back buffer blending
+	DepthTest,              ///< Depth testing
+	FaceCulling,            ///< Back face culling
+	LineSmoothing,          ///< Smooth lines
+	PolygonSmoothing,       ///< Smooth polygons
+	Multisample,            ///< Multisample?
+	Texture1D,              ///< 1D textures
+	Texture2D,              ///< 2D textures
+	Texture3D,              ///< 3D textures
+	Vsync,                  ///< VSync
+	Wireframe               ///< Wireframe
 };
 
 /**
@@ -39,9 +72,16 @@ class SAUCE_API GraphicsContext
 {
 	friend class Game;
 	friend class Window;
-public:
 
-	// State
+protected:
+	GraphicsContext();
+	virtual ~GraphicsContext();
+
+	virtual Window* createWindow(const string& title, const int x, const int y, const int w, const int h, const Uint32 flags) = 0;
+
+public:
+	static GraphicsContext* GetContext();
+
 	struct State
 	{
 		State()
@@ -49,7 +89,7 @@ public:
 			, height(0)
 			, texture(nullptr)
 			, shader(nullptr)
-			, blendState(BlendPreset::PRESET_ALPHA_BLEND)
+			, blendState(BlendPreset::AlphaBlend)
 			, renderTarget(nullptr)
 		{
 			transformationMatrixStack.push(Matrix4());
@@ -57,10 +97,10 @@ public:
 
 		uint width;
 		uint height;
-		shared_ptr<Texture2D> texture;
-		shared_ptr<Shader> shader;
+		Texture2DRef texture;
+		ShaderRef shader;
 		BlendState blendState;
-		RenderTarget2D *renderTarget;
+		RenderTarget2DRef renderTarget;
 		stack<Matrix4> transformationMatrixStack;
 		Matrix4 projectionMatrix;
 	};
@@ -70,29 +110,18 @@ public:
 	void popState();
 
 	/**
-	 * Clearing buffer mask.
-	 * Used for selecting how to clear the backbuffer.
-	 */
-	enum BufferMask
-	{
-		COLOR_BUFFER = GL_COLOR_BUFFER_BIT,		///< %Color buffer
-		DEPTH_BUFFER = GL_DEPTH_BUFFER_BIT,		///< Depth buffer
-		STENCIL_BUFFER = GL_STENCIL_BUFFER_BIT	///< Stencil buffer
-	};
-
-	/**
 	 * Sets a render target. This means that everything drawn after this function call
 	 * will be rendered to the given \p renderTarget instead of the screen.
 	 * TODO: Implement a render target stack.
 	 * \param renderTarget The target buffer to render to.
 	 */
-	void pushRenderTarget(RenderTarget2D *renderTarget);
+	void pushRenderTarget(RenderTarget2DRef renderTarget);
 	void popRenderTarget();
 
 	/**
 	 * Get current render target.
 	 */
-	RenderTarget2D *getRenderTarget() const
+	RenderTarget2DRef getRenderTarget() const
 	{
 		return m_stateStack.top().renderTarget;
 	}
@@ -124,24 +153,24 @@ public:
 	 * applied to it.
 	 * \param texture Texture to apply to the primitives.
 	 */
-	void setTexture(shared_ptr<Texture2D> texture);
+	void setTexture(Texture2DRef texture);
 
 	/**
 	 * Gets the current texture.
 	 */
-	shared_ptr<Texture2D> getTexture() const;
+	Texture2DRef getTexture() const;
 
 	/**
 	 * Set shader. Every vertex and fragment rendered after this will
 	 * have the effect of \p shader applied to them.
 	 * \param shader Shader to render the primitves with.
 	 */
-	void setShader(shared_ptr<Shader> shader);
+	void setShader(ShaderRef shader);
 
 	/**
 	 * Returns the current shader.
 	 */
-	shared_ptr<Shader> getShader() const;
+	ShaderRef getShader() const;
 
 	/**
 	 * Set blend state. Every pixel rendered after this will use a 
@@ -284,46 +313,15 @@ public:
 		return m_context;
 	}
 
-	Vertex *getVertices(const uint vertexCount);
-
-protected:
-	GraphicsContext();
-	virtual ~GraphicsContext();
-
-	void *m_context;
-	Window *m_window;
-
-	stack<State> m_stateStack;
-	State *m_currentState;
-
-	vector<Vertex> m_vertices; // Vertices for when needed
-
-	static shared_ptr<Shader> s_defaultShader;
-	static shared_ptr<Texture2D> s_defaultTexture;
+	/**
+	 * Fast way to draw with a temporary vertex array
+	 */
+	VertexArray& getTempVertexArray(const uint32 vertexCount);
 
 public:
-	/**
-	 *  Pure virtual backend dependent functions
-	 */
-	 
-	/**
-	  * Graphics capabilites.
-	  * For enabling and disabling certain rendering options.
-	  */
-	enum class Capability : uint32
-	{
-		BLEND,					///< Back buffer blending
-		DEPTH_TEST,				///< Depth testing
-		FACE_CULLING,			///< Back face culling
-		LINE_SMOOTH,			///< Smooth lines
-		POLYGON_SMOOTH,			///< Smooth polygons
-		MULTISAMPLE,			///< Multisample?
-		TEXTURE_1D,				///< 1D textures
-		TEXTURE_2D,				///< 2D textures
-		TEXTURE_3D,				///< 3D textures
-		VSYNC,
-		WIREFRAME
-	};
+	/************************************************
+	 *  Pure virtual backend dependent functions    *
+	 ************************************************/
 
 	/**
 	 * Enables the capability \p cap.
@@ -338,6 +336,11 @@ public:
 	virtual void disable(const Capability cap) = 0;
 
 	/**
+	 * Returns true if capability \p cap is enabled
+	 */
+	virtual bool isEnabled(const Capability cap) = 0;
+
+	/**
 	 * Enable scissor testing
 	 */
 	virtual void enableScissor(const int x, const int y, const int w, const int h) = 0;
@@ -346,11 +349,6 @@ public:
 	 * Disable scissor testing
 	 */
 	virtual void disableScissor() = 0;
-
-	/**
-	 * Returns true if capability \p cap is enabled
-	 */
-	virtual bool isEnabled(const Capability cap) = 0;
 
 	/**
 	 * Set rendering point size
@@ -372,7 +370,7 @@ public:
 	 * \param mask Decides what channels in the back buffer to clear.
 	 * \param fillColor Decides what value to clear to.
 	 */
-	virtual void clear(const uint mask, const Color &fillColor = Color(0, 0, 0, 0)) = 0;
+	virtual void clear(const uint32 clearMask, const Color& clearColor = Color(0, 0, 0, 0), const double clearDepth = 1.0, const int32 clearStencil = 0) = 0;
 
 	/**
 	 * Saves a screen shot of the back buffer to \p path as a PNG file.
@@ -395,7 +393,7 @@ public:
 	 * \param indices Array of indices.
 	 * \param indexCount Number of indices.
 	 */
-	virtual void drawIndexedPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount) = 0;
+	virtual void drawIndexedPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount, const uint* indices, const uint indexCount) = 0;
 
 	/**
 	 * Renders an indexed primitive to the screen using vertex and index buffers.
@@ -403,7 +401,7 @@ public:
 	 * \param vbo Vertex buffer object.
 	 * \param ibo Index buffer object.
 	 */
-	virtual void drawIndexedPrimitives(const PrimitiveType type, const VertexBuffer *vbo, const IndexBuffer *ibo) = 0;
+	virtual void drawIndexedPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer, const IndexBufferRef indexBuffer) = 0;
 
 	/**
 	 * Renders primitives to the screen.
@@ -411,24 +409,86 @@ public:
 	 * \param vertices Array of vertices to render.
 	 * \param vertexCount Number of vertices to render.
 	 */
-	virtual void drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount) = 0;
+	virtual void drawPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount) = 0;
 
 	/**
 	 * Renders primitives to the screen.
 	 * \param type Types of primitives to render.
 	 * \param vbo Vertex buffer object.
 	 */
-	virtual void drawPrimitives(const PrimitiveType type, const VertexBuffer *vbo) = 0;
-
-	virtual Texture2D *createTexture(const Pixmap &pixmap) = 0;
-	Texture2D *createTexture(const uint width, const uint height, const PixelFormat &format, const uint8_t* data=0);
-	Texture2D *createTexture(const Texture2D &other);
-
-	virtual Shader *createShader(const string &vertexSource, const string &fragmentSource, const string &geometrySource) = 0;
-	virtual RenderTarget2D *createRenderTarget(const uint width, const uint height, const uint targetCount = 1, const PixelFormat &fmt = PixelFormat()) = 0;
+	virtual void drawPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer) = 0;
 
 protected:
-	virtual Window *createWindow(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags) = 0;
+	/**
+	 * Texture2D internal API
+	 */
+	friend class Texture2D;
+	void texture2D_getDeviceObject(Texture2DRef texture, Texture2DDeviceObject*& outShaderDeviceObject);
+	virtual void texture2D_createDeviceObject(Texture2DDeviceObject*& textureDeviceObject, const string& deviceObjectName) = 0;
+	virtual void texture2D_destroyDeviceObject(Texture2DDeviceObject*& outTextureDeviceObject) = 0;
+	virtual void texture2D_copyToGPU(Texture2DDeviceObject* textureDeviceObject, const PixelFormat pixelFormat, const uint32 width, const uint32 height, uint8* textureData) = 0;
+	virtual void texture2D_copyToCPUReadable(Texture2DDeviceObject* textureDeviceObject, uint8** outTextureData) = 0;
+	virtual void texture2D_updateSubregion(Texture2DDeviceObject* textureDeviceObject, const uint32 x, const uint32 y, const uint32 subRegionWidth, const uint32 subRegionHeight, uint8* textureData) = 0;
+	virtual void texture2D_updateFiltering(Texture2DDeviceObject* textureDeviceObject, const TextureFiltering filtering) = 0;
+	virtual void texture2D_updateWrapping(Texture2DDeviceObject* textureDeviceObject, const TextureWrapping wrapping) = 0;
+	virtual void texture2D_clearTexture(Texture2DDeviceObject* textureDeviceObject) = 0;
+	
+	/**
+	 * Shader internal API
+	 */
+	friend class Shader;
+	void shader_getDeviceObject(ShaderRef shader, ShaderDeviceObject*& outShaderDeviceObject);
+	virtual void shader_createDeviceObject(ShaderDeviceObject*& shaderDeviceObject, const string& deviceObjectName) = 0;
+	virtual void shader_destroyDeviceObject(ShaderDeviceObject*& shaderDeviceObject) = 0;
+	virtual void shader_compileShader(ShaderDeviceObject* shaderDeviceObject, const string& vsSource, const string& psSource, const string& gsSource) = 0;
+	virtual void shader_setUniform(ShaderDeviceObject* shaderDeviceObject, const string& uniformName, const Datatype datatype, const uint32 numComponentsPerElement, const uint32 numElements, const void* data) = 0;
+	virtual void shader_setSampler2D(ShaderDeviceObject* shaderDeviceObject, const string& uniformName, Texture2DRef texture) = 0;
+
+	/**
+	 * RenderTarget2D internal API
+	 */
+	friend class RenderTarget2D;
+	void renderTarget2D_getDeviceObject(RenderTarget2DRef renderTarget, RenderTarget2DDeviceObject*& outRenderTargetDeviceObject);
+	virtual void renderTarget2D_createDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject, const string& deviceObjectName) = 0;
+	virtual void renderTarget2D_destroyDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject) = 0;
+	virtual void renderTarget2D_initializeRenderTarget(RenderTarget2DDeviceObject* renderTargetDeviceObject, const Texture2DRef* targetTextures, const uint32 targetCount) = 0;
+	virtual void renderTarget2D_bindRenderTarget(RenderTarget2DDeviceObject* renderTargetDeviceObject) = 0;
+
+	/**
+	 * VertexBuffer internal API
+	 */
+	friend class VertexBuffer;
+	void vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject);
+	virtual void vertexBuffer_createDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject, const string& deviceObjectName) = 0;
+	virtual void vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject) = 0;
+	virtual void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const VertexArray& vertices, const uint32 vertexCount) = 0;
+	virtual void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const VertexArray& vertices, const uint32 vertexCount) = 0;
+	virtual void vertexBuffer_bindVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject) = 0;
+
+	/**
+	 * IndexBuffer internal API
+	 */
+	friend class IndexBuffer;
+	void indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, IndexBufferDeviceObject*& outIndexBufferDeviceObject);
+	virtual void indexBuffer_createDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject, const string& deviceObjectName) = 0;
+	virtual void indexBuffer_destroyDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject) = 0;
+	virtual void indexBuffer_initializeIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const BufferUsage bufferUsage, const uint32* indices, const uint32 indexCount) = 0;
+	virtual void indexBuffer_modifyIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const uint32 startIndex, const uint32* indices, const uint32 indexCount) = 0;
+	virtual void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) = 0;
+
+protected:
+	void* m_context;
+	Window* m_window;
+
+	stack<State> m_stateStack;
+	State* m_currentState;
+
+	/** We keep a list of vertices for when we might need it */
+	VertexArray m_tempVertices;
+
+	static ShaderRef s_defaultShader;
+	static Texture2DRef s_defaultTexture;
+	static GraphicsContext* s_this;
 };
 
 END_SAUCE_NAMESPACE

@@ -17,7 +17,7 @@ public:
 	TextureAtlas(GraphicsContext *graphicsContext, const int width = 2048, const int height = 2048, const int border = 1);
 	~TextureAtlas();
 
-	void add(const string &key, Resource<Texture2D> texture);
+	//void add(const string &key, Resource<Texture2D> texture);
 	void add(const string &key, const Pixmap &pixmap);
 
 	TextureRegion get(const string &key) const;
@@ -27,7 +27,7 @@ public:
 		return get(key, Vector2F(u0, v0), Vector2F(u1, v1));
 	}
 
-	shared_ptr<Texture2D> getTexture() const
+	Texture2DRef getTexture() const
 	{
 		return m_texture;
 	}
@@ -63,7 +63,7 @@ public:
 
 private:
 	// Atlas texture
-	shared_ptr<Texture2D> m_texture;
+	Texture2DRef m_texture;
 
 	// Atlas properties
 	int m_width, m_height;

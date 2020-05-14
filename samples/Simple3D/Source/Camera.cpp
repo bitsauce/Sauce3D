@@ -31,22 +31,22 @@ float wrapAngle(float angle) {
 
 void Camera::onMouseEvent(MouseEvent *e)
 {
-	switch(e->getType())
+	switch((MouseEventType)e->getType())
 	{
-		case EVENT_MOUSE_DOWN:
+		case MouseEventType::Down:
 		{
 			m_dragging = true;
 			m_previousMousePosition = e->getPosition();
 		}
 		break;
 
-		case EVENT_MOUSE_UP:
+		case MouseEventType::Up:
 		{
 			m_dragging = false;
 		}
 		break;
 
-		case EVENT_MOUSE_MOVE:
+		case MouseEventType::Move:
 		{
 			if(m_dragging)
 			{
@@ -64,7 +64,7 @@ void Camera::onMouseEvent(MouseEvent *e)
 
 void Camera::onKeyEvent(KeyEvent *e)
 {
-	const bool pressed = e->getType() != EVENT_KEY_UP;
+	const bool pressed = (KeyEventType)e->getType() != KeyEventType::Up;
 	switch(e->getKeycode())
 	{
 		case SAUCE_KEY_W: m_inputState.forward = pressed; break;

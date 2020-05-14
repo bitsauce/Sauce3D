@@ -120,17 +120,17 @@ public:
 	{
 		switch(e->getType())
 		{
-			case (uint32)KeyEventType::DOWN:
-			case (uint32)KeyEventType::UP:
-			case (uint32)KeyEventType::REPEAT: onKeyEvent(static_cast<KeyEvent*>(e)); break;
-			case (uint32)MouseEventType::UP:
-			case (uint32)MouseEventType::DOWN:
-			case (uint32)MouseEventType::MOVE:
-			case (uint32)MouseEventType::WHEEL: onMouseEvent(static_cast<MouseEvent*>(e)); break;
-			case (uint32)ControllerButtonEventType::UP:
-			case (uint32)ControllerButtonEventType::DOWN:
-			case (uint32)ControllerButtonEventType::REPEAT:
-			case (uint32)CoreEventType::CONTROLLER_AXIS: onControllerEvent(static_cast<InputEvent*>(e)); break;
+			case (uint32)KeyEventType::Down:
+			case (uint32)KeyEventType::Up:
+			case (uint32)KeyEventType::Repeat: onKeyEvent(static_cast<KeyEvent*>(e)); break;
+			case (uint32)MouseEventType::Up:
+			case (uint32)MouseEventType::Down:
+			case (uint32)MouseEventType::Move:
+			case (uint32)MouseEventType::Wheel: onMouseEvent(static_cast<MouseEvent*>(e)); break;
+			case (uint32)ControllerButtonEventType::Up:
+			case (uint32)ControllerButtonEventType::Down:
+			case (uint32)ControllerButtonEventType::Repeat:
+			case (uint32)CoreEventType::ControllerAxis: onControllerEvent(static_cast<InputEvent*>(e)); break;
 		}
 	}
 
@@ -146,9 +146,9 @@ public:
 	{
 		switch(e->getType())
 		{
-			case (uint32)KeyEventType::DOWN: onKeyDown(e); break;
-			case (uint32)KeyEventType::UP: onKeyUp(e); break;
-			case (uint32)KeyEventType::REPEAT: onKeyRepeat(e); break;
+			case (uint32)KeyEventType::Down: onKeyDown(e); break;
+			case (uint32)KeyEventType::Up: onKeyUp(e); break;
+			case (uint32)KeyEventType::Repeat: onKeyRepeat(e); break;
 		}
 	}
 
@@ -208,10 +208,10 @@ public:
 	{
 		switch(e->getType())
 		{
-			case (uint32)MouseEventType::UP: onMouseUp(e); break;
-			case (uint32)MouseEventType::DOWN: onMouseDown(e); break;
-			case (uint32)MouseEventType::MOVE: onMouseMove(e); break;
-			case (uint32)MouseEventType::WHEEL: onMouseWheel(e); break;
+			case (uint32)MouseEventType::Up: onMouseUp(e); break;
+			case (uint32)MouseEventType::Down: onMouseDown(e); break;
+			case (uint32)MouseEventType::Move: onMouseMove(e); break;
+			case (uint32)MouseEventType::Wheel: onMouseWheel(e); break;
 		}
 	}
 
@@ -272,10 +272,10 @@ public:
 	{
 		switch(e->getType())
 		{
-			case (uint32)ControllerButtonEventType::DOWN:
-			case (uint32)ControllerButtonEventType::UP:
-			case (uint32)ControllerButtonEventType::REPEAT: onControllerButton(static_cast<ControllerButtonEvent*>(e)); break;
-			case (uint32)CoreEventType::CONTROLLER_AXIS: onControllerAxis(static_cast<ControllerAxisEvent*>(e)); break;
+			case (uint32)ControllerButtonEventType::Down:
+			case (uint32)ControllerButtonEventType::Up:
+			case (uint32)ControllerButtonEventType::Repeat: onControllerButton(static_cast<ControllerButtonEvent*>(e)); break;
+			case (uint32)CoreEventType::ControllerAxis: onControllerAxis(static_cast<ControllerAxisEvent*>(e)); break;
 		}
 	}
 
@@ -302,25 +302,25 @@ public:
 		// Find and call the specific event function
 		switch(e->getType())
 		{
-			case (uint32)GameEventType::START: onStart(static_cast<GameEvent*>(e)); break;
-			case (uint32)GameEventType::END: onEnd(static_cast<GameEvent*>(e)); break;
-			case (uint32)CoreEventType::TICK: onTick(static_cast<TickEvent*>(e)); break;
-			case (uint32)CoreEventType::DRAW: onDraw(static_cast<DrawEvent*>(e)); break;
-			case (uint32)StepEventType::BEGIN: onStepBegin(static_cast<StepEvent*>(e)); break;
-			case (uint32)StepEventType::END: onStepEnd(static_cast<StepEvent*>(e)); break;
-			case (uint32)CoreEventType::TEXT_INPUT: onTextInput(static_cast<TextEvent*>(e)); break;
-			case (uint32)WindowEventType::SIZE_CHANGED: onWindowSizeChanged(static_cast<WindowEvent*>(e)); break;
-			case (uint32)KeyEventType::DOWN:
-			case (uint32)KeyEventType::UP:
-			case (uint32)KeyEventType::REPEAT:
-			case (uint32)MouseEventType::UP:
-			case (uint32)MouseEventType::DOWN:
-			case (uint32)MouseEventType::MOVE:
-			case (uint32)MouseEventType::WHEEL:
-			case (uint32)ControllerButtonEventType::UP:
-			case (uint32)ControllerButtonEventType::DOWN:
-			case (uint32)ControllerButtonEventType::REPEAT:
-			case (uint32)CoreEventType::CONTROLLER_AXIS: onInputEvent(static_cast<InputEvent*>(e)); break;
+			case (uint32)GameEventType::Start: onStart(static_cast<GameEvent*>(e)); break;
+			case (uint32)GameEventType::End: onEnd(static_cast<GameEvent*>(e)); break;
+			case (uint32)CoreEventType::Tick: onTick(static_cast<TickEvent*>(e)); break;
+			case (uint32)CoreEventType::Draw: onDraw(static_cast<DrawEvent*>(e)); break;
+			case (uint32)StepEventType::Begin: onStepBegin(static_cast<StepEvent*>(e)); break;
+			case (uint32)StepEventType::End: onStepEnd(static_cast<StepEvent*>(e)); break;
+			case (uint32)CoreEventType::TextInput: onTextInput(static_cast<TextEvent*>(e)); break;
+			case (uint32)WindowEventType::SizeChanged: onWindowSizeChanged(static_cast<WindowEvent*>(e)); break;
+			case (uint32)KeyEventType::Down:
+			case (uint32)KeyEventType::Up:
+			case (uint32)KeyEventType::Repeat:
+			case (uint32)MouseEventType::Up:
+			case (uint32)MouseEventType::Down:
+			case (uint32)MouseEventType::Move:
+			case (uint32)MouseEventType::Wheel:
+			case (uint32)ControllerButtonEventType::Up:
+			case (uint32)ControllerButtonEventType::Down:
+			case (uint32)ControllerButtonEventType::Repeat:
+			case (uint32)CoreEventType::ControllerAxis: onInputEvent(static_cast<InputEvent*>(e)); break;
 		}
 	}
 

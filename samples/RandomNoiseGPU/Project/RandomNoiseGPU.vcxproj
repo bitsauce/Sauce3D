@@ -43,18 +43,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>RandomNoiseGPU</TargetName>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\Binaries\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>RandomNoiseGPU</TargetName>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SAUCE_DEBUG;SAUCE_IMPORT;</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -68,6 +71,10 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)build\$(Platform)\$(Configuration)\*.dll" "$(TargetDir)"</Command>
+      <Outputs>$(TargetDir)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -76,9 +83,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\gl3w\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\3rdparty\SDL\include;$(ProjectDir)..\..\..\3rdparty\SDL_image;$(ProjectDir)..\..\..\3rdparty\SDL_mixer;$(ProjectDir)..\..\..\3rdparty\freetype\include;$(ProjectDir)..\..\..\3rdparty\openal\include;$(ProjectDir)..\..\..\3rdparty\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>CGF_IMPORT;</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,24 +100,29 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)build\$(Platform)\$(Configuration)\*.dll" "$(TargetDir)"</Command>
+      <Outputs>$(TargetDir)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\Data\Resources.xml" />
+    <None Include="..\Assets\Shaders\Fractal2D.frag" />
+    <None Include="..\Assets\Shaders\Fractal2D.vert" />
+    <None Include="..\Assets\Shaders\Fractal2D_Gradient.frag" />
+    <None Include="..\Assets\Shaders\Fractal2D_Gradient.vert" />
+    <None Include="..\Assets\Shaders\Noise.frag" />
+    <None Include="..\Assets\Shaders\Noise.vert" />
+    <None Include="..\Assets\Shaders\Simplex3D.frag" />
+    <None Include="..\Assets\Shaders\Simplex3D.vert" />
+    <None Include="..\Assets\Shaders\Voronoise.frag" />
+    <None Include="..\Assets\Shaders\Voronoise.vert" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Data\Shader\Fractal2D.frag" />
-    <None Include="..\Data\Shader\Fractal2D.vert" />
-    <None Include="..\Data\Shader\Fractal2D_Gradient.frag" />
-    <None Include="..\Data\Shader\Fractal2D_Gradient.vert" />
-    <None Include="..\Data\Shader\Noise.frag" />
-    <None Include="..\Data\Shader\Noise.vert" />
-    <None Include="..\Data\Shader\Voronoise.frag" />
-    <None Include="..\Data\Shader\Voronoise.vert" />
-    <None Include="..\Data\Shader\Simplex3D.frag" />
-    <None Include="..\Data\Shader\Simplex3D.vert" />
+    <Image Include="..\Assets\Images\BW_Gradient.png" />
+    <Image Include="..\Assets\Images\Gradient.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

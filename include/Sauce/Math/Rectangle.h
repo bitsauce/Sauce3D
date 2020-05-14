@@ -7,6 +7,8 @@
 #include <Sauce/Config.h>
 #include <Sauce/Math/Vector.h>
 
+BEGIN_SAUCE_NAMESPACE
+
 /** \brief A class which holds a 2 dimensional Rect
  *
  * The Rect class is a 2 dimensional (hence the 2) Rect.
@@ -190,3 +192,5 @@ typedef Rect<float> RectF;
 typedef Rect<double> RectD;
 typedef Rect<int> RectI;
 typedef Rect<uint> RectU;
+
+END_SAUCE_NAMESPACE

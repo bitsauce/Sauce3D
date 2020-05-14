@@ -144,8 +144,8 @@ private:
  * \param	...	Variable argument list to format \p message with
  */
 
-#define THROW(str, ...)                   throw Exception(RetCode::SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
-#define THROW_IF(cond, str, ...) if(cond) throw Exception(RetCode::SAUCE_RUNTIME_EXCEPTION, str, __VA_ARGS__)
+#define THROW(str, ...)                   throw Exception(RetCode::RuntimeException, str, __VA_ARGS__)
+#define THROW_IF(cond, str, ...) if(cond) throw Exception(RetCode::RuntimeException, str, __VA_ARGS__)
 
 END_SAUCE_NAMESPACE
 
@@ -813,12 +813,12 @@ private:
 
 struct SAUCE_API GameDesc
 {
-	string name                     = "DefaultGame";
-	string workingDirectory         = ".";
-	string organization             = "Sauce3D";
-	uint32_t flags                  = 0;
-	GraphicsBackend graphicsBackend = GraphicsBackend::SAUCE_OPENGL_3;
-	double deltaTime                = 1.0f / 30.0f;
+	string          name             = "DefaultGame";
+	string          workingDirectory = ".";
+	string          organization     = "Sauce3D";
+	uint32          flags            = 0;
+	GraphicsBackend graphicsBackend  = GraphicsBackend::OpenGL3;
+	double          deltaTime        = 1.0 / 30.0;
 };
 
 class ResourceManager;

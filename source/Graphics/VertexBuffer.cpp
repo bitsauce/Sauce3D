@@ -15,142 +15,126 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-VertexBuffer::VertexBuffer(const BufferUsage usage) :
-	m_format(),
-	m_usage(usage),
-	m_size(0)
+/*********************************************************************
+**	Vertex buffer													**
+**********************************************************************/
+
+VertexBuffer::VertexBuffer()
+	: m_graphicsContext(nullptr)
+	, m_deviceObject(nullptr)
 {
-	glGenBuffers(1, &m_id);
 }
 
 VertexBuffer::~VertexBuffer()
 {
-	glDeleteBuffers(1, &m_id);
+	m_graphicsContext->vertexBuffer_destroyDeviceObject(m_deviceObject);
 }
 
-void VertexBuffer::setData(const Vertex *vertices, const uint vertexCount)
+bool VertexBuffer::initialize(VertexBufferDesc vertexBufferDesc)
 {
-	// Get vertex data
-	m_format = vertices->getFormat();
-	char *vertexData = new char[vertexCount * m_format.getVertexSizeInBytes()];
-	for(uint i = 0; i < vertexCount; ++i)
+	// Get graphics context to use
+	if (vertexBufferDesc.graphicsContext)
 	{
-		vertices[i].getData(vertexData + i * m_format.getVertexSizeInBytes());
+		m_graphicsContext = vertexBufferDesc.graphicsContext;
+	}
+	else
+	{
+		m_graphicsContext = GraphicsContext::GetContext();
 	}
 
-	if(vertexCount > 0)
+	// Get debug name
+	if (vertexBufferDesc.debugName.empty())
 	{
-		// Upload vertex data
-		glBindBuffer(GL_ARRAY_BUFFER, m_id);
-		glBufferData(GL_ARRAY_BUFFER, vertexCount * m_format.getVertexSizeInBytes(), vertexData, (uint32)m_usage);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		static uint32 anonymousVertexBufferCount = 0;
+		vertexBufferDesc.debugName = "VertexBuffer_" + to_string(anonymousVertexBufferCount);
+		anonymousVertexBufferCount++;
 	}
 
-	delete[] vertexData;
+	// Create and initialize vertex buffer device object
+	m_graphicsContext->vertexBuffer_createDeviceObject(m_deviceObject, vertexBufferDesc.debugName);
+	if (vertexBufferDesc.vertices)
+	{
+		m_graphicsContext->vertexBuffer_initializeVertexBuffer(
+			m_deviceObject,
+			vertexBufferDesc.bufferUsage,
+			*vertexBufferDesc.vertices,
+			vertexBufferDesc.vertexCount
+		);
+	}
 
-	m_size = vertexCount;
+	return true;
+}
+
+void VertexBuffer::modifyData(const uint32 startIndex, const VertexArray& vertices, const uint vertexCount)
+{
+	if (m_deviceObject->bufferUsage == BufferUsage::Static)
+	{
+		LOG("VertexBuffer::modifyData(): Cannot modify a static vertex buffer");
+		return;
+	}
+
+	m_graphicsContext->vertexBuffer_modifyVertexBuffer(m_deviceObject, startIndex, vertices, vertexCount);
 }
 
 VertexFormat VertexBuffer::getVertexFormat() const
 {
-	return m_format;
+	return m_deviceObject->vertexFormat;
 }
 
-DynamicVertexBuffer::DynamicVertexBuffer() :
-	VertexBuffer(BufferUsage::Dynamic)
+uint32 VertexBuffer::getVertexCount() const
 {
+	return m_deviceObject->vertexCount;
 }
 
-DynamicVertexBuffer::DynamicVertexBuffer(const Vertex *vertices, const uint vertexCount) :
-	VertexBuffer(BufferUsage::Dynamic)
+/*********************************************************************
+**	Index buffer													**
+**********************************************************************/
+
+IndexBuffer::IndexBuffer()
+	: m_graphicsContext(nullptr)
+	, m_deviceObject(nullptr)
 {
-	setData(vertices, vertexCount);
-}
-
-void DynamicVertexBuffer::modifyData(const uint startIdx, Vertex *vertices, const uint vertexCount)
-{
-	if(!(m_format == vertices->getFormat())) return;
-
-	// Get vertex data
-	char *vertexData = new char[vertexCount * m_format.getVertexSizeInBytes()];
-	for(uint i = 0; i < vertexCount; ++i)
-	{
-		vertices[i].getData(vertexData + i * m_format.getVertexSizeInBytes());
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_id);
-	glBufferSubData(GL_ARRAY_BUFFER, startIdx * getVertexFormat().getVertexSizeInBytes(), vertexCount * getVertexFormat().getVertexSizeInBytes(), vertexData);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	delete[] vertexData;
-}
-
-StaticVertexBuffer::StaticVertexBuffer() :
-	VertexBuffer(BufferUsage::Static)
-{
-}
-
-StaticVertexBuffer::StaticVertexBuffer(const Vertex *vertices, const uint vertexCount) :
-	VertexBuffer(BufferUsage::Static)
-{
-	setData(vertices, vertexCount);
-}
-
-
-// -------------------------------------------------------------------------------------
-
-IndexBuffer::IndexBuffer(const BufferUsage usage)
-	: m_usage(usage)
-	, m_size(0)
-{
-	glGenBuffers(1, &m_id);
 }
 
 IndexBuffer::~IndexBuffer()
 {
-	glDeleteBuffers(1, &m_id);
 }
 
-void IndexBuffer::setData(const uint *indices, const uint indexCount)
+bool IndexBuffer::initialize(IndexBufferDesc indexBufferDesc)
 {
-	if(indexCount > 0)
+	// Get graphics context to use
+	if (indexBufferDesc.graphicsContext)
 	{
-		// Upload index data
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, (uint32)m_usage);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		m_graphicsContext = indexBufferDesc.graphicsContext;
 	}
-	
-	m_size = indexCount;
+	else
+	{
+		m_graphicsContext = GraphicsContext::GetContext();
+	}
+
+	// Get debug name
+	if (indexBufferDesc.debugName.empty())
+	{
+		static uint32 anonymousIndexBufferCount = 0;
+		indexBufferDesc.debugName = "IndexBuffer_" + to_string(anonymousIndexBufferCount);
+		anonymousIndexBufferCount++;
+	}
+
+	// Create and initialize index buffer device object
+	m_graphicsContext->indexBuffer_createDeviceObject(m_deviceObject, indexBufferDesc.debugName);
+	m_graphicsContext->indexBuffer_initializeIndexBuffer(
+		m_deviceObject,
+		indexBufferDesc.bufferUsage,
+		indexBufferDesc.indices,
+		indexBufferDesc.indexCount
+	);
+
+	return true;
 }
 
-DynamicIndexBuffer::DynamicIndexBuffer() :
-	IndexBuffer(BufferUsage::Dynamic)
+uint32 IndexBuffer::getIndexCount() const
 {
-}
-
-DynamicIndexBuffer::DynamicIndexBuffer(const uint *indices, const uint indexCount) :
-	IndexBuffer(BufferUsage::Dynamic)
-{
-	setData(indices, indexCount);
-}
-
-void DynamicIndexBuffer::modifyData(const uint startIdx, uint *indices, const uint indexCount)
-{
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, startIdx * sizeof(uint), indexCount * sizeof(uint), indices);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-StaticIndexBuffer::StaticIndexBuffer() :
-	IndexBuffer(BufferUsage::Static)
-{
-}
-
-StaticIndexBuffer::StaticIndexBuffer(const uint *indices, const uint indexCount) :
-	IndexBuffer(BufferUsage::Static)
-{
-	setData(indices, indexCount);
+	return m_deviceObject->indexCount;
 }
 
 END_SAUCE_NAMESPACE

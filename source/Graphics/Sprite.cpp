@@ -15,7 +15,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-Sprite::Sprite(shared_ptr<Texture2D> texture, const Rect<float> &rectangle, const Vector2F &origin, const float angle, const TextureRegion &region, const Color &color, const float depth, const Vector2F scale) :
+Sprite::Sprite(Texture2DRef texture, const Rect<float> &rectangle, const Vector2F &origin, const float angle, const TextureRegion &region, const Color &color, const float depth, const Vector2F scale) :
 	m_texture(texture),
 	m_textureRegion(region),
 	m_position(rectangle.position),
@@ -207,7 +207,7 @@ TextureRegion Sprite::getRegion() const
 	return m_textureRegion;
 }
 
-shared_ptr<Texture2D> Sprite::getTexture() const
+Texture2DRef Sprite::getTexture() const
 {
 	return m_texture;
 }
@@ -224,14 +224,14 @@ void Sprite::getVertices(Vertex *vertices, uint *indices, const uint indexOffset
 	for(int i = 0; i < 4; i++)
 	{
 		Vector2F pos = (mat * QUAD_VERTICES[i]).getXY();
-		vertices[i].set2f(VertexAttribute::VERTEX_POSITION, pos.x, pos.y);
-		vertices[i].set4ub(VertexAttribute::VERTEX_COLOR, m_color.getR(), m_color.getG(), m_color.getB(), m_color.getA());
+		vertices[i].set2f(VertexAttribute::Position, pos.x, pos.y);
+		vertices[i].set4ub(VertexAttribute::Color, m_color.getR(), m_color.getG(), m_color.getB(), m_color.getA());
 	}
 
-	vertices[0].set2f(VertexAttribute::VERTEX_TEX_COORD, m_textureRegion.uv0.x, m_textureRegion.uv0.y);
-	vertices[1].set2f(VertexAttribute::VERTEX_TEX_COORD, m_textureRegion.uv1.x, m_textureRegion.uv0.y);
-	vertices[2].set2f(VertexAttribute::VERTEX_TEX_COORD, m_textureRegion.uv0.x, m_textureRegion.uv1.y);
-	vertices[3].set2f(VertexAttribute::VERTEX_TEX_COORD, m_textureRegion.uv1.x, m_textureRegion.uv1.y);
+	vertices[0].set2f(VertexAttribute::TexCoord, m_textureRegion.uv0.x, m_textureRegion.uv0.y);
+	vertices[1].set2f(VertexAttribute::TexCoord, m_textureRegion.uv1.x, m_textureRegion.uv0.y);
+	vertices[2].set2f(VertexAttribute::TexCoord, m_textureRegion.uv0.x, m_textureRegion.uv1.y);
+	vertices[3].set2f(VertexAttribute::TexCoord, m_textureRegion.uv1.x, m_textureRegion.uv1.y);
 	
 	indices[0] = indexOffset + QUAD_INDICES[0];
 	indices[1] = indexOffset + QUAD_INDICES[1];

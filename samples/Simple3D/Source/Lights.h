@@ -25,9 +25,8 @@ struct PointLight
 	{
 	}
 
-	Vector3F position;
-	Vector3F color;
-	float radius;
+	Vector3F position; float _pad0;
+	Vector3F color; float radius;
 };
 
 struct SpotLight
