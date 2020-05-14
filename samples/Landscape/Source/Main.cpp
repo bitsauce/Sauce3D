@@ -3,7 +3,7 @@
 
 using namespace sauce;
 
-class MinimalGame : public Game
+class LandscapeGame : public Game
 {
 public:
 	/** 
@@ -56,18 +56,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	 * This function should typically not require modification.
 	 */
 	GameDesc desc;
-	desc.name = "Minimal Sample";
+	desc.name = "Landscape Sample";
 	desc.workingDirectory = "../Assets";
 	desc.flags = (uint32)EngineFlag::ResizableWindow;
 	desc.graphicsBackend = GraphicsBackend::OpenGL4;
 
-	MinimalGame game;
+	LandscapeGame game;
 	return game.run(desc);
 }
 #else
 int main()
 {
-	MinimalGame game;
+	LandscapeGame game;
 	return game.run();
 }
 #endif

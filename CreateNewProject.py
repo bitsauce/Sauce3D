@@ -45,7 +45,7 @@ def main():
     shutil.copyfile(os.path.join(source_dir, "Project", "Minimal.vcxproj"), proj_file)
 
     # Copy the rest of the project files
-    folders_to_copy = ["Source", "Assets", "Config"]
+    folders_to_copy = ["Source", "Config"]
     for folder in folders_to_copy:
         source_folder = os.path.join(source_dir, folder)
         target_folder = os.path.join(target_dir, folder)
