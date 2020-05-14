@@ -66,8 +66,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	GameDesc desc;
 	desc.name = "SDFFontRendering Sample";
 	desc.workingDirectory = "../Assets";
-	desc.flags = (uint32)EngineFlag::SAUCE_WINDOW_RESIZABLE;
-	desc.graphicsBackend = GraphicsBackend::SAUCE_OPENGL_3;
+	desc.flags = (uint32)EngineFlag::ResizableWindow;
+	desc.graphicsBackend = GraphicsBackend::OpenGL4;
 
 	SDFFontRenderingGame game;
 	return game.run(desc);

@@ -1080,6 +1080,7 @@ void OpenGLContext::texture2D_copyToCPUReadable(Texture2DDeviceObject* textureDe
 	const GLenum datatype = toPixelDatatype(pixelFormat.getDataType());
 
 	// Copy texture data to CPU-readable memory
+	*outTextureData = new uint8[textureDeviceObject->width * textureDeviceObject->height];
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, textureDeviceObject->id));
 	GL_CALL(glGetTexImage(
 		GL_TEXTURE_2D,

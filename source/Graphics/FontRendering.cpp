@@ -608,7 +608,7 @@ public:
 					glyphDesc = m_sharedData->getGlyphDesc(charcode);
 					if (!glyphDesc)
 					{
-						LOG("Tried to render glyph with charcode '%s', but no maching glyph descriptor was found", charcode);
+						LOG("Tried to render glyph with charcode '%i', but no maching glyph descriptor was found", charcode);
 						continue;
 					}
 				}

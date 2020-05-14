@@ -190,11 +190,11 @@ ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture)
 	if (!isNull)
 	{
 		Texture2DDesc textureDesc;
-		{
-			Pixmap pixmap;
-			in >> pixmap;
-			textureDesc.pixmap = &pixmap;
-		}
+
+		Pixmap pixmap;
+		in >> pixmap;
+		textureDesc.pixmap = &pixmap;
+
 		in >> *(uint32*)&textureDesc.filtering;
 		in >> *(uint32*)&textureDesc.wrapping;
 		texture = CreateNew<Texture2D>(textureDesc);
