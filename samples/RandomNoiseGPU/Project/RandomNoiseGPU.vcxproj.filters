@@ -4,45 +4,54 @@
     <ClCompile Include="..\Source\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Data">
+    <Filter Include="Assets">
       <UniqueIdentifier>{e0854144-82d1-4ba6-997e-4278e98406ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shaders">
+      <UniqueIdentifier>{41ae9cd0-dfe7-4e3f-a3f9-51049a846343}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Images">
+      <UniqueIdentifier>{a8332f3f-fca3-487c-bba5-75455db9ae6c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\Data\Resources.xml">
-      <Filter>Data</Filter>
-    </Xml>
+    <None Include="..\Assets\Shaders\Simplex3D.frag">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Simplex3D.vert">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Voronoise.frag">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Voronoise.vert">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Fractal2D.frag">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Fractal2D.vert">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Fractal2D_Gradient.frag">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Fractal2D_Gradient.vert">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Noise.frag">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\Shaders\Noise.vert">
+      <Filter>Assets\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Data\Shader\Simplex3D.frag">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Simplex3D.vert">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Noise.vert">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Noise.frag">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Fractal2D.frag">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Fractal2D.vert">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Voronoise.frag">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Voronoise.vert">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Fractal2D_Gradient.frag">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="..\Data\Shader\Fractal2D_Gradient.vert">
-      <Filter>Data</Filter>
-    </None>
+    <Image Include="..\Assets\Images\BW_Gradient.png">
+      <Filter>Assets\Images</Filter>
+    </Image>
+    <Image Include="..\Assets\Images\Gradient.png">
+      <Filter>Assets\Images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

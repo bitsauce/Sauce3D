@@ -61,7 +61,7 @@ bool RenderTarget2D::initialize(RenderTarget2DDesc renderTargetDesc)
 	{
 		// Allocate target textures
 		targetTextures = new Texture2DRef[renderTargetDesc.targetCount];
-		for (uint32 i = 0; i < m_deviceObject->targetCount; ++i)
+		for (uint32 i = 0; i < renderTargetDesc.targetCount; ++i)
 		{
 			Texture2DDesc textureDesc;
 			Pixmap pixmap(renderTargetDesc.width, renderTargetDesc.height, renderTargetDesc.pixelFormat);

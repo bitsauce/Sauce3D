@@ -682,6 +682,7 @@ void VertexArray::resize(const uint32 newVertexCount)
 		m_vertexCapacity = m_vertexCount = newVertexCount;
 		const uint32 newVertexDataSize = getVertexDataSize();
 		m_vertexArrayData = new uint8[newVertexDataSize];
+		memset(m_vertexArrayData, 0, newVertexDataSize);
 
 		// Copy previous vertex data
 		memcpy(m_vertexArrayData, prevVertexArrayData, prevVertexDataSize);
