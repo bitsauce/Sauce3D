@@ -492,14 +492,12 @@ class FontRendererImpl : public FontRenderer
 public:
 	FontRendererImpl()
 		: m_sharedData(nullptr)
-		, m_vertices(nullptr)
 		, m_indices(nullptr)
 	{
 	}
 
 	~FontRendererImpl()
 	{
-		delete[] m_vertices;
 		delete[] m_indices;
 	}
 
@@ -595,7 +593,6 @@ public:
 		{
 			m_extentsOfString = Vector2F::Zero;
 
-			delete[] m_vertices;
 			delete[] m_indices;
 			m_vertices = g_fontVertexFormat.createVertices(numChars * 4);
 			m_indices = new uint32[numChars * 6];
@@ -698,7 +695,7 @@ private:
 	
 	Vector2F m_extentsOfString;
 
-	Vertex* m_vertices;
+	VertexArray m_vertices;
 	uint32* m_indices;
 
 	static VertexFormat s_vertexFormat;

@@ -629,7 +629,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 	{
 		const string vertexShader =
 			"\n"
-			"in vec2 in_Position;\n"
+			"in vec3 in_Position;\n"
 			"in vec2 in_TexCoord;\n"
 			"in vec4 in_VertexColor;\n"
 			"\n"
@@ -640,7 +640,7 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 			"\n"
 			"void main()\n"
 			"{\n"
-			"	gl_Position = vec4(in_Position, 0.0, 1.0) * u_ModelViewProj;\n"
+			"	gl_Position = vec4(in_Position, 1.0) * u_ModelViewProj;\n"
 			"	v_TexCoord = in_TexCoord;\n"
 			"	v_VertexColor = in_VertexColor;\n"
 			"}\n";
@@ -676,6 +676,8 @@ Window *OpenGLContext::createWindow(const string &title, const int x, const int 
 		Texture2DDesc textureDesc;
 		textureDesc.debugName = "DefaultTexture";
 		textureDesc.pixmap = &pixmap;
+		textureDesc.wrapping = TextureWrapping::Repeat;
+		textureDesc.filtering = TextureFiltering::Nearest;
 		s_defaultTexture = CreateNew<Texture2D>(textureDesc);
 	}
 
@@ -852,30 +854,21 @@ void OpenGLContext::setupVertexAttributePointers(const VertexFormat& fmt)
 	}
 }
 
-void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount)
+void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, const VertexArray& vertices, const uint vertexCount, const uint* indices, const uint indexCount)
 {
 	// If there are no vertices to draw, do nothing
 	if(vertexCount == 0 || indexCount == 0) return;
 
 	setupContext();
 
-	// Get vertices and vertex data
-	VertexFormat fmt = vertices->getFormat();
-	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	char *vertexData = new char[vertexCount * vertexSizeInBytes];
-	for(uint i = 0; i < vertexCount; ++i)
-	{
-		vertices[i].getData(vertexData + i * vertexSizeInBytes);
-	}
-
-	// Bind buffers
+	// Bind buffers and upload vertex data
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, g_vbo));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertices.getVertexDataSize(), vertices.getVertexData(), GL_DYNAMIC_DRAW));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibo));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint), indices, GL_DYNAMIC_DRAW));
 
 	// Setup vertex attribute pointers
-	setupVertexAttributePointers(fmt);
+	setupVertexAttributePointers(vertices.getVertexFormat());
 
 	// Draw primitives
 	GL_CALL(glDrawElements(toPrimitiveType(primitiveType), indexCount, GL_UNSIGNED_INT, 0));
@@ -883,9 +876,6 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, con
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-
-	// Release vertex data
-	delete[] vertexData;
 }
 
 void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, const VertexBufferRef vertexBuffer, const IndexBufferRef indexBuffer)
@@ -927,37 +917,25 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, con
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
-void OpenGLContext::drawPrimitives(const PrimitiveType primitiveType, const Vertex *vertices, const uint vertexCount)
+void OpenGLContext::drawPrimitives(const PrimitiveType primitiveType, const VertexArray& vertices, const uint vertexCount)
 {
 	// If there are no vertices to draw, do nothing
 	if(vertexCount == 0) return;
 
 	setupContext();
 
-	// Get vertices and vertex data
-	const VertexFormat fmt = vertices->getFormat();
-	const int32 vertexSizeInBytes = fmt.getVertexSizeInBytes();
-	char *vertexData = new char[vertexCount * vertexSizeInBytes];
-	for(uint i = 0; i < vertexCount; ++i)
-	{
-		vertices[i].getData(vertexData + i * vertexSizeInBytes);
-	}
-
-	// Bind buffer
+	// Bind buffers and upload vertex data
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, g_vbo));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexSizeInBytes, vertexData, GL_DYNAMIC_DRAW));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertices.getVertexDataSize(), vertices.getVertexData(), GL_DYNAMIC_DRAW));
 
 	// Setup vertex attribute pointers
-	setupVertexAttributePointers(fmt);
+	setupVertexAttributePointers(vertices.getVertexFormat());
 
 	// Draw primitives
 	GL_CALL(glDrawArrays(toPrimitiveType(primitiveType), 0, vertexCount));
 
 	// Reset vbo buffers
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-	// Release vertex data
-	delete[] vertexData;
 }
 
 void OpenGLContext::drawPrimitives(const PrimitiveType primitiveType, const VertexBufferRef vertexBuffer)
@@ -2029,54 +2007,37 @@ void OpenGLContext::vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& 
 	outVertexBufferDeviceObject = nullptr;
 }
 
-void OpenGLContext::vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObjectBase, const BufferUsage bufferUsage, const Vertex* vertices, const uint32 vertexCount)
+void OpenGLContext::vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObjectBase, const BufferUsage bufferUsage, const VertexArray& vertices, const uint32 vertexCount)
 {
 	OpenGLVertexBufferDeviceObject* vertexBufferDeviceObject = dynamic_cast<OpenGLVertexBufferDeviceObject*>(vertexBufferDeviceObjectBase);
 	assert(vertexBufferDeviceObject);
 
 	assert(vertexCount > 0);
 
-	// Copy over vertex data
-	const VertexFormat vertexFormat = vertices->getFormat();
-	uint8* vertexData = new uint8[vertexCount * vertexFormat.getVertexSizeInBytes()];
-	for (uint i = 0; i < vertexCount; ++i)
-	{
-		vertices[i].getData((char*)vertexData + i * vertexFormat.getVertexSizeInBytes());
-	}
-
 	// Upload vertex data to vertex buffer object
+	const VertexFormat vertexFormat = vertices.getVertexFormat();
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDeviceObject->id));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexFormat.getVertexSizeInBytes(), vertexData, toBufferUsage(bufferUsage)));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertexCount * vertexFormat.getVertexSizeInBytes(), vertices.getVertexData(), toBufferUsage(bufferUsage)));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-	delete[] vertexData;
 
 	// Update device object settings
 	vertexBufferDeviceObject->vertexCount = vertexCount;
 	vertexBufferDeviceObject->vertexFormat = vertexFormat;
 }
 
-void OpenGLContext::vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObjectBase, const uint32 startIndex, const Vertex* vertices, const uint32 vertexCount)
+void OpenGLContext::vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObjectBase, const uint32 startIndex, const VertexArray& vertices, const uint32 vertexCount)
 {
 	OpenGLVertexBufferDeviceObject* vertexBufferDeviceObject = dynamic_cast<OpenGLVertexBufferDeviceObject*>(vertexBufferDeviceObjectBase);
 	assert(vertexBufferDeviceObject);
 
 	assert(vertexCount > 0);
 
-	// Copy over vertex data
-	const VertexFormat vertexFormat = vertices->getFormat();
+	// Upload vertex data to vertex buffer object
+	const VertexFormat vertexFormat = vertices.getVertexFormat();
 	assert(vertexBufferDeviceObject->vertexFormat == vertexFormat);
-	uint8* vertexData = new uint8[vertexCount * vertexFormat.getVertexSizeInBytes()];
-	for (uint i = 0; i < vertexCount; ++i)
-	{
-		vertices[i].getData((char*)vertexData + i * vertexFormat.getVertexSizeInBytes());
-	}
-
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDeviceObject->id));
-	GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, startIndex * vertexFormat.getVertexSizeInBytes(), vertexCount * vertexFormat.getVertexSizeInBytes(), vertexData));
+	GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, startIndex * vertexFormat.getVertexSizeInBytes(), vertices.getVertexDataSize(), vertices.getVertexData()));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-	delete[] vertexData;
 }
 
 void OpenGLContext::vertexBuffer_bindVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObjectBase)

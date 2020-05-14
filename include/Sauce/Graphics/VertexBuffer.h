@@ -33,9 +33,9 @@ struct SAUCE_API VertexBufferDeviceObject
 
 struct SAUCE_API VertexBufferDesc : public GraphicsDeviceObjectDesc
 {
-	BufferUsage bufferUsage = BufferUsage::Static;
-	Vertex*     vertices    = nullptr;
-	uint32      vertexCount = 0;
+	BufferUsage  bufferUsage = BufferUsage::Static;
+	VertexArray* vertices    = nullptr;
+	uint32       vertexCount = 0;
 };
 
 class SAUCE_API VertexBuffer : public SauceObject
@@ -49,7 +49,7 @@ public:
 
 	bool initialize(VertexBufferDesc vertexBufferDesc);
 
-	void modifyData(const uint32 startIndex, const Vertex* vertices, const uint vertexCount);
+	void modifyData(const uint32 startIndex, const VertexArray& vertices, const uint vertexCount);
 
 	VertexFormat getVertexFormat() const;
 	uint32 getVertexCount() const;

@@ -160,11 +160,6 @@ int Game::run(const GameDesc &desc)
 		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
 		m_windows.push_back(mainWindow);
 
-		// Setup default vertex format
-		VertexFormat::s_vct.set(VertexAttribute::Position, 2, Datatype::Float);
-		VertexFormat::s_vct.set(VertexAttribute::Color, 4, Datatype::Uint8);
-		VertexFormat::s_vct.set(VertexAttribute::TexCoord, 2, Datatype::Float);
-
 		// Initialize font rendering system
 		FontRenderingSystem::Initialize(graphicsContext);
 

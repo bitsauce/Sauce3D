@@ -121,7 +121,7 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 	format.set(VertexAttribute::Color, 4, Datatype::Uint8);
 	format.set(VertexAttribute::TexCoord, 2, Datatype::Float);
 	
-	Vertex *vertices = format.createVertices(36);
+	VertexArray vertices = format.createVertices(36);
 
 	Matrix4 mat;
 	mat.translate(x, y, z);
@@ -136,8 +136,6 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 
 	// Draw triangles
 	graphicsContext->drawPrimitives(PrimitiveType::Triangles, vertices, 36);
-
-	delete[] vertices;
 }
 
 void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
@@ -235,7 +233,7 @@ public:
 
 		// Draw UI
 		graphicsContext->disable(Capability::DepthTest);
-		graphicsContext->disable(Capability::FaceCulling);
+		//graphicsContext->disable(Capability::FaceCulling);
 		graphicsContext->disable(Capability::Vsync);
 		{
 			ImGui::Begin("Simple 3D");

@@ -313,7 +313,10 @@ public:
 		return m_context;
 	}
 
-	Vertex *getVertices(const uint vertexCount);
+	/**
+	 * Fast way to draw with a temporary vertex array
+	 */
+	VertexArray& getTempVertexArray(const uint32 vertexCount);
 
 public:
 	/************************************************
@@ -390,7 +393,7 @@ public:
 	 * \param indices Array of indices.
 	 * \param indexCount Number of indices.
 	 */
-	virtual void drawIndexedPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount) = 0;
+	virtual void drawIndexedPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount, const uint* indices, const uint indexCount) = 0;
 
 	/**
 	 * Renders an indexed primitive to the screen using vertex and index buffers.
@@ -406,7 +409,7 @@ public:
 	 * \param vertices Array of vertices to render.
 	 * \param vertexCount Number of vertices to render.
 	 */
-	virtual void drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount) = 0;
+	virtual void drawPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount) = 0;
 
 	/**
 	 * Renders primitives to the screen.
@@ -458,8 +461,8 @@ protected:
 	void vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject);
 	virtual void vertexBuffer_createDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject, const string& deviceObjectName) = 0;
 	virtual void vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject) = 0;
-	virtual void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const Vertex* vertices, const uint32 vertexCount) = 0;
-	virtual void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const Vertex* vertices, const uint32 vertexCount) = 0;
+	virtual void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const VertexArray& vertices, const uint32 vertexCount) = 0;
+	virtual void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const VertexArray& vertices, const uint32 vertexCount) = 0;
 	virtual void vertexBuffer_bindVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject) = 0;
 
 	/**
@@ -472,6 +475,7 @@ protected:
 	virtual void indexBuffer_initializeIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const BufferUsage bufferUsage, const uint32* indices, const uint32 indexCount) = 0;
 	virtual void indexBuffer_modifyIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const uint32 startIndex, const uint32* indices, const uint32 indexCount) = 0;
 	virtual void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) = 0;
+
 protected:
 	void* m_context;
 	Window* m_window;
@@ -480,7 +484,7 @@ protected:
 	State* m_currentState;
 
 	/** We keep a list of vertices for when we might need it */
-	vector<Vertex> m_vertices;
+	VertexArray m_tempVertices;
 
 	static ShaderRef s_defaultShader;
 	static Texture2DRef s_defaultTexture;

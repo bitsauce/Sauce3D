@@ -24,10 +24,12 @@ enum class VertexAttribute : uint32
 **	Vertex format													**
 **********************************************************************/
 class Vertex;
+class VertexArray;
+
 class SAUCE_API VertexFormat
 {
-	friend class Game;
-	friend class Vertex;
+	friend class GraphicsContext;
+	friend class VertexArray;
 	friend class VertexBuffer;
 public:
 	VertexFormat();
@@ -41,15 +43,15 @@ public:
 	uint getVertexSizeInBytes() const;
 	uint getAttributeOffset(const VertexAttribute attrib) const;
 	
-	Vertex *createVertices(const uint32 count) const;
+	VertexArray createVertices(const uint32 count) const;
 	
 	VertexFormat &operator=(const VertexFormat &other);
 	bool operator==(const VertexFormat &other);
 
-protected:
-	static VertexFormat s_vct; // Position, color, texture coord
-
 private:
+	// Default vertex format: position, color, texture coord
+	static VertexFormat s_vtc;
+
 	struct Attribute
 	{
 		Attribute() :
@@ -78,14 +80,12 @@ private:
 **********************************************************************/
 class SAUCE_API Vertex
 {
-public:
-	Vertex();
-	Vertex(const Vertex &other);
-	Vertex(const VertexFormat &fmt);
-	~Vertex();
+	friend class VertexArray;
 
-	void setFormat(const VertexFormat &fmt);
-	VertexFormat getFormat() const;
+private:
+	Vertex();
+
+public:
 
 	void set1f(const VertexAttribute attrib, const float v0);
 	void set1ui(const VertexAttribute attrib, const uint v0);
@@ -119,16 +119,46 @@ public:
 	void set4ub(const VertexAttribute attrib, const uchar v0, const uchar v1, const uchar v2, const uchar v3);
 	void set4b(const VertexAttribute attrib, const char v0, const char v1, const char v2, const char v3);
 
-	void setData(const char *data) const;
-	void getData(char *data) const;
-	
-	Vertex &operator=(const Vertex &other);
-
-	void print();
+	string toString() const;
 
 private:
-	char *m_data;
-	VertexFormat m_format;
+	uint8* m_vertexData;
+	VertexFormat m_vertexFormat;
+};
+
+/*********************************************************************
+**	VertexArray														**
+**********************************************************************/
+class SAUCE_API VertexArray final
+{
+public:
+	VertexArray();
+	VertexArray(const uint32 vertexCount);
+	VertexArray(const uint32 vertexCount, const VertexFormat& vertexFormat);
+	VertexArray(const VertexArray&) = delete;
+	VertexArray(VertexArray&& other) noexcept;
+	~VertexArray();
+
+	VertexArray& operator=(VertexArray&) = delete;
+	VertexArray& operator=(VertexArray&& other) noexcept;
+	Vertex& operator[](const uint32 index);
+
+	uint32 getVertexCount() const;
+	VertexFormat getVertexFormat() const;
+	uint8* getVertexData() const; // TODO: Should probably be "lockVertexData" when multithreading if multithreading is introduced
+	uint32 getVertexDataSize() const;
+
+	void resize(const uint32 newVertexCount);
+	VertexArray makeCopy() const;
+
+	string toString() const;
+
+private:
+	uint32       m_vertexCount;
+	uint32       m_vertexCapacity;
+	VertexFormat m_vertexFormat;
+	uint8*       m_vertexArrayData;
+	Vertex*      m_vertexHandlesCache;
 };
 
 END_SAUCE_NAMESPACE

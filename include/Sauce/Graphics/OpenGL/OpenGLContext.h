@@ -47,9 +47,9 @@ public:
 	Matrix4 createPerspectiveMatrix(const float fov, const float aspectRatio, const float zNear, const float zFar) const override;
 	Matrix4 createLookAtMatrix(const Vector3F &position, const Vector3F &fwd) const override;
 
-	void drawIndexedPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount, const uint *indices, const uint indexCount) override;
+	void drawIndexedPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount, const uint* indices, const uint indexCount) override;
 	void drawIndexedPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer, const IndexBufferRef indexBuffer) override;
-	void drawPrimitives(const PrimitiveType type, const Vertex *vertices, const uint vertexCount) override;
+	void drawPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount) override;
 	void drawPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer) override;
 
 	string getGLSLVersion() const;
@@ -89,8 +89,8 @@ protected:
 	 */
 	void vertexBuffer_createDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject, const string& deviceObjectName) override;
 	void vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject) override;
-	void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const Vertex* vertices, const uint32 vertexCount) override;
-	void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const Vertex* vertices, const uint32 vertexCount) override;
+	void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const VertexArray& vertices, const uint32 vertexCount) override;
+	void vertexBuffer_modifyVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const uint32 startIndex, const VertexArray& vertices, const uint32 vertexCount) override;
 	void vertexBuffer_bindVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject) override;
 
 	/**

@@ -34,7 +34,4 @@ Vector2F QUAD_TEXCOORD[4] = {
 	Vector2F(1.0f, 1.0f)
 };
 
-// Standard position, color and texCoord vertex format
-VertexFormat VertexFormat::s_vct;
-
 END_SAUCE_NAMESPACE

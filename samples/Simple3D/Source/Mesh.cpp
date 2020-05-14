@@ -32,7 +32,7 @@ bool Mesh::initialize(MeshDesc meshDesc)
 	{
 		// Create vertices
 		uint32 vertexCount = shapes[s].mesh.indices.size();
-		Vertex* vertices = fmt.createVertices(vertexCount);
+		VertexArray vertices = fmt.createVertices(vertexCount);
 
 		// Loop over faces(polygon)
 		size_t index_offset = 0;
@@ -68,11 +68,9 @@ bool Mesh::initialize(MeshDesc meshDesc)
 		}
 
 		VertexBufferDesc vertexBufferDesc;
-		vertexBufferDesc.vertices = vertices;
+		vertexBufferDesc.vertices = &vertices;
 		vertexBufferDesc.vertexCount = vertexCount;
 		m_vertexBuffer = CreateNew<VertexBuffer>(vertexBufferDesc);
-
-		delete[] vertices;
 
 		return true;
 	}

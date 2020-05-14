@@ -65,7 +65,7 @@ private:
 	State m_state;
 
 	// Vertex & index buffers
-	Vertex *m_vertices;
+	VertexArray m_vertices;
 	uint *m_indices;
 	Sprite *m_sprites;
 	uint m_spriteCount;

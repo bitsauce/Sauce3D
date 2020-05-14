@@ -21,14 +21,13 @@ SpriteBatch::SpriteBatch(const uint maxSprites)
 	, m_spriteCount(0)
 {
 	m_sprites = new Sprite[maxSprites];
-	m_vertices = new Vertex[maxSprites * 4];
+	m_vertices = VertexArray(maxSprites * 4);
 	m_indices = new uint[maxSprites * 6];
 }
 
 SpriteBatch::~SpriteBatch()
 {
 	delete[] m_sprites;
-	delete[] m_vertices;
 	delete[] m_indices;
 }
 
@@ -84,91 +83,92 @@ void SpriteBatch::drawSprite(const Sprite &sprite)
 
 void SpriteBatch::end()
 {
-	if(!m_graphicsContext)
-	{
-		LOG("SpriteBatch::end(): Called before begin()");
-		return;
-	}
+	THROW("Deprecated");
+	//if(!m_graphicsContext)
+	//{
+	//	LOG("SpriteBatch::end(): Called before begin()");
+	//	return;
+	//}
 
-	m_graphicsContext->pushState();
-	
-	// Draw sprites
-	if(m_spriteCount > 0)
-	{
-		switch(m_state.mode)
-		{
-			case SpriteSortMode::Deferred:
-			{
-				// Sprites are not drawn until end() is called. end() will apply graphics
-				// device settings and draw all the sprites in one batch, in the same
-				// order calls to draw*() were recieved. This mode allows draw*() calls
-				// to two or more instances of SpriteBatch without introducing conflicting
-				// graphics device settings. SpriteBatch defaults to DEFERRED mode.
+	//m_graphicsContext->pushState();
+	//
+	//// Draw sprites
+	//if(m_spriteCount > 0)
+	//{
+	//	switch(m_state.mode)
+	//	{
+	//		case SpriteSortMode::Deferred:
+	//		{
+	//			// Sprites are not drawn until end() is called. end() will apply graphics
+	//			// device settings and draw all the sprites in one batch, in the same
+	//			// order calls to draw*() were recieved. This mode allows draw*() calls
+	//			// to two or more instances of SpriteBatch without introducing conflicting
+	//			// graphics device settings. SpriteBatch defaults to DEFERRED mode.
 
-				m_graphicsContext->clearMatrixStack();
-				m_graphicsContext->pushMatrix(m_state.transformationMatix);
-				m_graphicsContext->setBlendState(m_state.blendState);
-				m_graphicsContext->setShader(m_state.shader);
+	//			m_graphicsContext->clearMatrixStack();
+	//			m_graphicsContext->pushMatrix(m_state.transformationMatix);
+	//			m_graphicsContext->setBlendState(m_state.blendState);
+	//			m_graphicsContext->setShader(m_state.shader);
 
-				// Separate sprites by depth and texture
-				map<float, map<Texture2DRef, list<Sprite*>>> layerTextureMap;
-				for(uint i = 0; i < m_spriteCount; ++i)
-				{
-					Sprite *sprite = &m_sprites[i];
-					layerTextureMap[sprite->m_depth][sprite->m_texture].push_back(sprite);
-				}
+	//			// Separate sprites by depth and texture
+	//			map<float, map<Texture2DRef, list<Sprite*>>> layerTextureMap;
+	//			for(uint i = 0; i < m_spriteCount; ++i)
+	//			{
+	//				Sprite *sprite = &m_sprites[i];
+	//				layerTextureMap[sprite->m_depth][sprite->m_texture].push_back(sprite);
+	//			}
 
-				// For each depth
-				for(map<float, map<Texture2DRef, list<Sprite*>>>::iterator itr1 = layerTextureMap.begin(); itr1 != layerTextureMap.end(); ++itr1)
-				{
-					// For each texture
-					uint spriteCount = 0;
-					for(map<Texture2DRef, list<Sprite*>>::iterator itr2 = itr1->second.begin(); itr2 != itr1->second.end(); ++itr2)
-					{
-						// Batch all sprite vertex data
-						for(list<Sprite*>::iterator itr3 = itr2->second.begin(); itr3 != itr2->second.end(); ++itr3)
-						{
-							(*itr3)->getVertices(m_vertices + spriteCount * 4, m_indices + spriteCount * 6, spriteCount * 4);
-							spriteCount++;
-						}
+	//			// For each depth
+	//			for(map<float, map<Texture2DRef, list<Sprite*>>>::iterator itr1 = layerTextureMap.begin(); itr1 != layerTextureMap.end(); ++itr1)
+	//			{
+	//				// For each texture
+	//				uint spriteCount = 0;
+	//				for(map<Texture2DRef, list<Sprite*>>::iterator itr2 = itr1->second.begin(); itr2 != itr1->second.end(); ++itr2)
+	//				{
+	//					// Batch all sprite vertex data
+	//					for(list<Sprite*>::iterator itr3 = itr2->second.begin(); itr3 != itr2->second.end(); ++itr3)
+	//					{
+	//						(*itr3)->getVertices(m_vertices + spriteCount * 4, m_indices + spriteCount * 6, spriteCount * 4);
+	//						spriteCount++;
+	//					}
 
-						// If we have sprites
-						if(spriteCount > 0)
-						{
-							// Draw textured primitives
-							m_graphicsContext->setTexture(itr2->first);
-							m_graphicsContext->drawIndexedPrimitives(PrimitiveType::Triangles, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
-							spriteCount = 0;
-						}
-					}
-				}
-			}
-			break;
+	//					// If we have sprites
+	//					if(spriteCount > 0)
+	//					{
+	//						// Draw textured primitives
+	//						m_graphicsContext->setTexture(itr2->first);
+	//						m_graphicsContext->drawIndexedPrimitives(PrimitiveType::Triangles, m_vertices, spriteCount * 4, m_indices, spriteCount * 6);
+	//						spriteCount = 0;
+	//					}
+	//				}
+	//			}
+	//		}
+	//		break;
 
-			case SpriteSortMode::Texture:
-			{
-				// Sort sprites by texture. Draw forwards and batch together
-				// similar textures, as long as they don't overlap a different texture.
-				/*uint prevIndex = 0;
-				Texture2DPtr prevTexture = m_sprites[0].texture;
-				for(uint i = 0; i < m_spriteCount; ++i)
-				{
-					if(m_sprites[i].texture != prevTexture)
-					{
-						m_graphicsContext.setTexture(m_sprites[i].texture);
-						m_graphicsContext.drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, m_vertices + prevIndex * 4, (i - prevIndex) * 4, m_indices + prevIndex * 6, (i - prevIndex) * 6);
-						prevIndex = i;
-					}
-				}
-				m_graphicsContext.setTexture(m_sprites[prevIndex].texture);
-				m_graphicsContext.drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, m_vertices + prevIndex * 4, (m_spriteCount - prevIndex) * 4, m_indices + prevIndex * 6, (m_spriteCount - prevIndex) * 6);*/
-			}
-			break;
-		}
-	}
-		
-	m_graphicsContext->popState();
-	m_graphicsContext = nullptr;
+	//		case SpriteSortMode::Texture:
+	//		{
+	//			// Sort sprites by texture. Draw forwards and batch together
+	//			// similar textures, as long as they don't overlap a different texture.
+	//			/*uint prevIndex = 0;
+	//			Texture2DPtr prevTexture = m_sprites[0].texture;
+	//			for(uint i = 0; i < m_spriteCount; ++i)
+	//			{
+	//				if(m_sprites[i].texture != prevTexture)
+	//				{
+	//					m_graphicsContext.setTexture(m_sprites[i].texture);
+	//					m_graphicsContext.drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, m_vertices + prevIndex * 4, (i - prevIndex) * 4, m_indices + prevIndex * 6, (i - prevIndex) * 6);
+	//					prevIndex = i;
+	//				}
+	//			}
+	//			m_graphicsContext.setTexture(m_sprites[prevIndex].texture);
+	//			m_graphicsContext.drawIndexedPrimitives(GraphicsContext::PRIMITIVE_TRIANGLES, m_vertices + prevIndex * 4, (m_spriteCount - prevIndex) * 4, m_indices + prevIndex * 6, (m_spriteCount - prevIndex) * 6);*/
+	//		}
+	//		break;
+	//	}
+	//}
+	//	
+	//m_graphicsContext->popState();
+	//m_graphicsContext = nullptr;
 }
 
 void SpriteBatch::flush()

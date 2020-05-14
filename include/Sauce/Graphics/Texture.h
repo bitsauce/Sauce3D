@@ -39,11 +39,11 @@ struct SAUCE_API Texture2DDeviceObject
 
 struct SAUCE_API Texture2DDesc : public GraphicsDeviceObjectDesc
 {
-	string           filePath        = "";
-	Pixmap*          pixmap          = nullptr;
-	TextureFiltering filtering       = TextureFiltering::Nearest;
-	TextureWrapping  wrapping        = TextureWrapping::ClampToBorder;
-	bool             mipmaps         = false;
+	string           filePath  = "";
+	Pixmap*          pixmap    = nullptr;
+	TextureFiltering filtering = TextureFiltering::Nearest;
+	TextureWrapping  wrapping  = TextureWrapping::ClampToEdge;
+	bool             mipmaps   = false;
 };
 
 class SAUCE_API Texture2D final : public SauceObject

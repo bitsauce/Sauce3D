@@ -227,7 +227,7 @@ void ImGuiSystem::render()
             const ImDrawList* imDrawList = imDrawData->CmdLists[n];
 
             // Convert ImGui vertex buffer to Sauce vertex buffer
-            Vertex* vertices;
+            VertexArray vertices;
             uint32 vertexCount;
             {
                 const ImVector<ImDrawVert>& imVbo = imDrawList->VtxBuffer;
@@ -247,11 +247,14 @@ void ImGuiSystem::render()
             uint32 indexCount;
             {
                 const ImVector<ImDrawIdx>& imIbo = imDrawList->IdxBuffer;
+                assert(imIbo.Size % 3 == 0);
                 indexCount = imIbo.Size;
                 indices = new uint32[indexCount];
-                for (uint32 i = 0; i < indexCount; ++i)
+                for (uint32 i = 0; i < indexCount / 3; ++i)
                 {
-                    indices[i] = imIbo[i];
+                    indices[i * 3 + 0] = imIbo[i * 3 + 0];
+                    indices[i * 3 + 1] = imIbo[i * 3 + 2];
+                    indices[i * 3 + 2] = imIbo[i * 3 + 1];
                 }
             }
 
@@ -301,7 +304,6 @@ void ImGuiSystem::render()
                 }
             }
 
-            delete[] vertices;
             delete[] indices;
         }
     }

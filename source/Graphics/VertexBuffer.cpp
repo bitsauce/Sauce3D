@@ -52,17 +52,20 @@ bool VertexBuffer::initialize(VertexBufferDesc vertexBufferDesc)
 
 	// Create and initialize vertex buffer device object
 	m_graphicsContext->vertexBuffer_createDeviceObject(m_deviceObject, vertexBufferDesc.debugName);
-	m_graphicsContext->vertexBuffer_initializeVertexBuffer(
-		m_deviceObject,
-		vertexBufferDesc.bufferUsage,
-		vertexBufferDesc.vertices,
-		vertexBufferDesc.vertexCount
-	);
+	if (vertexBufferDesc.vertices)
+	{
+		m_graphicsContext->vertexBuffer_initializeVertexBuffer(
+			m_deviceObject,
+			vertexBufferDesc.bufferUsage,
+			*vertexBufferDesc.vertices,
+			vertexBufferDesc.vertexCount
+		);
+	}
 
 	return true;
 }
 
-void VertexBuffer::modifyData(const uint32 startIndex, const Vertex* vertices, const uint vertexCount)
+void VertexBuffer::modifyData(const uint32 startIndex, const VertexArray& vertices, const uint vertexCount)
 {
 	if (m_deviceObject->bufferUsage == BufferUsage::Static)
 	{
