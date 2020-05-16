@@ -11,6 +11,7 @@
 // Distributed under the MIT license
 
 #include <Sauce/Graphics.h>
+#include <Sauce/Common/Window.h>
 
 #include <GL/gl3w.h>
 #include <GL/wglext.h>
@@ -378,7 +379,129 @@ OpenGLContext::~OpenGLContext()
 	GL_CALL(glDeleteBuffers(1, &g_vbo));
 	GL_CALL(glDeleteVertexArrays(1, &g_vao));
 	delete g_zeroedTextureDataArray;
-	SDL_GL_DeleteContext(m_context);
+}
+
+bool OpenGLContext::initialize(GraphicsContextDesc graphicsContextDesc)
+{
+	//GraphicsContext::initialize(graphicsContextDesc); // TODO
+	m_owningWindow = graphicsContextDesc.owningWindow;
+
+#ifdef SAUCE_COMPILE_WINDOWS
+	// Initialize GL3W
+	if (gl3wInit() != 0)
+	{
+		THROW("GL3W did not initialize!");
+	}
+#endif
+
+	// Print GPU info
+	{
+		const uchar* vendorString = GL_CALL(glGetString(GL_VENDOR));
+		const uchar* versionString = GL_CALL(glGetString(GL_VERSION));
+		LOG("** Using GPU: %s (OpenGL %s) **", vendorString, versionString);
+	}
+
+#ifdef SAUCE_COMPILE_WINDOWS
+	// Check OpenGL support
+	if (!gl3wIsSupported(m_majorVersion, m_minorVersion))
+	{
+		THROW("OpenGL %i.%i not supported\n", m_majorVersion, m_minorVersion);
+	}
+#endif
+
+	// Setup graphics context
+	const Vector2I size = m_owningWindow->getSize();
+	setSize(size.x, size.y);
+
+	// We default to an ortographic projection where top-left is (0, 0) and bottom-right is (w, h)
+	setProjectionMatrix(createOrtographicMatrix(0, size.x, 0, size.y));
+
+	// Init graphics
+	GL_CALL(glGenVertexArrays(1, &g_vao));
+	GL_CALL(glBindVertexArray(g_vao));
+	GL_CALL(glGenBuffers(1, &g_vbo));
+	GL_CALL(glGenBuffers(1, &g_ibo));
+
+	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+
+	// Enable blending
+	GL_CALL(glEnable(GL_BLEND));
+	GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+	// Set smooth lines
+	GL_CALL(glEnable(GL_LINE_SMOOTH));
+	GL_CALL(glHint(GL_LINE_SMOOTH_HINT, GL_NICEST));
+	//glEnable(GL_POLYGON_SMOOTH);
+	//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+	// Set some gl state variables
+	GL_CALL(glDepthFunc(GL_LESS));
+	GL_CALL(glCullFace(GL_BACK));
+	GL_CALL(glPointSize(4));
+	GL_CALL(glPixelStorei(GL_PACK_ALIGNMENT, 1));
+	GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+
+	GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &g_maxTextureSize));
+	g_zeroedTextureDataArray = new GLubyte[g_maxTextureSize * g_maxTextureSize * 4];
+	memset(g_zeroedTextureDataArray, 0, g_maxTextureSize * g_maxTextureSize * 4);
+
+	// Create passthrough shader
+	{
+		const string vertexShader =
+			"\n"
+			"in vec3 in_Position;\n"
+			"in vec2 in_TexCoord;\n"
+			"in vec4 in_VertexColor;\n"
+			"\n"
+			"out vec2 v_TexCoord;\n"
+			"out vec4 v_VertexColor;\n"
+			"\n"
+			"uniform mat4 u_ModelViewProj;\n"
+			"\n"
+			"void main()\n"
+			"{\n"
+			"	gl_Position = vec4(in_Position, 1.0) * u_ModelViewProj;\n"
+			"	v_TexCoord = in_TexCoord;\n"
+			"	v_VertexColor = in_VertexColor;\n"
+			"}\n";
+
+		const string pixelShader =
+			"\n"
+			"in vec2 v_TexCoord;\n"
+			"in vec4 v_VertexColor;\n"
+			"\n"
+			"out vec4 out_FragColor;\n"
+			"\n"
+			"uniform sampler2D u_Texture;\n"
+			"\n"
+			"void main()\n"
+			"{\n"
+			"	out_FragColor = texture(u_Texture, v_TexCoord) * v_VertexColor;\n"
+			"}\n";
+
+		s_glslVersion = getGLSLVersion();
+
+		ShaderDesc shaderDesc;
+		shaderDesc.shaderSourceVS = vertexShader;
+		shaderDesc.shaderSourcePS = pixelShader;
+		s_defaultShader = CreateNew<Shader>(shaderDesc);
+	}
+
+	// Create blank texture
+	{
+		uint8 pixel[4];
+		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
+		Pixmap pixmap(1, 1, PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8), pixel);
+
+		Texture2DDesc textureDesc;
+		textureDesc.debugName = "DefaultTexture";
+		textureDesc.pixmap = &pixmap;
+		textureDesc.wrapping = TextureWrapping::Repeat;
+		textureDesc.filtering = TextureFiltering::Nearest;
+		s_defaultTexture = CreateNew<Texture2D>(textureDesc);
+	}
+
+	return true;
 }
 
 void OpenGLContext::enable(const Capability cap)
@@ -547,141 +670,6 @@ Matrix4 OpenGLContext::createLookAtMatrix(const Vector3F &position, const Vector
 		0, 0, 1, -position.z,
 		0.0f, 0.0f, 0.0f, 1.0f);
 	return cameraMatrix * cameraTranslate;
-}
-
-Window *OpenGLContext::createWindow(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags)
-{
-	// Request opengl 3.1 context
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, m_majorVersion);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, m_minorVersion);
-
-	// Turn on double buffering with a 24bit Z buffer.
-	// You may need to change this to 16 or 32 for your system
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-	m_window = new Window(this, title, x, y, w, h, SDL_WINDOW_OPENGL | flags);
-
-	// Create GL context
-	m_context = SDL_GL_CreateContext(m_window->getSDLHandle());
-
-#ifdef SAUCE_COMPILE_WINDOWS
-	// Initialize GL3W
-	if(gl3wInit() != 0)
-	{
-		THROW("GL3W did not initialize!");
-	}
-#endif
-
-	// Print GPU info
-	{
-		const uchar* vendorString = GL_CALL(glGetString(GL_VENDOR));
-		const uchar* versionString = GL_CALL(glGetString(GL_VERSION));
-		LOG("** Using GPU: %s (OpenGL %s) **", vendorString, versionString);
-	}
-
-#ifdef SAUCE_COMPILE_WINDOWS
-	// Check OpenGL support
-	if(!gl3wIsSupported(m_majorVersion, m_minorVersion))
-	{
-		THROW("OpenGL %i.%i not supported\n", m_majorVersion, m_minorVersion);
-	}
-#endif
-
-	// Setup graphics context
-	Vector2I size;
-	m_window->getSize(&size.x, &size.y);
-	setSize(size.x, size.y);
-
-	// We default to an ortographic projection where top-left is (0, 0) and bottom-right is (w, h)
-	setProjectionMatrix(createOrtographicMatrix(0, size.x, 0, size.y));
-
-	// Init graphics
-	GL_CALL(glGenVertexArrays(1, &g_vao));
-	GL_CALL(glBindVertexArray(g_vao));
-	GL_CALL(glGenBuffers(1, &g_vbo));
-	GL_CALL(glGenBuffers(1, &g_ibo));
-
-	GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
-
-	// Enable blending
-	GL_CALL(glEnable(GL_BLEND));
-	GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-	// Set smooth lines
-	GL_CALL(glEnable(GL_LINE_SMOOTH));
-	GL_CALL(glHint(GL_LINE_SMOOTH_HINT, GL_NICEST));
-	//glEnable(GL_POLYGON_SMOOTH);
-	//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-
-	// Set some gl state variables
-	GL_CALL(glDepthFunc(GL_LESS));
-	GL_CALL(glCullFace(GL_BACK));
-	GL_CALL(glPointSize(4));
-	GL_CALL(glPixelStorei(GL_PACK_ALIGNMENT, 1));
-	GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-
-	GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &g_maxTextureSize));
-	g_zeroedTextureDataArray = new GLubyte[g_maxTextureSize * g_maxTextureSize * 4];
-	memset(g_zeroedTextureDataArray, 0, g_maxTextureSize * g_maxTextureSize * 4);
-
-	// Create passthrough shader
-	{
-		const string vertexShader =
-			"\n"
-			"in vec3 in_Position;\n"
-			"in vec2 in_TexCoord;\n"
-			"in vec4 in_VertexColor;\n"
-			"\n"
-			"out vec2 v_TexCoord;\n"
-			"out vec4 v_VertexColor;\n"
-			"\n"
-			"uniform mat4 u_ModelViewProj;\n"
-			"\n"
-			"void main()\n"
-			"{\n"
-			"	gl_Position = vec4(in_Position, 1.0) * u_ModelViewProj;\n"
-			"	v_TexCoord = in_TexCoord;\n"
-			"	v_VertexColor = in_VertexColor;\n"
-			"}\n";
-
-		const string pixelShader =
-			"\n"
-			"in vec2 v_TexCoord;\n"
-			"in vec4 v_VertexColor;\n"
-			"\n"
-			"out vec4 out_FragColor;\n"
-			"\n"
-			"uniform sampler2D u_Texture;\n"
-			"\n"
-			"void main()\n"
-			"{\n"
-			"	out_FragColor = texture(u_Texture, v_TexCoord) * v_VertexColor;\n"
-			"}\n";
-
-		s_glslVersion = getGLSLVersion();
-
-		ShaderDesc shaderDesc;
-		shaderDesc.shaderSourceVS = vertexShader;
-		shaderDesc.shaderSourcePS = pixelShader;
-		s_defaultShader = CreateNew<Shader>(shaderDesc);
-	}
-
-	// Create blank texture
-	{
-		uint8 pixel[4];
-		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 255;
-		Pixmap pixmap(1, 1, PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8), pixel);
-
-		Texture2DDesc textureDesc;
-		textureDesc.debugName = "DefaultTexture";
-		textureDesc.pixmap = &pixmap;
-		textureDesc.wrapping = TextureWrapping::Repeat;
-		textureDesc.filtering = TextureFiltering::Nearest;
-		s_defaultTexture = CreateNew<Texture2D>(textureDesc);
-	}
-
-	return m_window;
 }
 
 void OpenGLContext::setupContext()

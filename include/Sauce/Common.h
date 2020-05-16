@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Sauce/Common/Engine.h>
+#include <Sauce/Common/Window.h>
 #include <Sauce/Common/Exception.h>
 #include <Sauce/Common/SauceObject.h>
 #include <Sauce/Common/SceneObject.h>

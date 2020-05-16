@@ -5,7 +5,6 @@
 #pragma once
 
 #include <Sauce/Common.h>
-#include <Sauce/Graphics/Shader.h>
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/TextureRegion.h>
 
@@ -19,10 +18,12 @@ class IndexBuffer;
 
 class SAUCE_API OpenGLContext final : public GraphicsContext
 {
-	friend class Game;
+	friend class GraphicsContext;
 private:
 	OpenGLContext(const int major, const int minor);
 	~OpenGLContext();
+	
+	bool initialize(GraphicsContextDesc graphicsContextDesc) override;
 
 	void setupContext();
 	void setUniformsRecursive(const struct ShaderUniform* shaderUniform, const struct ShaderUniformLayout& uniformLayout, int32 &currentTextureTarget);
@@ -103,8 +104,6 @@ protected:
 	void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) override;
 
 private:
-	Window *createWindow(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags);
-
 	const int m_majorVersion, m_minorVersion;
 };
 

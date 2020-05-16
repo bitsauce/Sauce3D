@@ -18,11 +18,12 @@
 
 // Private headers
 #include <ImGui/ImGuiSystem.h>
+#include <Common/SDL/SDLWindow.h>
 
-// Additional headers
+// Library headers
 #include <FreeImage.h>
 #undef WIN32_LEAN_AND_MEAN // "warning C4005: macro redefinition" fix
-#include <SDL_syswm.h>
+#include <SDL.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -145,20 +146,13 @@ int Game::run(const GameDesc &desc)
 		// Initialize resource manager
 		//m_resourceManager = new ResourceManager("Resources.xml");
 
-		Uint32 windowFlags = 0;
-		if(isEnabled(EngineFlag::ResizableWindow))
-		{
-			windowFlags |= SDL_WINDOW_RESIZABLE;
-		}
-
 		// Initialize graphics context and window
-		GraphicsContext *graphicsContext = 0;
-		switch(desc.graphicsBackend)
-		{
-			default: graphicsContext = new OpenGLContext(4, 2); break;
-		}
-		Window *mainWindow = graphicsContext->createWindow(desc.name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, windowFlags);
+		GraphicsContext::s_effectiveBackend = desc.graphicsBackend;
+		WindowDesc windowDesc;
+		windowDesc.title = desc.name.c_str();
+		WindowRef mainWindow = CreateNew<Window>(windowDesc);
 		m_windows.push_back(mainWindow);
+		GraphicsContextRef graphicsContext = mainWindow->getGraphicsContext();
 
 		// Initialize font rendering system
 		FontRenderingSystem::Initialize(graphicsContext);
@@ -172,12 +166,7 @@ int Game::run(const GameDesc &desc)
 		SDL_StartTextInput();
 
 		// Initialize ImGui
-		{
-			SDL_SysWMinfo info;
-			SDL_VERSION(&info.version);
-			assert(SDL_GetWindowWMInfo(mainWindow->getSDLHandle(), &info));
-			ImGuiSystem::initialize(info.info.win.window);
-		}
+		ImGuiSystem::initialize(mainWindow->getOSHandle());
 
 		// Engine initialized
 		m_initialized = true;
@@ -220,16 +209,16 @@ int Game::run(const GameDesc &desc)
 				{
 					case SDL_WINDOWEVENT:
 					{
-						list<Window*> windows(m_windows);
-						for(Window *window : windows)
+						list<WindowRef> windows(m_windows);
+						for(WindowRef window : windows)
 						{
-							if(event.window.windowID == window->getID())
+							SDLWindow* sdlWindow = dynamic_cast<SDLWindow*>(window.get());
+							if(event.window.windowID == sdlWindow->getWindowID())
 							{
-								if(window->handleEvent(event, this))
+								if(sdlWindow->handleEvent(this, &event))
 								{
 									// The window was closed. Release its resources.
 									m_windows.remove(window);
-									delete window;
 
 									// If all windows are closed, end the game.
 									if(m_windows.size() == 0)
@@ -413,7 +402,7 @@ int Game::run(const GameDesc &desc)
 			}
 
 			// Check if game is paused or out of focus
-			if(m_paused || (!isEnabled(EngineFlag::RunInBackground) && !mainWindow->checkFlags(SDL_WINDOW_INPUT_FOCUS)))
+			if(m_paused || (!isEnabled(EngineFlag::RunInBackground) && !mainWindow->isFocused()))
 			{
 				continue;
 			}
@@ -463,7 +452,7 @@ int Game::run(const GameDesc &desc)
 			// Draw ImGui last
 			ImGuiSystem::render();
 
-			SDL_GL_SwapWindow(mainWindow->getSDLHandle());
+			mainWindow->swapBuffers();
 			graphicsContext->clear(BufferMask::Color | BufferMask::Depth);
 
 			// Add fps sample
@@ -504,7 +493,7 @@ gameloopend:
 		stringstream ss;
 		ss << e.message() << endl << "------------------------------------------------------------------------------------------------" << endl;
 		ss << "Callstack: " << endl << e.callstack();
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "An error occured", ss.str().c_str(), m_windows.front()->getSDLHandle());
+		m_windows.front()->showMessageBox(MessageBoxType::Error, ss.str());
 		LOG("An exception occured: %s", ss.str().c_str());
 		return (uint32)e.errorCode();
 	}
@@ -535,20 +524,22 @@ bool Game::isEnabled(const EngineFlag flag)
 	return (m_desc.flags & (uint32)flag) != 0;
 }
 
-Window *Game::getWindow(const Sint32 id) const
+WindowRef Game::getWindow(const int32 windowIndex) const
 {
-	if(id < 0)
+	if (windowIndex < 0)
 	{
 		return m_windows.front();
 	}
-	for(Window *window : m_windows)
+
+	for (WindowRef window : m_windows)
 	{
-		if(window->getID() == id)
+		if (window->getWindowID() == windowIndex)
 		{
 			return window;
 		}
 	}
-	return 0;
+
+	return nullptr;
 }
 
 END_SAUCE_NAMESPACE

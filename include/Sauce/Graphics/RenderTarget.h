@@ -5,11 +5,12 @@
 #pragma once
 
 #include <Sauce/Common.h>
-#include <Sauce/Graphics/GraphicsContext.h>
 #include <Sauce/Graphics/GraphicsDeviceObjectDesc.h>
 #include <Sauce/Graphics/Texture.h>
 
 BEGIN_SAUCE_NAMESPACE
+
+SAUCE_FORWARD_DECLARE(GraphicsContext);
 
 struct SAUCE_API RenderTarget2DDeviceObject
 {
@@ -21,11 +22,11 @@ struct SAUCE_API RenderTarget2DDeviceObject
 
 struct SAUCE_API RenderTarget2DDesc : public GraphicsDeviceObjectDesc
 {
-	uint32           width           = 0;
-	uint32           height          = 0;
-	uint32           targetCount     = 1;
-	PixelFormat      pixelFormat     = PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8);
-	Texture2DRef*    targetTextures  = nullptr;
+	uint32        width           = 0;
+	uint32        height          = 0;
+	uint32        targetCount     = 1;
+	PixelFormat   pixelFormat     = PixelFormat(PixelComponents::Rgba, PixelDatatype::Uint8);
+	Texture2DRef* targetTextures  = nullptr;
 };
 
 class SAUCE_API RenderTarget2D final : public SauceObject
@@ -42,7 +43,7 @@ public:
 	Texture2DRef getTargetTexture(const uint32 targetIndex = 0) const;
 
 private:
-	GraphicsContext* m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 	RenderTarget2DDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(RenderTarget2D);

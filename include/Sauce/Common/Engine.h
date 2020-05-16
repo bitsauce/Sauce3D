@@ -20,6 +20,8 @@ class FileWriter;
 class AudioManager;
 class Graphics;
 
+SAUCE_FORWARD_DECLARE(Window);
+
 #ifdef __LINUX__
 extern int _vscprintf (const char * format, va_list pargs);
 #endif
@@ -569,227 +571,6 @@ private:
 #endif
 
 /*********************************************************************
-**	Window class													**
-**********************************************************************/
-
-class Graphics;
-class GraphicsContext;
-class Pixmap;
-
-class SAUCE_API Window
-{
-public:
-
-	/**
-	 * \fn	Window::Window(const string &title, const int x, const int y, const int w, const int h, const Uint32 flags);
-	 *
-	 * \brief	Constructor.
-	 *
-	 * \param	title	        Window title
-	 * \param	x	 	        Initial x-position of window
-	 * \param	y               Initial y-position of window
-	 * \param	w	 	        Initial width of window
-	 * \param	h	 	        Initial height of window
-	 * \param	flags	        Additional window flags
-	 */
-
-	Window(GraphicsContext *graphicsContext, const string &title, const int x, const int y, const int w, const int h, const Uint32 flags);
-
-	/**
-	 * \fn	Window::~Window();
-	 *
-	 * \brief	Destructor.
-	 */
-
-	~Window();
-	
-	/** 
-	 * \brief Set the window to fullscreen using the given \p displayMode.
-	 * If \p displayMode is 0 or invalid, then setFullScreenMode will use the
-	 * current desktop display mode.
-	 * TODO: Multi-monitor support
-	 */
-	void setFullScreenMode(SDL_DisplayMode *displayMode);
-
-	/**
-	 * \brief Sets the window to windowed mode.
-	 */
-	void setWindowed();
-
-	/**
-	 * \brief Gets the current window flags.
-	 */
-	Uint32 getFlags() const;
-
-	/**
-	 * \brief Returns true if all the flags in \p flags is set.
-	 */
-	bool checkFlags(const Uint32 flags) const;
-
-	/**
-	 * \brief Moves the window to a given position in desktop coordinates.
-	 */
-	void setPosition(const int x, const int y);
-
-	/**
-	 * \brief Gets the position of window in desktop coordinates.
-	 */
-	void getPosition(int *x, int *y) const;
-
-	/**
-	 * \brief Resizes the window to a given size in desktop coordinates.
-	 */
-	void setSize(const int width, const int height);
-
-	/**
-	 * \brief Gets the size of window in desktop coordinates.
-	 */
-	void getSize(int *x, int *y) const;
-
-	Vector2I getSize() const
-	{
-		Vector2I size;
-		getSize(&size.x, &size.y);
-		return size;
-	}
-
-	int getWidth() const
-	{
-		return getSize().x;
-	}
-	
-	int getHeight() const
-	{
-		return getSize().y;
-	}
-
-	/**
-	 * \brief Sets the title of the window.
-	 */
-	void setTitle(const string &title);
-
-	/**
-	 * \brief Gets the title of the window.
-	 */
-	string getTitle() const;
-
-	/**
-	 * \brief Sets the icon of the window.
-	 */
-	void setIcon(const Pixmap &icon);
-
-	/**
-	 * \brief Sets the minimum size of the window in desktop coordinates.
-	 */
-	void setMinimumSize(const int width, const int height);
-
-	/**
-	 * \brief Sets the maximum size of the window in desktop coordinates.
-	 */
-	void setMaximumSize(const int width, const int height);
-
-	/**
-	 * \brief If true applies borders to the window. If false removes borders from the window.
-	 */
-	void setBordered(const bool bordered);
-
-	/**
-	 * \brief If true the window will try to grab user input.
-	 */
-	void setGrab(const bool grabbed);
-
-	/**
-	 * \brief Set the brightness of the window?
-	 */
-	void setBrightness(const float brightness);
-
-	/**
-	 * \brief Set gamma ramp of the window?
-	 */
-	void setGammaRamp(Uint16 *red, Uint16 *green, Uint16 *blue);
-
-	/**
-	 * \brief Hides the window?
-	 */
-	void hide();
-
-	/**
-	 * \brief Shows the window?
-	 */
-	void show();
-
-	/**
-	 * \brief Get display index of window?
-	 */
-	int getDisplayIndex() const;
-
-	/**
-	 * \brief Get display mode?
-	 */
-	void getDisplayMode(SDL_DisplayMode *mode) const;
-
-	/**
-	 * \brief Maximizes the window.
-	 */
-	void maximize();
-
-	/**
-	 * \brief Minimizes the window.
-	 */
-	void minimize();
-
-	/**
-	 * \brief Restores the window if minimized.
-	 */
-	void restore();
-
-	/**
-	 * \brief Sets the vsync mode. 0 disables vsync, 1 enables vsync and -1 enables adaptive vsync.
-	 */
-	void setVSync(const int mode);
-
-	/**
-	 * \brief Returns the GraphicsContext of the window.
-	 */
-	GraphicsContext *getGraphicsContext() const;
-
-	/**
-	 * \fn	bool Window::handleEvent(SDL_Event &event, Game *game);
-	 *
-	 * \brief	Handle window input events.
-	 *
-	 * \param [in,out]	event	If non-null, the event.
-	 * \param [in,out]	game 	If non-null, the game.
-	 *
-	 * \return	true if the window was closed, else it returns false.
-	 */
-
-	bool handleEvent(SDL_Event &event, Game *game);
-
-	/**
-	 * \fn	Uint32 Window::getWindowID() const;
-	 *
-	 * \brief	Gets window identifier.
-	 *
-	 * \return	The window identifier.
-	 */
-
-	Uint32 getID() const;
-
-	/**
-	 * \brief Returns the SDL_Window handle of this window.
-	 */
-	SDL_Window *getSDLHandle() const;
-
-private:
-	/** \brief	SDL window object. */
-	SDL_Window *m_window;
-
-	/** \brief	Graphics context. */
-	GraphicsContext *m_graphicsContext;
-};
-
-/*********************************************************************
 **	Scene class													**
 **********************************************************************/
 
@@ -817,7 +598,7 @@ struct SAUCE_API GameDesc
 	string          workingDirectory = ".";
 	string          organization     = "Sauce3D";
 	uint32          flags            = 0;
-	GraphicsBackend graphicsBackend  = GraphicsBackend::OpenGL3;
+	GraphicsBackend graphicsBackend  = GraphicsBackend::OpenGL4;
 	double          deltaTime        = 1.0 / 30.0;
 };
 
@@ -857,8 +638,7 @@ public:
 	 *
 	 * \return	null a window with \p id does not exist, else it returns the window.
 	 */
-
-	Window *getWindow(const Sint32 id = -1) const;
+	WindowRef getWindow(const int32 windowIndex = -1) const;
 
 	/**
 	 * \fn	float Game::getFPS() const
@@ -910,7 +690,7 @@ private:
 	double m_framesPerSecond;
 	
 	/** \brief	Game windows. */
-	list<Window*> m_windows;
+	list<WindowRef> m_windows;
 
 	/** \brief	The file system. */
 	FileSystem		*m_fileSystem;

@@ -138,7 +138,7 @@ void drawCube(GraphicsContext* graphicsContext, const float x, const float y, co
 	graphicsContext->drawPrimitives(PrimitiveType::Triangles, vertices, 36);
 }
 
-void drawMesh(GraphicsContext* graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
+void drawMesh(GraphicsContextRef graphicsContext, const float x, const float y, const float z, const float w, const float h, const float d, Mesh *mesh)
 {
 	//m_phongShader->setUniformMatrix4f();
 	graphicsContext->drawPrimitives(PrimitiveType::Triangles, mesh->getVertexBuffer());
@@ -203,7 +203,7 @@ public:
 
 	void onDraw(DrawEvent *e)
 	{
-		GraphicsContext *graphicsContext = e->getGraphicsContext();
+		GraphicsContextRef graphicsContext = e->getGraphicsContext();
 		
 		// Push 3D rendering state
 		graphicsContext->pushState();

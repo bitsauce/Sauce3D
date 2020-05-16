@@ -14,6 +14,9 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+// Effective backend used for all windows
+GraphicsBackend GraphicsContext::s_effectiveBackend = (GraphicsBackend)-1;
+
 // Default shader. Used when no shader is set.
 ShaderRef GraphicsContext::s_defaultShader = 0;
 
@@ -21,14 +24,13 @@ ShaderRef GraphicsContext::s_defaultShader = 0;
 Texture2DRef GraphicsContext::s_defaultTexture = 0;
 
 // Singleton pointer
-GraphicsContext* GraphicsContext::s_this = nullptr;
+GraphicsContextRef GraphicsContext::s_this = nullptr;
 
 GraphicsContext::GraphicsContext()
-	: m_context(nullptr)
-	, m_window(nullptr)
+	: m_owningWindow(nullptr)
 {
 	assert(s_this == nullptr);
-	s_this = this;
+	s_this = GraphicsContextRef(this);
 
 	// Setup default vertex format
 	VertexFormat::s_vtc.set(VertexAttribute::Position, 3, Datatype::Float);
@@ -46,9 +48,25 @@ GraphicsContext::~GraphicsContext()
 {
 }
 
-GraphicsContext* GraphicsContext::GetContext()
+GraphicsContext* GraphicsContext::CreateImpl()
+{
+	GraphicsContext* graphicsContext = 0;
+	switch (s_effectiveBackend)
+	{
+		//case GraphicsBackend::DirectX12:        graphicsContext = new D3D12Context(); break;
+		case GraphicsBackend::OpenGL4: default: graphicsContext = new OpenGLContext(4, 2); break;
+	}
+	return graphicsContext;
+}
+
+GraphicsContextRef GraphicsContext::GetContext()
 {
 	return s_this;
+}
+
+GraphicsBackend GraphicsContext::GetEffectiveBackend()
+{
+	return s_effectiveBackend;
 }
 
 void GraphicsContext::pushRenderTarget(RenderTarget2DRef renderTarget)
@@ -101,7 +119,7 @@ void GraphicsContext::popRenderTarget()
 	}
 	else
 	{
-		setSize(m_window->getWidth(), m_window->getHeight());
+		setSize(m_owningWindow->getWidth(), m_owningWindow->getHeight());
 	}
 }
 
@@ -352,4 +370,3 @@ void GraphicsContext::indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, In
 }
 
 END_SAUCE_NAMESPACE
-

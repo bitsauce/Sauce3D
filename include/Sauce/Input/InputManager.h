@@ -5,7 +5,6 @@
 #pragma once
 
 #include <Sauce/Config.h>
-
 #include <Sauce/Input/InputButton.h>
 
 BEGIN_SAUCE_NAMESPACE
@@ -88,10 +87,10 @@ public:
 	float getAxisValue(const ControllerAxis axis, ControllerDevice *controller = 0) const;
 
 	// Window-relative position
-	void getPosition(Sint32 *x, Sint32 *y) const;
+	void getPosition(int32 *x, int32 *y) const;
 	Vector2I getPosition() const;
-	Sint32 getX() const;
-	Sint32 getY() const;
+	int32 getX() const;
+	int32 getY() const;
 
 	// Input context
 	void setContext(InputContext *inputContext);
@@ -139,7 +138,7 @@ private:
 	void updateKeybinds(InputEvent *e);
 
 	// Cursor position
-	Sint32 m_x, m_y;
+	int32 m_x, m_y;
 
 	// Input context
 	InputContext *m_context;

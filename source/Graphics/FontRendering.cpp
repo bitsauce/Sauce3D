@@ -449,7 +449,7 @@ ShaderRef g_fontShader;
 //--------------------------------------------------------------
 // FontRenderingSystem::Initialize()
 //--------------------------------------------------------------
-bool FontRenderingSystem::Initialize(GraphicsContext* context)
+bool FontRenderingSystem::Initialize(GraphicsContextRef context)
 {
 	FT_Error error = FT_Init_FreeType(&g_library);
 	if (error)
@@ -583,7 +583,7 @@ public:
 		return false;
 	}
 
-	void drawText(GraphicsContext* context, FontRendererDrawTextArgs& args) override
+	void drawText(GraphicsContextRef context, FontRendererDrawTextArgs& args) override
 	{
 		const int32 numChars = args.text.length();
 
@@ -701,7 +701,7 @@ private:
 	static VertexFormat s_vertexFormat;
 };
 
-FontRenderer* FontRenderer::CreateImpl(FontRendererDesc desc)
+FontRenderer* FontRenderer::CreateImpl()
 {
 	return new FontRendererImpl();
 }

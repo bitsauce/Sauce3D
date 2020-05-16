@@ -32,7 +32,10 @@
 #pragma once
 
 #include <Sauce/Config.h>
-#include "Scancodes.h"
+#include <Sauce/Input/Scancodes.h>
+
+// TODO: Have to remove this
+#include <SDL.h>
 
 BEGIN_SAUCE_NAMESPACE
 

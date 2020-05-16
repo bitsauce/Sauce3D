@@ -14,6 +14,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 class Sprite;
 
 /*********************************************************************
@@ -50,7 +52,7 @@ public:
 		ShaderRef shader;
 	};
 
-	void begin(GraphicsContext *graphicsContext, const State &state = State());
+	void begin(GraphicsContextRef graphicsContext, const State &state = State());
 	void drawSprite(const Sprite &sprite);
 	//void drawText(const Vector2F &pos, const string &text, Font *font); // TODO: Fonts
 	void end();
@@ -70,7 +72,7 @@ private:
 	Sprite *m_sprites;
 	uint m_spriteCount;
 	const uint m_maxSpriteCount;
-	GraphicsContext *m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 };
 
 END_SAUCE_NAMESPACE

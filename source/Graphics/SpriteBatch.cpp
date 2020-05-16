@@ -31,7 +31,7 @@ SpriteBatch::~SpriteBatch()
 	delete[] m_indices;
 }
 
-void SpriteBatch::begin(GraphicsContext *graphicsContext, const State &state)
+void SpriteBatch::begin(GraphicsContextRef graphicsContext, const State &state)
 {
 	if(m_graphicsContext)
 	{
@@ -180,9 +180,8 @@ void SpriteBatch::flush()
 	}
 
 	// Draw current and begin new batch using the same state
-	GraphicsContext *graphicsContext = m_graphicsContext;
 	end();
-	begin(graphicsContext, m_state);
+	begin(m_graphicsContext, m_state);
 }
 
 // TODO: Can we make this more efficient?

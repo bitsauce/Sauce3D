@@ -27,7 +27,7 @@ struct HasCreateImpl
 };
 
 template<typename T>
-struct HasCreateImpl<T, std::enable_if_t<std::is_invocable_r_v<T*, decltype(&T::CreateImpl), typename T::DescType>>>
+struct HasCreateImpl<T, std::enable_if_t<std::is_invocable_r_v<T*, decltype(&T::CreateImpl)>>>
 {
 	static constexpr bool value = true;
 };
@@ -40,7 +40,7 @@ typename T::RefType CreateNew(const typename T::DescType& desc)
 	T* newObject;
 	if constexpr (HasCreateImpl<T>::value)
 	{
-		newObject = T::CreateImpl(desc);
+		newObject = T::CreateImpl();
 		THROW_IF(newObject == nullptr, "CreateImpl() must return a valid object");
 	}
 	else
@@ -54,6 +54,12 @@ typename T::RefType CreateNew(const typename T::DescType& desc)
 		return nullptr;
 	}
 	return T::RefType(newObject);
+}
+
+template<typename T, typename U>
+T* sauce_cast(U object)
+{
+	return dynamic_cast<T*>(object.get());
 }
 
 END_SAUCE_NAMESPACE

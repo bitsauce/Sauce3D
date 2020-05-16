@@ -15,7 +15,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
-TextureAtlas::TextureAtlas(GraphicsContext *graphicsContext, const int width, const int height, const int border) :
+TextureAtlas::TextureAtlas(GraphicsContextRef graphicsContext, const int width, const int height, const int border) :
 	m_border(border),
 	m_texture(0),
 	m_width(width),

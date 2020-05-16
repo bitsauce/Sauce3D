@@ -11,6 +11,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 enum class TextureFiltering : uint32
 {
 	Nearest,
@@ -85,7 +87,7 @@ public:
 	friend ByteStreamIn& operator>>(ByteStreamIn& in, Texture2DRef& texture);
 
 private:
-	GraphicsContext* m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 	Texture2DDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(Texture2D);

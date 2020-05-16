@@ -11,13 +11,13 @@ BEGIN_SAUCE_NAMESPACE
 class SAUCE_API Viewport
 {
 public:
-	Viewport(const Rect<Sint32> &view);
+	Viewport(const Rect<int32> &view);
 	Viewport(const int x, const int y, const int w, const int h);
 
 	void makeCurrent() const;
 
 private:
-	Rect<Sint32> m_viewport;
+	Rect<int32> m_viewport;
 };
 
 END_SAUCE_NAMESPACE

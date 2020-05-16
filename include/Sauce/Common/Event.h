@@ -9,6 +9,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 /*********************************************************************
 **	Event types														**
 **********************************************************************/
@@ -149,7 +151,7 @@ private:
 class SAUCE_API DrawEvent : public Event
 {
 public:
-	DrawEvent(const float alpha, const float delta, class GraphicsContext *graphicsContext) :
+	DrawEvent(const float alpha, const float delta, GraphicsContextRef graphicsContext) :
 		Event((int32)CoreEventType::Draw),
 		m_alpha(alpha),
 		m_delta(delta),
@@ -167,14 +169,14 @@ public:
 		return m_delta;
 	}
 
-	class GraphicsContext *getGraphicsContext() const
+	GraphicsContextRef getGraphicsContext() const
 	{
 		return m_graphicsContext;
 	}
 
 private:
 	const float m_alpha, m_delta;
-	class GraphicsContext *m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 };
 
 class SAUCE_API TickEvent : public Event
@@ -280,7 +282,7 @@ protected:
 class SAUCE_API KeyEvent : public InputEvent
 {
 public:
-	KeyEvent(const KeyEventType type, InputManager *inputManager, const InputButton inputButton, const Uint16 modifiers) :
+	KeyEvent(const KeyEventType type, InputManager *inputManager, const InputButton inputButton, const uint16 modifiers) :
 		InputEvent((int32)type, inputManager, inputButton),
 		m_modifiers(modifiers)
 	{
@@ -293,13 +295,13 @@ public:
 		return (Scancode) m_inputButton.getCode();
 	}
 
-	Uint16 getModifiers() const
+	uint16 getModifiers() const
 	{
 		return m_modifiers;
 	}
 
 private:
-	const Uint16 m_modifiers;
+	const uint16 m_modifiers;
 };
 
 class SAUCE_API MouseEvent : public InputEvent

@@ -232,7 +232,7 @@ InputManager::~InputManager()
 	m_contextKeybinds.clear();
 }
 
-void InputManager::getPosition(Sint32 *x, Sint32 *y) const
+void InputManager::getPosition(int32* x, int32* y) const
 {
 	*x = m_x;
 	*y = m_y;
@@ -243,12 +243,12 @@ Vector2I InputManager::getPosition() const
 	return Vector2I(m_x, m_y);
 }
 
-Sint32 InputManager::getX() const
+int32 InputManager::getX() const
 {
 	return m_x;
 }
 
-Sint32 InputManager::getY() const
+int32 InputManager::getY() const
 {
 	return m_y;
 }

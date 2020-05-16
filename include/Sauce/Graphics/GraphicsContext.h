@@ -14,6 +14,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(Window);
+
 class Vertex;
 class RenderTarget2D;
 class VertexBuffer;
@@ -65,22 +67,30 @@ enum class Capability : uint32
 	Wireframe               ///< Wireframe
 };
 
+struct SAUCE_API GraphicsContextDesc : public SauceObjectDesc
+{
+	WindowRef owningWindow;
+};
+
 /**
- * \brief Handles primitive rendering to the screen.
+ * Abstract class representing a rendering system
  */
-class SAUCE_API GraphicsContext
+class SAUCE_API GraphicsContext : public SauceObject
 {
 	friend class Game;
-	friend class Window;
 
-protected:
+public:
+	SAUCE_REF_TYPE(GraphicsContext);
+
 	GraphicsContext();
 	virtual ~GraphicsContext();
 
-	virtual Window* createWindow(const string& title, const int x, const int y, const int w, const int h, const Uint32 flags) = 0;
+	virtual bool initialize(GraphicsContextDesc graphicsContextDesc) = 0;
+	static GraphicsContext* CreateImpl();
 
 public:
-	static GraphicsContext* GetContext();
+	static GraphicsContextRef GetContext();
+	static GraphicsBackend GetEffectiveBackend();
 
 	struct State
 	{
@@ -308,11 +318,6 @@ public:
 	void drawArrow(const float x0, const float y0, const float x1, const float y1, const float arrowHeadSize = 10.0f, const Color &color = Color::White);
 	void drawArrow(const Vector2F p0, const Vector2F p1, const float arrowHeadSize = 10.0f, const Color &color = Color::White) { drawArrow(p0.x, p0.y, p1.x, p1.y, arrowHeadSize, color); }
 
-	void *getSDLHandle() const
-	{
-		return m_context;
-	}
-
 	/**
 	 * Fast way to draw with a temporary vertex array
 	 */
@@ -477,8 +482,7 @@ protected:
 	virtual void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) = 0;
 
 protected:
-	void* m_context;
-	Window* m_window;
+	WindowRef m_owningWindow;
 
 	stack<State> m_stateStack;
 	State* m_currentState;
@@ -488,7 +492,9 @@ protected:
 
 	static ShaderRef s_defaultShader;
 	static Texture2DRef s_defaultTexture;
-	static GraphicsContext* s_this;
+	static RefType s_this;
+	static GraphicsBackend s_effectiveBackend;
 };
+SAUCE_REF_TYPE_TYPEDEFS(GraphicsContext);
 
 END_SAUCE_NAMESPACE

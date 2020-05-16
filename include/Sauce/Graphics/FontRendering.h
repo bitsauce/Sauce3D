@@ -14,8 +14,11 @@
 
 #include <Sauce/Common.h>
 #include <Sauce/Utils.h>
+#include <Sauce/Math.h>
 
 BEGIN_SAUCE_NAMESPACE
+
+SAUCE_FORWARD_DECLARE(GraphicsContext);
 
 /**
  * Text alignment enum
@@ -67,14 +70,14 @@ public:
 
 	virtual ~FontRenderer() { }
 	virtual bool initialize(FontRendererDesc objectDesc) = 0;
-	virtual void drawText(GraphicsContext* context, FontRendererDrawTextArgs& args) = 0;
+	virtual void drawText(GraphicsContextRef context, FontRendererDrawTextArgs& args) = 0;
 
 	/**
 	 * Since FontRenderer is an abstract class, we define this static function
 	 * to return a pointer to an instance of the implementation object. This
 	 * allows us to create new FontRenderers via CreateNew<FontRenderer>()
 	 */
-	static FontRenderer* CreateImpl(FontRendererDesc desc);
+	static FontRenderer* CreateImpl();
 };
 SAUCE_REF_TYPE_TYPEDEFS(FontRenderer);
 
@@ -85,7 +88,7 @@ SAUCE_REF_TYPE_TYPEDEFS(FontRenderer);
 class SAUCE_API FontRenderingSystem
 {
 public:
-	static bool Initialize(GraphicsContext* context);
+	static bool Initialize(GraphicsContextRef context);
 	static void Free();
 };
 

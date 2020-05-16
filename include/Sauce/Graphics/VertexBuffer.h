@@ -9,6 +9,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 class Vertex;
 
 enum class BufferUsage : uint32
@@ -55,7 +57,7 @@ public:
 	uint32 getVertexCount() const;
 
 private:
-	GraphicsContext* m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 	VertexBufferDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(VertexBuffer);
@@ -93,7 +95,7 @@ public:
 	uint32 getIndexCount() const;
 
 private:
-	GraphicsContext* m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 	IndexBufferDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(IndexBuffer);

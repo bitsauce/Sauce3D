@@ -4,10 +4,6 @@
 
 #pragma once
 
-#define NOMINMAX
-
-#include <SDL.h>
-
 /*********************************************************************
 **	Compiler preprocessor											**
 **********************************************************************/
@@ -144,9 +140,14 @@ BEGIN_SAUCE_NAMESPACE
 		return descType ? initialize(*descType) : false;          \
 	}
 
-#define SAUCE_REF_TYPE_TYPEDEFS(Class) \
-	typedef Class::RefType Class ## Ref; \
+#define SAUCE_REF_TYPE_TYPEDEFS(Class)      \
+	typedef Class::RefType Class ## Ref;    \
 	typedef Class::DescType Class ## Desc
+
+#define SAUCE_FORWARD_DECLARE(Class)        \
+    class Class;                            \
+    class Class ## Desc;                    \
+	typedef shared_ptr<Class> Class ## Ref
 
 /*********************************************************************
 **	Enum class utility												**
@@ -205,7 +206,6 @@ enum MessageType
 **********************************************************************/
 enum class GraphicsBackend : uint32
 {
-	OpenGL3,
 	OpenGL4,
 	DirectX12,
 	Vulkan_VERSION

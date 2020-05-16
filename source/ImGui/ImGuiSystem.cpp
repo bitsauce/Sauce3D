@@ -13,6 +13,9 @@
 #include <Sauce/Common.h>
 #include <Sauce/Graphics.h>
 #include <ImGui/ImGuiSystem.h>
+#include <Common/SDL/SDLWindow.h>
+
+#include <SDL.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -103,7 +106,7 @@ void ImGuiSystem::processInputs(const float deltaTime, const char textInputChar)
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
 
-    Window* window = Game::Get()->getWindow();
+    WindowRef window = Game::Get()->getWindow();
     InputManager* input = Game::Get()->getInputManager();
 
     // Setup display size (every frame to accommodate for window resizing)
@@ -148,7 +151,7 @@ void ImGuiSystem::processInputs(const float deltaTime, const char textInputChar)
         // Set OS mouse position if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
         if (io.WantSetMousePos)
         {
-            SDL_WarpMouseInWindow(window->getSDLHandle(), io.MousePos.x, io.MousePos.y);
+            SDL_WarpMouseInWindow(sauce_cast<SDLWindow>(window)->getSDLHandle(), io.MousePos.x, io.MousePos.y);
         }
 
         // Set mouse position
@@ -197,7 +200,7 @@ void ImGuiSystem::render()
 {
     ImGui::Render();
 
-    GraphicsContext* graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
+    GraphicsContextRef graphicsContext = Game::Get()->getWindow()->getGraphicsContext();
 
     graphicsContext->setShader(g_ImGuiShader);
 

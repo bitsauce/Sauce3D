@@ -9,6 +9,8 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 struct SAUCE_API ShaderDeviceObject
 {
 	virtual ~ShaderDeviceObject() { }
@@ -107,7 +109,7 @@ public:
 	void setUniformStruct(const string& uniformName, const uint8* structData);
 
 private:
-	GraphicsContext* m_graphicsContext;
+	GraphicsContextRef m_graphicsContext;
 	ShaderDeviceObject* m_deviceObject;
 };
 SAUCE_REF_TYPE_TYPEDEFS(Shader);

@@ -22,7 +22,9 @@
     <ClCompile Include="$(SolutionDir)source\Graphics\Animation.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\BlendState.cpp" />
     <ClCompile Include="..\source\Common\Exception.cpp" />
+    <ClCompile Include="..\source\Common\SDL\SDLWindow.cpp" />
     <ClCompile Include="..\source\Common\Timer.cpp" />
+    <ClCompile Include="..\source\Graphics\D3D12\D3D12Context.cpp" />
     <ClCompile Include="..\source\Graphics\FontRendering.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\Graphics.cpp" />
     <ClCompile Include="$(SolutionDir)source\Graphics\GraphicsContext.cpp" />
@@ -73,6 +75,8 @@
     <ClInclude Include="..\include\Sauce\Common\Exception.h" />
     <ClInclude Include="..\include\Sauce\Common\ImGui.h" />
     <ClInclude Include="..\include\Sauce\Common\SauceObject.h" />
+    <ClInclude Include="..\include\Sauce\Common\Window.h" />
+    <ClInclude Include="..\include\Sauce\Graphics\D3D12\D3D12Context.h" />
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h" />
@@ -107,6 +111,7 @@
     <ClInclude Include="..\include\Sauce\Utils.h" />
     <ClInclude Include="..\include\Sauce\Utils\FileSystemUtils.h" />
     <ClInclude Include="..\include\Sauce\Utils\MiscUtils.h" />
+    <ClInclude Include="..\source\Common\SDL\SDLWindow.h" />
     <ClInclude Include="..\source\ImGui\ImGuiSystem.h" />
     <ClInclude Include="..\source\ImGui\imgui_internal.h" />
     <ClInclude Include="..\source\ImGui\imstb_rectpack.h" />

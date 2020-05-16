@@ -8,10 +8,12 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(GraphicsContext);
+
 struct SAUCE_API GraphicsDeviceObjectDesc : public SauceObjectDesc
 {
-	GraphicsContext* graphicsContext = nullptr;
-	string           debugName       = "";
+	GraphicsContextRef graphicsContext = nullptr;
+	string             debugName       = "";
 };
 
 END_SAUCE_NAMESPACE
