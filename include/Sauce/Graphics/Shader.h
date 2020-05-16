@@ -27,17 +27,15 @@ struct SAUCE_API ShaderDesc : public GraphicsDeviceObjectDesc
 	string shaderSourceGS;
 };
 
-class SAUCE_API Shader final : public SauceObject
+class SAUCE_API Shader final : public SauceObject<Shader, ShaderDesc>
 {
 	friend class GraphicsContext;
 	friend class ResourceManager;
 public:
-	SAUCE_REF_TYPE(Shader);
-
 	Shader();
 	virtual ~Shader();
 
-	bool initialize(ShaderDesc shaderDesc);
+	bool initialize(DescType) override;
 	
 	/**
 	 * Signed integers
@@ -112,7 +110,7 @@ private:
 	GraphicsContextRef m_graphicsContext;
 	ShaderDeviceObject* m_deviceObject;
 };
-SAUCE_REF_TYPE_TYPEDEFS(Shader);
+SAUCE_TYPEDEFS(Shader);
 
 END_SAUCE_NAMESPACE
 

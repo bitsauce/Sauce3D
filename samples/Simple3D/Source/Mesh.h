@@ -9,21 +9,19 @@ struct MeshDesc : public SauceObjectDesc
 	string meshFilePath = "";
 };
 
-class Mesh : public SauceObject
+class Mesh : public SauceObject<Mesh, MeshDesc>
 {
 public:
-	SAUCE_REF_TYPE(Mesh);
-
 	Mesh()
 		: m_vertexBuffer(nullptr)
 	{
 	}
 
-	bool initialize(MeshDesc meshDesc);
+	bool initialize(DescType) override;
 
 	VertexBufferRef getVertexBuffer() const { return m_vertexBuffer; }
 
 private:
 	VertexBufferRef m_vertexBuffer;
 };
-SAUCE_REF_TYPE_TYPEDEFS(Mesh);
+SAUCE_TYPEDEFS(Mesh);

@@ -27,7 +27,7 @@ Shader::~Shader()
 	m_graphicsContext->shader_destroyDeviceObject(m_deviceObject);
 }
 
-bool Shader::initialize(ShaderDesc shaderDesc)
+bool Shader::initialize(DescType shaderDesc)
 {
 	// Get vertex shader source
 	stringstream vsSource;

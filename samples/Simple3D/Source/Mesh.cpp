@@ -2,7 +2,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-bool Mesh::initialize(MeshDesc meshDesc)
+bool Mesh::initialize(DescType meshDesc)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;

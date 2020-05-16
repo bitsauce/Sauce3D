@@ -23,7 +23,7 @@ private:
 	OpenGLContext(const int major, const int minor);
 	~OpenGLContext();
 	
-	bool initialize(GraphicsContextDesc graphicsContextDesc) override;
+	bool initialize(DescType) override;
 
 	void setupContext();
 	void setUniformsRecursive(const struct ShaderUniform* shaderUniform, const struct ShaderUniformLayout& uniformLayout, int32 &currentTextureTarget);

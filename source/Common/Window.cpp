@@ -32,15 +32,13 @@ Window::~Window()
 {
 }
 
-bool Window::initialize(WindowDesc windowDesc)
+void Window::postInitialize(RefType windowRef)
 {
-	m_this = WindowRef(this);
-
 	// Create a graphics context
 	GraphicsContextDesc graphicsContextDesc;
-	graphicsContextDesc.owningWindow = m_this;
+	graphicsContextDesc.owningWindow = windowRef;
 	m_graphicsContext = CreateNew<GraphicsContext>(graphicsContextDesc);
-	return m_graphicsContext != nullptr;
+	assert(m_graphicsContext != nullptr);
 }
 
 GraphicsContextRef Window::getGraphicsContext() const

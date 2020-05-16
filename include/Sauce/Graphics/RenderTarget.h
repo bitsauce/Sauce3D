@@ -29,16 +29,15 @@ struct SAUCE_API RenderTarget2DDesc : public GraphicsDeviceObjectDesc
 	Texture2DRef* targetTextures  = nullptr;
 };
 
-class SAUCE_API RenderTarget2D final : public SauceObject
+class SAUCE_API RenderTarget2D final : public SauceObject<RenderTarget2D, RenderTarget2DDesc>
 {
 	friend class GraphicsContext;
-public:
-	SAUCE_REF_TYPE(RenderTarget2D);
 
+public:
 	RenderTarget2D();
 	virtual ~RenderTarget2D();
 
-	bool initialize(RenderTarget2DDesc renderTargetDesc);
+	bool initialize(DescType) override;
 
 	Texture2DRef getTargetTexture(const uint32 targetIndex = 0) const;
 
@@ -46,6 +45,6 @@ private:
 	GraphicsContextRef m_graphicsContext;
 	RenderTarget2DDeviceObject* m_deviceObject;
 };
-SAUCE_REF_TYPE_TYPEDEFS(RenderTarget2D);
+SAUCE_TYPEDEFS(RenderTarget2D);
 
 END_SAUCE_NAMESPACE

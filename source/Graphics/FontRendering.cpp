@@ -70,13 +70,9 @@ struct GlyphDesc
  *
  * This data is shared between FontRenderers to imporve performance.
  */
-class FontRendererSharedData : public SauceObject
+class FontRendererSharedData : public SauceObject<FontRendererSharedData, FontRendererDesc>
 {
 public:
-	// Reuse FontRenderer's descriptor object
-	using FontRendererSharedDataDesc = FontRendererDesc;
-	SAUCE_REF_TYPE(FontRendererSharedData);
-
 	FontRendererSharedData()
 		: m_fontSize(0)
 		, m_fontPadding(40)
@@ -90,7 +86,7 @@ public:
 	 * Initializes a font by loading and storing glyph metrics and
 	 * renders the font's glyphs to a texture atlas
 	 */
-	virtual bool initialize(FontRendererSharedDataDesc fontDesc)
+	virtual bool initialize(DescType fontDesc) override
 	{
 		// Load font
 		FT_Face face;
@@ -119,7 +115,7 @@ public:
 	/**
 	 * Serialization
 	 */
-	friend ByteStreamOut& operator<<(ByteStreamOut& out, const FontRendererSharedDataRef& sharedData)
+	friend ByteStreamOut& operator<<(ByteStreamOut& out, const RefType& sharedData)
 	{
 		out << sharedData->m_fontSize;
 		out << sharedData->m_fontPadding;
@@ -133,10 +129,10 @@ public:
 	/**
 	 * Deserialization
 	 */
-	friend ByteStreamIn& operator>>(ByteStreamIn& in, FontRendererSharedDataRef& sharedData)
+	friend ByteStreamIn& operator>>(ByteStreamIn& in, RefType& sharedData)
 	{
 		assert(sharedData == nullptr);
-		sharedData = FontRendererSharedDataRef(new FontRendererSharedData());
+		sharedData = RefType(new FontRendererSharedData());
 
 		in >> sharedData->m_fontSize;
 		in >> sharedData->m_fontPadding;
@@ -400,7 +396,7 @@ private:
 	Texture2DRef m_sdfTextureAtlas;
 	unordered_map<uint64, GlyphDesc> m_charcodeToGlyph;
 };
-SAUCE_REF_TYPE_TYPEDEFS(FontRendererSharedData);
+SAUCE_TYPEDEFS(FontRendererSharedData);
 
 /**
  * Globals used by FontRendererImpl
@@ -501,7 +497,7 @@ public:
 		delete[] m_indices;
 	}
 
-	bool initialize(FontRendererDesc fontDesc) override
+	bool initialize(DescType fontDesc) override
 	{
 		if (fontDesc.fontFilePath.empty())
 		{

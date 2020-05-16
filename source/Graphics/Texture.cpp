@@ -25,7 +25,7 @@ Texture2D::~Texture2D()
 {
 }
 
-bool Texture2D::initialize(Texture2DDesc textureDesc)
+bool Texture2D::initialize(DescType textureDesc)
 {
 	// Get graphics context to use
 	if (textureDesc.graphicsContext)

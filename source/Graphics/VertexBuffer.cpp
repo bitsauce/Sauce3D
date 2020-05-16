@@ -30,7 +30,7 @@ VertexBuffer::~VertexBuffer()
 	m_graphicsContext->vertexBuffer_destroyDeviceObject(m_deviceObject);
 }
 
-bool VertexBuffer::initialize(VertexBufferDesc vertexBufferDesc)
+bool VertexBuffer::initialize(DescType vertexBufferDesc)
 {
 	// Get graphics context to use
 	if (vertexBufferDesc.graphicsContext)
@@ -100,7 +100,7 @@ IndexBuffer::~IndexBuffer()
 {
 }
 
-bool IndexBuffer::initialize(IndexBufferDesc indexBufferDesc)
+bool IndexBuffer::initialize(DescType indexBufferDesc)
 {
 	// Get graphics context to use
 	if (indexBufferDesc.graphicsContext)

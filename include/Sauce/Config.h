@@ -128,20 +128,8 @@ BEGIN_SAUCE_NAMESPACE
 /*********************************************************************
 **	Ref types														**
 **********************************************************************/
-#define SAUCE_REF_TYPE(Class)                                     \
-	using RefType = shared_ptr<Class>;                            \
-	using DescType = Class ## Desc;                               \
-	typedef Class::RefType Class ## Ref;                          \
-	typedef Class::DescType Class ## Desc;                        \
-	bool initialize(SauceObjectDesc* objectDesc) override         \
-	{                                                             \
-		DescType* descType = dynamic_cast<DescType*>(objectDesc); \
-		assert(descType);                                         \
-		return descType ? initialize(*descType) : false;          \
-	}
-
-#define SAUCE_REF_TYPE_TYPEDEFS(Class)      \
-	typedef Class::RefType Class ## Ref;    \
+#define SAUCE_TYPEDEFS(Class)             \
+	typedef Class::RefType Class ## Ref;  \
 	typedef Class::DescType Class ## Desc
 
 #define SAUCE_FORWARD_DECLARE(Class)        \

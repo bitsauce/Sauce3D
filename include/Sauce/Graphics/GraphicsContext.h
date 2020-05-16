@@ -75,20 +75,14 @@ struct SAUCE_API GraphicsContextDesc : public SauceObjectDesc
 /**
  * Abstract class representing a rendering system
  */
-class SAUCE_API GraphicsContext : public SauceObject
+class SAUCE_API GraphicsContext : public SauceObject<GraphicsContext, GraphicsContextDesc>
 {
 	friend class Game;
 
 public:
-	SAUCE_REF_TYPE(GraphicsContext);
-
 	GraphicsContext();
 	virtual ~GraphicsContext();
-
-	virtual bool initialize(GraphicsContextDesc graphicsContextDesc) = 0;
 	static GraphicsContext* CreateImpl();
-
-public:
 	static GraphicsContextRef GetContext();
 	static GraphicsBackend GetEffectiveBackend();
 
@@ -495,6 +489,6 @@ protected:
 	static RefType s_this;
 	static GraphicsBackend s_effectiveBackend;
 };
-SAUCE_REF_TYPE_TYPEDEFS(GraphicsContext);
+SAUCE_TYPEDEFS(GraphicsContext);
 
 END_SAUCE_NAMESPACE

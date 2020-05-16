@@ -63,13 +63,11 @@ struct SAUCE_API FontRendererDrawTextArgs
 /**
  * Font rendering object
  */
-class SAUCE_API FontRenderer : public SauceObject
+class SAUCE_API FontRenderer : public SauceObject<FontRenderer, FontRendererDesc>
 {
 public:
-	SAUCE_REF_TYPE(FontRenderer);
 
 	virtual ~FontRenderer() { }
-	virtual bool initialize(FontRendererDesc objectDesc) = 0;
 	virtual void drawText(GraphicsContextRef context, FontRendererDrawTextArgs& args) = 0;
 
 	/**
@@ -79,7 +77,7 @@ public:
 	 */
 	static FontRenderer* CreateImpl();
 };
-SAUCE_REF_TYPE_TYPEDEFS(FontRenderer);
+SAUCE_TYPEDEFS(FontRenderer);
 
 /**
  * Static class for initializing the font rendering system

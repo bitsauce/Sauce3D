@@ -30,7 +30,7 @@ SDLWindow::~SDLWindow()
 	SDL_DestroyWindow(m_window);
 }
 
-bool SDLWindow::initialize(WindowDesc windowDesc)
+bool SDLWindow::initialize(DescType windowDesc)
 {
 	if (windowDesc.initialScreenX < 0)
 	{
@@ -99,12 +99,6 @@ bool SDLWindow::initialize(WindowDesc windowDesc)
 	{
 		m_glContext = SDL_GL_CreateContext(m_window);
 		SDL_GL_MakeCurrent(m_window, m_glContext);
-	}
-
-	// Initialize the engine rendering context
-	if (!Window::initialize(windowDesc))
-	{
-		return false;
 	}
 
 	return true;

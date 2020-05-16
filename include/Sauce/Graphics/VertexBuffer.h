@@ -40,16 +40,15 @@ struct SAUCE_API VertexBufferDesc : public GraphicsDeviceObjectDesc
 	uint32       vertexCount = 0;
 };
 
-class SAUCE_API VertexBuffer : public SauceObject
+class SAUCE_API VertexBuffer : public SauceObject<VertexBuffer, VertexBufferDesc>
 {
 	friend class GraphicsContext;
-public:
-	SAUCE_REF_TYPE(VertexBuffer);
 
+public:
 	VertexBuffer();
 	virtual ~VertexBuffer();
 
-	bool initialize(VertexBufferDesc vertexBufferDesc);
+	bool initialize(DescType) override;
 
 	void modifyData(const uint32 startIndex, const VertexArray& vertices, const uint vertexCount);
 
@@ -60,7 +59,7 @@ private:
 	GraphicsContextRef m_graphicsContext;
 	VertexBufferDeviceObject* m_deviceObject;
 };
-SAUCE_REF_TYPE_TYPEDEFS(VertexBuffer);
+SAUCE_TYPEDEFS(VertexBuffer);
 
 /*********************************************************************
 **	Index buffer													**
@@ -81,16 +80,15 @@ struct SAUCE_API IndexBufferDesc : public GraphicsDeviceObjectDesc
 	uint32      indexCount  = 0;
 };
 
-class SAUCE_API IndexBuffer : public SauceObject
+class SAUCE_API IndexBuffer : public SauceObject<IndexBuffer, IndexBufferDesc>
 {
 	friend class GraphicsContext;
-public:
-	SAUCE_REF_TYPE(IndexBuffer);
 
+public:
 	IndexBuffer();
 	virtual ~IndexBuffer();
 
-	bool initialize(IndexBufferDesc indexBufferDesc);
+	bool initialize(DescType) override;
 
 	uint32 getIndexCount() const;
 
@@ -98,6 +96,6 @@ private:
 	GraphicsContextRef m_graphicsContext;
 	IndexBufferDeviceObject* m_deviceObject;
 };
-SAUCE_REF_TYPE_TYPEDEFS(IndexBuffer);
+SAUCE_TYPEDEFS(IndexBuffer);
 
 END_SAUCE_NAMESPACE

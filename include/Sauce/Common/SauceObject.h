@@ -13,11 +13,16 @@ struct SAUCE_API SauceObjectDesc
 	virtual ~SauceObjectDesc() {}
 };
 
-class SAUCE_API SauceObject
+template<typename DerivedClass, typename DescClass>
+class SauceObject
 {
 public:
+	typedef shared_ptr<DerivedClass> RefType;
+	typedef DescClass DescType;
+
 	virtual ~SauceObject() {}
-	virtual bool initialize(SauceObjectDesc* objectDesc) = 0;
+	virtual bool initialize(DescType objectDesc) = 0;
+	virtual void postInitialize(RefType objectRef) { }
 };
 
 template<typename T, typename Enabled = void>
@@ -35,7 +40,7 @@ struct HasCreateImpl<T, std::enable_if_t<std::is_invocable_r_v<T*, decltype(&T::
 template<typename T>
 typename T::RefType CreateNew(const typename T::DescType& desc)
 {
-	static_assert(std::is_base_of<SauceObject, T>::value == true, "Template type passed to CreateNew<T>() must derive from SauceObject.");
+	static_assert(std::is_base_of<SauceObject<T, T::DescType>, T>::value == true, "Template type passed to CreateNew<T>() must derive from SauceObject.");
 
 	T* newObject;
 	if constexpr (HasCreateImpl<T>::value)
@@ -48,12 +53,17 @@ typename T::RefType CreateNew(const typename T::DescType& desc)
 		newObject = new T();
 	}
 
-	if (!newObject->initialize(desc))
+	if (newObject->initialize(desc))
+	{
+		typename T::RefType newObjectRef(newObject);
+		newObject->postInitialize(newObjectRef);
+		return newObjectRef;
+	}
+	else
 	{
 		delete newObject;
 		return nullptr;
 	}
-	return T::RefType(newObject);
 }
 
 template<typename T, typename U>

@@ -21,7 +21,7 @@ public:
 	SDLWindow();
 	~SDLWindow();
 
-	virtual bool initialize(WindowDesc windowDesc) override;
+	virtual bool initialize(DescType) override;
 
 	/**
 	 * Fullscreen functionality

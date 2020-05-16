@@ -381,7 +381,7 @@ OpenGLContext::~OpenGLContext()
 	delete g_zeroedTextureDataArray;
 }
 
-bool OpenGLContext::initialize(GraphicsContextDesc graphicsContextDesc)
+bool OpenGLContext::initialize(DescType graphicsContextDesc)
 {
 	//GraphicsContext::initialize(graphicsContextDesc); // TODO
 	m_owningWindow = graphicsContextDesc.owningWindow;

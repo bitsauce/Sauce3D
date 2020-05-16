@@ -74,15 +74,13 @@ enum class MessageBoxType : uint32
 /**
  * Base abstract window class
  */
-class SAUCE_API Window : public SauceObject
+class SAUCE_API Window : public SauceObject<Window, WindowDesc>
 {
 public:
-	SAUCE_REF_TYPE(Window);
-
 	Window();
 	~Window();
 
-	virtual bool initialize(WindowDesc windowDesc);
+	virtual void postInitialize(RefType) override;
 
 	/** Fullscreen functionality */
 	virtual void enableFullScreen(WindowFullscreenConfig* fullscreenConfig=nullptr) = 0;
@@ -167,9 +165,7 @@ protected:
 
 	/** Graphics context object */
 	GraphicsContextRef m_graphicsContext;
-
-	RefType m_this; // TODO: This has to go...
 };
-SAUCE_REF_TYPE_TYPEDEFS(Window);
+SAUCE_TYPEDEFS(Window);
 
 END_SAUCE_NAMESPACE

@@ -26,7 +26,7 @@ RenderTarget2D::~RenderTarget2D()
 	m_graphicsContext->renderTarget2D_destroyDeviceObject(m_deviceObject);
 }
 
-bool RenderTarget2D::initialize(RenderTarget2DDesc renderTargetDesc)
+bool RenderTarget2D::initialize(DescType renderTargetDesc)
 {
 	if (renderTargetDesc.width == 0 || renderTargetDesc.height == 0)
 	{

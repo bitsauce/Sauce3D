@@ -11,6 +11,7 @@
 
 BEGIN_SAUCE_NAMESPACE
 
+SAUCE_FORWARD_DECLARE(Texture2D);
 SAUCE_FORWARD_DECLARE(GraphicsContext);
 
 enum class TextureFiltering : uint32
@@ -48,18 +49,17 @@ struct SAUCE_API Texture2DDesc : public GraphicsDeviceObjectDesc
 	bool             mipmaps   = false;
 };
 
-class SAUCE_API Texture2D final : public SauceObject
+class SAUCE_API Texture2D final : public SauceObject<Texture2D, Texture2DDesc>
 {
 	friend class RenderTarget2D;
 	friend class GraphicsContext;
 	friend class Shader;
-public:
-	SAUCE_REF_TYPE(Texture2D);
 
+public:
 	Texture2D();
 	~Texture2D();
 
-	bool initialize(Texture2DDesc textureDesc);
+	bool initialize(DescType) override;
 
 	// Mipmapping
 	//void enableMipmaps();
@@ -90,6 +90,6 @@ private:
 	GraphicsContextRef m_graphicsContext;
 	Texture2DDeviceObject* m_deviceObject;
 };
-SAUCE_REF_TYPE_TYPEDEFS(Texture2D);
+SAUCE_TYPEDEFS(Texture2D);
 
 END_SAUCE_NAMESPACE

@@ -27,7 +27,7 @@ public:
 	{
 		static const int32 MAX_TEXT_LENGTH = 256;
 
-		GraphicsContext* context = e->getGraphicsContext();
+		GraphicsContextRef context = e->getGraphicsContext();
 		{
 			ImGui::Begin("SDF Font Rendering");
 
