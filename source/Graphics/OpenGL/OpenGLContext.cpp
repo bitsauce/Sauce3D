@@ -13,6 +13,8 @@
 #include <Sauce/Graphics.h>
 #include <Sauce/Common/Window.h>
 
+#include <Common/SDL/SDLWindow.h>
+
 #include <GL/gl3w.h>
 #include <GL/wglext.h>
 
@@ -355,10 +357,6 @@ void checkOpenGLError(const string& info)
 		THROW("glGetError() returned 0x%X (%s) from function %s", error, errorType.c_str(), info.c_str());
 	}
 }
-#endif
-
-#ifdef SAUCE_DEBUG
-extern void checkOpenGLError(const string& info);
 #define GL_CALL(call) call; checkOpenGLError(#call)
 #else
 #define GL_CALL(call) call
@@ -482,6 +480,7 @@ bool OpenGLContext::initialize(DescType graphicsContextDesc)
 		s_glslVersion = getGLSLVersion();
 
 		ShaderDesc shaderDesc;
+		shaderDesc.debugName = "DefaultShader";
 		shaderDesc.shaderSourceVS = vertexShader;
 		shaderDesc.shaderSourcePS = pixelShader;
 		s_defaultShader = CreateNew<Shader>(shaderDesc);
@@ -701,12 +700,8 @@ void OpenGLContext::setupContext()
 		// TODO: Check if all samplers are bound on the shader
 	}
 
-	ShaderDeviceObject* shaderDeviceObjectBase;
-	shader_getDeviceObject(shader, shaderDeviceObjectBase);
-	OpenGLShaderDeviceObject* shaderDeviceObject = dynamic_cast<OpenGLShaderDeviceObject*>(shaderDeviceObjectBase);
-	assert(shaderDeviceObject);
-
 	// Enable shader
+	OpenGLShaderDeviceObject* shaderDeviceObject = getDeviceObject<OpenGLShaderDeviceObject>(shader);
 	GL_CALL(glUseProgram(shaderDeviceObject->id));
 
 	// Set projection matrix
@@ -748,11 +743,7 @@ void OpenGLContext::setUniformsRecursive(const ShaderUniform* shaderUniform, con
 			case GL_INT_SAMPLER_2D:
 			case GL_SAMPLER_2D:
 			{
-				Texture2DDeviceObject* textureDeviceObjectBase;
-				texture2D_getDeviceObject(shaderUniform->texture, textureDeviceObjectBase);
-				OpenGLTexture2DDeviceObject* textureDeviceObject = dynamic_cast<OpenGLTexture2DDeviceObject*>(textureDeviceObjectBase);
-				assert(textureDeviceObject);
-
+				OpenGLTexture2DDeviceObject* textureDeviceObject = getDeviceObject<OpenGLTexture2DDeviceObject>(shaderUniform->texture);
 				GL_CALL(glActiveTexture(GL_TEXTURE0 + currentTextureTarget));
 				GL_CALL(glBindTexture(GL_TEXTURE_2D, textureDeviceObject->id));
 				GL_CALL(glUniform1i(uniformLayout.location, currentTextureTarget));
@@ -879,8 +870,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, con
 	// Bind vertex buffer object
 	VertexFormat vertexFormat;
 	{
-		VertexBufferDeviceObject* vertexBufferDeviceObject;
-		vertexBuffer_getDeviceObject(vertexBuffer, vertexBufferDeviceObject);
+		VertexBufferDeviceObject* vertexBufferDeviceObject = getDeviceObject<VertexBufferDeviceObject>(vertexBuffer);
 		vertexBuffer_bindVertexBuffer(vertexBufferDeviceObject);
 		vertexFormat = vertexBufferDeviceObject->vertexFormat;
 	}
@@ -888,8 +878,7 @@ void OpenGLContext::drawIndexedPrimitives(const PrimitiveType primitiveType, con
 	// Bind index buffer object
 	uint32 indexCount;
 	{
-		IndexBufferDeviceObject* indexBufferDeviceObject;
-		indexBuffer_getDeviceObject(indexBuffer, indexBufferDeviceObject);
+		IndexBufferDeviceObject* indexBufferDeviceObject = getDeviceObject<IndexBufferDeviceObject>(indexBuffer);
 		indexBuffer_bindIndexBuffer(indexBufferDeviceObject);
 		indexCount = indexBufferDeviceObject->indexCount;
 	}
@@ -940,8 +929,7 @@ void OpenGLContext::drawPrimitives(const PrimitiveType primitiveType, const Vert
 	VertexFormat vertexFormat;
 	uint32 vertexCount;
 	{
-		VertexBufferDeviceObject* vertexBufferDeviceObject;
-		vertexBuffer_getDeviceObject(vertexBuffer, vertexBufferDeviceObject);
+		VertexBufferDeviceObject* vertexBufferDeviceObject = getDeviceObject<VertexBufferDeviceObject>(vertexBuffer);
 		vertexBuffer_bindVertexBuffer(vertexBufferDeviceObject);
 		vertexFormat = vertexBufferDeviceObject->vertexFormat;
 		vertexCount = vertexBufferDeviceObject->vertexCount;
@@ -996,6 +984,12 @@ string OpenGLContext::getGLSLVersion() const
 		}
 	}
 	return "150";
+}
+
+void OpenGLContext::presentFrame()
+{
+	SDLWindow* sdlWindow = sauce_cast<SDLWindow>(m_owningWindow);
+	SDL_GL_SwapWindow(sdlWindow->getSDLHandle());
 }
 
 /**************************************************
@@ -1938,10 +1932,7 @@ void OpenGLContext::renderTarget2D_bindRenderTarget(RenderTarget2DDeviceObject* 
 		GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, renderTargetDeviceObject->id));
 		for (uint32 i = 0; i < renderTargetDeviceObject->targetCount; ++i)
 		{
-			Texture2DDeviceObject* textureDeviceObjectBase;
-			texture2D_getDeviceObject(renderTargetDeviceObject->targetTextures[i], textureDeviceObjectBase);
-			OpenGLTexture2DDeviceObject* textureDeviceObject = dynamic_cast<OpenGLTexture2DDeviceObject*>(textureDeviceObjectBase);
-			assert(textureDeviceObject);
+			OpenGLTexture2DDeviceObject* textureDeviceObject = getDeviceObject<OpenGLTexture2DDeviceObject>(renderTargetDeviceObject->targetTextures[i]);
 
 			GLenum targetColorAttachment = GL_COLOR_ATTACHMENT0 + i;
 			GL_CALL(glFramebufferTexture2D(

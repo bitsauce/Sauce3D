@@ -101,7 +101,7 @@ bool SDLWindow::initialize(DescType windowDesc)
 		SDL_GL_MakeCurrent(m_window, m_glContext);
 	}
 
-	return true;
+	return Window::initialize(windowDesc);
 }
 
 /**
@@ -320,10 +320,6 @@ bool SDLWindow::isFocused() const
 	return (SDL_GetWindowFlags(m_window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
-void SDLWindow::swapBuffers() const
-{
-	SDL_GL_SwapWindow(m_window);
-}
 
 void SDLWindow::showMessageBox(MessageBoxType messageBoxType, const string& message) const
 {

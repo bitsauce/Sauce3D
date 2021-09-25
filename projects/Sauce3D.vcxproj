@@ -76,7 +76,6 @@
     <ClInclude Include="..\include\Sauce\Common\ImGui.h" />
     <ClInclude Include="..\include\Sauce\Common\SauceObject.h" />
     <ClInclude Include="..\include\Sauce\Common\Window.h" />
-    <ClInclude Include="..\include\Sauce\Graphics\D3D12\D3D12Context.h" />
     <ClInclude Include="..\include\Sauce\Graphics\FontRendering.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\GraphicsContext.h" />
     <ClInclude Include="$(SolutionDir)include\Sauce\Graphics\OpenGL\OpenGLContext.h" />
@@ -112,6 +111,8 @@
     <ClInclude Include="..\include\Sauce\Utils\FileSystemUtils.h" />
     <ClInclude Include="..\include\Sauce\Utils\MiscUtils.h" />
     <ClInclude Include="..\source\Common\SDL\SDLWindow.h" />
+    <ClInclude Include="..\source\Graphics\D3D12\D3D12Context.h" />
+    <ClInclude Include="..\source\Graphics\D3D12\d3dx12.h" />
     <ClInclude Include="..\source\ImGui\ImGuiSystem.h" />
     <ClInclude Include="..\source\ImGui\imgui_internal.h" />
     <ClInclude Include="..\source\ImGui\imstb_rectpack.h" />
@@ -191,7 +192,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalDependencies>$(SolutionDir)build\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\gl3w.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\FreeImage.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\freetype.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)build\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\gl3w.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\FreeImage.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\freetype.lib;opengl32.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalDependencies>glew32_d.lib;ws2_32.lib;IPHlpAPI.lib;freetype248_d.lib;OpenAL32.lib;libpng15_d.lib;angelscriptd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -219,7 +220,7 @@
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)build\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\gl3w.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\FreeImage.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\freetype.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)build\$(Platform)\$(Configuration)\SDL2.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\gl3w.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\FreeImage.lib;$(SolutionDir)build\$(Platform)\$(Configuration)\freetype.lib;opengl32.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>

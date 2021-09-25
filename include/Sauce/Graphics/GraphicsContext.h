@@ -70,6 +70,7 @@ enum class Capability : uint32
 struct SAUCE_API GraphicsContextDesc : public SauceObjectDesc
 {
 	WindowRef owningWindow;
+	bool enableDebugLayer;
 };
 
 /**
@@ -419,10 +420,22 @@ public:
 
 protected:
 	/**
+	 * Presents a fully-rendered frame to the screen
+	 */
+	virtual void presentFrame() = 0;
+
+	template <typename T, typename U>
+	T* getDeviceObject(U renderingResourceObjectRef)
+	{
+		T* deviceObject = dynamic_cast<T*>(renderingResourceObjectRef->m_deviceObject);
+		assert(deviceObject);
+		return deviceObject;
+	}
+
+	/**
 	 * Texture2D internal API
 	 */
 	friend class Texture2D;
-	void texture2D_getDeviceObject(Texture2DRef texture, Texture2DDeviceObject*& outShaderDeviceObject);
 	virtual void texture2D_createDeviceObject(Texture2DDeviceObject*& textureDeviceObject, const string& deviceObjectName) = 0;
 	virtual void texture2D_destroyDeviceObject(Texture2DDeviceObject*& outTextureDeviceObject) = 0;
 	virtual void texture2D_copyToGPU(Texture2DDeviceObject* textureDeviceObject, const PixelFormat pixelFormat, const uint32 width, const uint32 height, uint8* textureData) = 0;
@@ -436,7 +449,6 @@ protected:
 	 * Shader internal API
 	 */
 	friend class Shader;
-	void shader_getDeviceObject(ShaderRef shader, ShaderDeviceObject*& outShaderDeviceObject);
 	virtual void shader_createDeviceObject(ShaderDeviceObject*& shaderDeviceObject, const string& deviceObjectName) = 0;
 	virtual void shader_destroyDeviceObject(ShaderDeviceObject*& shaderDeviceObject) = 0;
 	virtual void shader_compileShader(ShaderDeviceObject* shaderDeviceObject, const string& vsSource, const string& psSource, const string& gsSource) = 0;
@@ -447,7 +459,6 @@ protected:
 	 * RenderTarget2D internal API
 	 */
 	friend class RenderTarget2D;
-	void renderTarget2D_getDeviceObject(RenderTarget2DRef renderTarget, RenderTarget2DDeviceObject*& outRenderTargetDeviceObject);
 	virtual void renderTarget2D_createDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject, const string& deviceObjectName) = 0;
 	virtual void renderTarget2D_destroyDeviceObject(RenderTarget2DDeviceObject*& outRenderTargetDeviceObject) = 0;
 	virtual void renderTarget2D_initializeRenderTarget(RenderTarget2DDeviceObject* renderTargetDeviceObject, const Texture2DRef* targetTextures, const uint32 targetCount) = 0;
@@ -457,7 +468,6 @@ protected:
 	 * VertexBuffer internal API
 	 */
 	friend class VertexBuffer;
-	void vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject);
 	virtual void vertexBuffer_createDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject, const string& deviceObjectName) = 0;
 	virtual void vertexBuffer_destroyDeviceObject(VertexBufferDeviceObject*& outVertexBufferDeviceObject) = 0;
 	virtual void vertexBuffer_initializeVertexBuffer(VertexBufferDeviceObject* vertexBufferDeviceObject, const BufferUsage bufferUsage, const VertexArray& vertices, const uint32 vertexCount) = 0;
@@ -468,7 +478,6 @@ protected:
 	 * IndexBuffer internal API
 	 */
 	friend class IndexBuffer;
-	void indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, IndexBufferDeviceObject*& outIndexBufferDeviceObject);
 	virtual void indexBuffer_createDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject, const string& deviceObjectName) = 0;
 	virtual void indexBuffer_destroyDeviceObject(IndexBufferDeviceObject*& outIndexBufferDeviceObject) = 0;
 	virtual void indexBuffer_initializeIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const BufferUsage bufferUsage, const uint32* indices, const uint32 indexCount) = 0;

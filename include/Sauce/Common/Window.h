@@ -8,6 +8,7 @@
 #include <Sauce/Math.h>
 #include <Sauce/Common/SauceObject.h>
 #include <Sauce/Graphics/Pixmap.h>
+#include <Sauce/Graphics/GraphicsContext.h>
 
 BEGIN_SAUCE_NAMESPACE
 
@@ -51,12 +52,14 @@ public:
 
 struct SAUCE_API WindowDesc : public SauceObjectDesc
 {
-	string title         = "Sauce3D";
-	int32 initialScreenX = -1;
-	int32 initialScreenY = -1;
-	int32 width          = -1;
-	int32 height         = -1;
-	string iconFilePath  = "";
+	string              title          = "Sauce3D";
+	int32               initialScreenX = -1;
+	int32               initialScreenY = -1;
+	int32               width          = -1;
+	int32               height         = -1;
+	string              iconFilePath   = "";
+
+	bool                enableDebugLayer = false;
 };
 
 enum class WindowVSyncMode : uint32
@@ -80,6 +83,7 @@ public:
 	Window();
 	~Window();
 
+	virtual bool initialize(DescType) override;
 	virtual void postInitialize(RefType) override;
 
 	/** Fullscreen functionality */
@@ -121,7 +125,6 @@ public:
 	virtual void setGammaRamp(uint16* red, uint16* green, uint16* blue) = 0;
 	virtual void setVSyncMode(const WindowVSyncMode vsyncMode) = 0;
 	virtual bool isFocused() const = 0;
-	virtual void swapBuffers() const = 0;
 	virtual void showMessageBox(MessageBoxType messageBoxType, const string& message) const = 0;
 
 	/** Misc getters */
@@ -165,6 +168,9 @@ protected:
 
 	/** Graphics context object */
 	GraphicsContextRef m_graphicsContext;
+
+	/** Graphics context desc */
+	GraphicsContextDesc* m_graphicsContextDesc;
 };
 SAUCE_TYPEDEFS(Window);
 

@@ -150,12 +150,16 @@ int Game::run(const GameDesc &desc)
 		GraphicsContext::s_effectiveBackend = desc.graphicsBackend;
 		WindowDesc windowDesc;
 		windowDesc.title = desc.name.c_str();
+		windowDesc.enableDebugLayer = true;
 		WindowRef mainWindow = CreateNew<Window>(windowDesc);
 		m_windows.push_back(mainWindow);
 		GraphicsContextRef graphicsContext = mainWindow->getGraphicsContext();
 
 		// Initialize font rendering system
-		FontRenderingSystem::Initialize(graphicsContext);
+		if (GraphicsContext::GetEffectiveBackend() != GraphicsBackend::DirectX12)
+		{
+			FontRenderingSystem::Initialize(graphicsContext);
+		}
 
 		// Initialize input handler
 		m_inputManager = new InputManager("InputConfig.xml");
@@ -166,7 +170,10 @@ int Game::run(const GameDesc &desc)
 		SDL_StartTextInput();
 
 		// Initialize ImGui
-		ImGuiSystem::initialize(mainWindow->getOSHandle());
+		if (GraphicsContext::GetEffectiveBackend() != GraphicsBackend::DirectX12)
+		{
+			ImGuiSystem::initialize(mainWindow->getOSHandle());
+		}
 
 		// Engine initialized
 		m_initialized = true;
@@ -418,8 +425,11 @@ int Game::run(const GameDesc &desc)
 				deltaTime = 0.25;
 			}
 
-			// TODO: Make a scene object instead?
-			ImGuiSystem::processInputs(deltaTime, textInputChar);
+			if (GraphicsContext::GetEffectiveBackend() != GraphicsBackend::DirectX12)
+			{
+				// TODO: Make a scene object instead?
+				ImGuiSystem::processInputs(deltaTime, textInputChar);
+			}
 
 			// Step begin
 			{
@@ -439,8 +449,11 @@ int Game::run(const GameDesc &desc)
 				accumulator -= dt;
 			}
 
-			// New ImGui frame
-			ImGuiSystem::newFrame();
+			if (GraphicsContext::GetEffectiveBackend() != GraphicsBackend::DirectX12)
+			{
+				// New ImGui frame
+				ImGuiSystem::newFrame();
+			}
 
 			// Draw the game
 			const double alpha = accumulator / dt;
@@ -449,10 +462,13 @@ int Game::run(const GameDesc &desc)
 				onEvent(&e);
 			}
 
-			// Draw ImGui last
-			ImGuiSystem::render();
+			if (GraphicsContext::GetEffectiveBackend() != GraphicsBackend::DirectX12)
+			{
+				// Draw ImGui last
+				ImGuiSystem::render();
+			}
 
-			mainWindow->swapBuffers();
+			graphicsContext->presentFrame();
 			graphicsContext->clear(BufferMask::Color | BufferMask::Depth);
 
 			// Add fps sample

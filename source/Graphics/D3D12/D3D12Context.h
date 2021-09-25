@@ -5,30 +5,74 @@
 #pragma once
 
 #include <Sauce/Common.h>
-#include <Sauce/Graphics/BlendState.h>
-#include <Sauce/Graphics/TextureRegion.h>
+
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <D3Dcompiler.h>
+#include <DirectXMath.h>
+#include <wrl.h>
+
+#include <Graphics/D3D12/d3dx12.h>
+
+using Microsoft::WRL::ComPtr;
 
 BEGIN_SAUCE_NAMESPACE
 
-class Vertex;
-class VertexFormat;
-class RenderTarget2D;
-class VertexBuffer;
-class IndexBuffer;
+struct ImmediateVertexBuffer
+{
+	ComPtr<ID3D12Resource>   vertexBuffer;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+};
 
-class SAUCE_API OpenGLContext final : public GraphicsContext
+class SAUCE_API D3D12Context final : public GraphicsContext
 {
 	friend class GraphicsContext;
 
 private:
-	OpenGLContext(const int major, const int minor);
-	~OpenGLContext();
-	
+	D3D12Context();
+	~D3D12Context();
+
 	bool initialize(DescType) override;
 
-	void setupContext();
-	void setUniformsRecursive(const struct ShaderUniform* shaderUniform, const struct ShaderUniformLayout& uniformLayout, int32 &currentTextureTarget);
-	void setupVertexAttributePointers(const VertexFormat& fmt);
+	/** Pipeline state object handling */
+	ComPtr<ID3D12PipelineState> createOrFindPSO(const VertexFormat& vertexFormat, ShaderDeviceObject** shaderDeviceObject);
+
+	/** Command queue handling */
+	void executeDrawCommandList(ShaderDeviceObject* shaderDeviceObject, ComPtr<ID3D12PipelineState> pso, const D3D12_VERTEX_BUFFER_VIEW& vertexBufferView);
+	void flushCommandQueue();
+
+	/** Command queue synchronization objects */
+	ComPtr<ID3D12Fence> m_commandQueueFence;
+	HANDLE m_commandQueueFenceEvent;
+	UINT64 m_commandQueueFenceValue;
+	UINT m_frameIndex;
+
+
+	/** Immediate draw vertex buffer */
+	//ComPtr<ID3D12Resource>   m_immediateDrawVertexBuffer;
+	//D3D12_VERTEX_BUFFER_VIEW m_immediateDrawVertexBufferView;
+	//uint32                   m_immediateDrawVertexBufferSize;
+
+	unordered_map<uint32, vector<ImmediateVertexBuffer>> m_availableImmediateDrawVertexBuffers;
+	unordered_map<uint32, vector<ImmediateVertexBuffer>> m_immediateDrawVertexBuffers;
+
+	//vector<ComPtr<ID3D12Resource>> m_immediateDrawVertexBuffer;
+	//vector<D3D12_VERTEX_BUFFER_VIEW> m_immediateDrawVertexBufferView;
+
+
+	vector<ComPtr<ID3D12DescriptorHeap>> m_inflightCbvSrvUavHeaps;
+
+	struct PSOKey
+	{
+		ShaderRef    shader;
+		VertexFormat vertexFormat;
+
+		string getHash() const;
+	};
+
+	unordered_map<string, ComPtr<ID3D12PipelineState>> m_availablePSOs;
+
+	
 
 public:
 	void enable(const Capability cap) override;
@@ -41,23 +85,21 @@ public:
 	void setPointSize(const float pointSize) override;
 	void setLineWidth(const float lineWidth) override;
 	void setViewportSize(const uint w, const uint h) override;
-	void clear(const uint32 clearMask, const Color &clearColor, const double clearDepth, const int32 clearStencil) override;
+	void clear(const uint32 clearMask, const Color& clearColor, const double clearDepth, const int32 clearStencil) override;
 
 	void saveScreenshot(string filePath) override;
 
 	Matrix4 createOrtographicMatrix(const float left, const float right, const float top, const float bottom, const float n = -1.0f, const float f = 1.0f) const override;
 	Matrix4 createPerspectiveMatrix(const float fov, const float aspectRatio, const float zNear, const float zFar) const override;
-	Matrix4 createLookAtMatrix(const Vector3F &position, const Vector3F &fwd) const override;
+	Matrix4 createLookAtMatrix(const Vector3F& position, const Vector3F& fwd) const override;
 
 	void drawIndexedPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount, const uint* indices, const uint indexCount) override;
 	void drawIndexedPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer, const IndexBufferRef indexBuffer) override;
 	void drawPrimitives(const PrimitiveType type, const VertexArray& vertices, const uint vertexCount) override;
 	void drawPrimitives(const PrimitiveType type, const VertexBufferRef vertexBuffer) override;
 
-	string getGLSLVersion() const;
-
 protected:
-	void presentFrame() override;
+	virtual void presentFrame() override;
 
 	/**
 	 * Texture2D internal API
@@ -74,6 +116,18 @@ protected:
 	/**
 	 * Shader internal API
 	 */
+	struct ReflectionInfo
+	{
+		int32 numCbuffers = 0;
+		int32 numSrvs = 0;
+		int32 numSamplers = 0;
+
+		uint32 cbufferBindPointMax = 0;
+		uint32 srvBindPointMax = 0;
+		uint32 samplerBindPointMax = 0;
+	};
+
+	ComPtr<ID3DBlob> compileAndReflect(ShaderDeviceObject* shaderDeviceObject, const string& shaderCode, const string& shaderMain, const string& shaderTarget, ReflectionInfo& outReflectionInfo);
 	void shader_createDeviceObject(ShaderDeviceObject*& outShaderDeviceObject, const string& deviceObjectName) override;
 	void shader_destroyDeviceObject(ShaderDeviceObject*& outShaderDeviceObject) override;
 	void shader_compileShader(ShaderDeviceObject* shaderDeviceObject, const string& vsSource, const string& psSource, const string& gsSource) override;
@@ -105,9 +159,6 @@ protected:
 	void indexBuffer_initializeIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const BufferUsage bufferUsage, const uint32* indices, const uint32 indexCount) override;
 	void indexBuffer_modifyIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject, const uint32 startIndex, const uint32* indices, const uint32 indexCount) override;
 	void indexBuffer_bindIndexBuffer(IndexBufferDeviceObject* indexBufferDeviceObject) override;
-
-private:
-	const int m_majorVersion, m_minorVersion;
 };
 
 END_SAUCE_NAMESPACE

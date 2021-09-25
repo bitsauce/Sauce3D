@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Sauce/Config.h>
+#include <Sauce/Common/Exception.h>
 
 BEGIN_SAUCE_NAMESPACE
 

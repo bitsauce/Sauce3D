@@ -32,13 +32,21 @@ Window::~Window()
 {
 }
 
+bool Window::initialize(DescType desc)
+{
+	m_graphicsContextDesc = new GraphicsContextDesc();
+	m_graphicsContextDesc->enableDebugLayer = desc.enableDebugLayer;
+	return true;
+}
+
 void Window::postInitialize(RefType windowRef)
 {
+	// TODO: Can we avoid this? (E.g. moving CreateNew<GraphicsContext>() to Engine.cpp)
 	// Create a graphics context
-	GraphicsContextDesc graphicsContextDesc;
-	graphicsContextDesc.owningWindow = windowRef;
-	m_graphicsContext = CreateNew<GraphicsContext>(graphicsContextDesc);
+	m_graphicsContextDesc->owningWindow = windowRef;
+	m_graphicsContext = CreateNew<GraphicsContext>(*m_graphicsContextDesc);
 	assert(m_graphicsContext != nullptr);
+	delete m_graphicsContextDesc;
 }
 
 GraphicsContextRef Window::getGraphicsContext() const

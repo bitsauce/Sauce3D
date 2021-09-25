@@ -76,7 +76,6 @@ public:
 	void setGammaRamp(uint16* red, uint16* green, uint16* blue) override;
 	void setVSyncMode(const WindowVSyncMode vsyncMode) override;
 	bool isFocused() const;
-	void swapBuffers() const;
 	void showMessageBox(MessageBoxType messageBoxType, const string& message) const;
 
 	/** Window event handling */

@@ -260,7 +260,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	GameDesc desc;
 	desc.name = "Simple3D Sample";
 	desc.workingDirectory = "../Assets";
-	desc.graphicsBackend = GraphicsBackend::OpenGL4;
+	//desc.graphicsBackend = GraphicsBackend::OpenGL4;
+	desc.graphicsBackend = GraphicsBackend::DirectX12;
 
 	Simple3DGame game;
 	return game.run(desc);

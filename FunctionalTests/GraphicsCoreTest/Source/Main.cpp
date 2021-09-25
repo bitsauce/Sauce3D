@@ -3,17 +3,38 @@
 
 using namespace sauce;
 
-class HelloTriangleGame : public Game
+class GraphicsCoreTest : public Game
 {
 public:
-	ShaderRef m_testShader;
+	enum class TestStep
+	{
+		// Basics
+		SingleTriangle,
+		Triangles,
+		TriangleStrip,
+		
+		// Shaders
+		TriangleWithShader,
+
+		// Texturing
+		TexturedTriangle,
+		CustomTextureFormat,
+
+		// Custom vertex formats
+		CustomVertexFormat,
+
+		// Vertex buffer rendering
+		DrawVertexBuffer,
+
+		// Render targets
+		DrawRenderTarget
+	};
+
+	TestStep m_currentTestStep;
 
 	void onStart(GameEvent* e)
 	{
-		ShaderDesc shaderDesc;
-		shaderDesc.shaderFilePS = "TestShader.hlsl";
-		shaderDesc.shaderFileVS = "TestShader.hlsl";
-		//m_testShader = CreateNew<Shader>(shaderDesc);
+		m_currentTestStep = (TestStep)0;
 	}
 
 	void onDraw(DrawEvent* e)
@@ -78,19 +99,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
 	 * This function should typically not require modification.
 	 */
 	GameDesc desc;
-	desc.name = "HelloTriangle Sample";
+	desc.name = "GraphicsCoreTest";
 	desc.workingDirectory = "../Assets";
 	desc.flags = (uint32)EngineFlag::ResizableWindow;
-	desc.graphicsBackend = GraphicsBackend::OpenGL4;
-	//desc.graphicsBackend = GraphicsBackend::DirectX12;
+	desc.graphicsBackend = GraphicsBackend::DirectX12;
 
-	HelloTriangleGame game;
+	GraphicsCoreTest  game;
 	return game.run(desc);
 }
 #else
 int main()
 {
-	HelloTriangleGame game;
+	GraphicsCoreTestGame game;
 	return game.run();
 }
 #endif

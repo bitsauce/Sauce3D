@@ -49,7 +49,7 @@ public:
 	bool operator==(const VertexFormat &other);
 
 private:
-	// Default vertex format: position, color, texture coord
+	// Default vertex format: position, texture coord, color
 	static VertexFormat s_vtc;
 
 	struct Attribute

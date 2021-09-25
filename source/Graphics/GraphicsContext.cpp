@@ -12,6 +12,8 @@
 
 #include <Sauce/Graphics.h>
 
+#include <Graphics/D3D12/D3D12Context.h>
+
 BEGIN_SAUCE_NAMESPACE
 
 // Effective backend used for all windows
@@ -35,7 +37,7 @@ GraphicsContext::GraphicsContext()
 	// Setup default vertex format
 	VertexFormat::s_vtc.set(VertexAttribute::Position, 3, Datatype::Float);
 	VertexFormat::s_vtc.set(VertexAttribute::TexCoord, 2, Datatype::Float);
-	VertexFormat::s_vtc.set(VertexAttribute::Color, 4, Datatype::Uint8);
+	VertexFormat::s_vtc.set(VertexAttribute::Color, 4, Datatype::Float);
 	m_tempVertices = VertexFormat::s_vtc.createVertices(1);
 
 	// Add initial rendering state
@@ -53,8 +55,11 @@ GraphicsContext* GraphicsContext::CreateImpl()
 	GraphicsContext* graphicsContext = 0;
 	switch (s_effectiveBackend)
 	{
-		//case GraphicsBackend::DirectX12:        graphicsContext = new D3D12Context(); break;
-		case GraphicsBackend::OpenGL4: default: graphicsContext = new OpenGLContext(4, 2); break;
+		case GraphicsBackend::DirectX12: graphicsContext = new D3D12Context(); break;
+		case GraphicsBackend::OpenGL4:   graphicsContext = new OpenGLContext(4, 2); break;
+		default:
+			THROW("Couldn't find a matching backend");
+			break;
 	}
 	return graphicsContext;
 }
@@ -342,31 +347,6 @@ VertexArray& GraphicsContext::getTempVertexArray(const uint32 vertexCount)
 		m_tempVertices.resize(vertexCount);
 	}
 	return m_tempVertices;
-}
-
-void GraphicsContext::texture2D_getDeviceObject(Texture2DRef texture, Texture2DDeviceObject*& outTextureDeviceObject)
-{
-	outTextureDeviceObject = texture->m_deviceObject;
-}
-
-void GraphicsContext::shader_getDeviceObject(ShaderRef shader, ShaderDeviceObject*& outShaderDeviceObject)
-{
-	outShaderDeviceObject = shader->m_deviceObject;
-}
-
-void GraphicsContext::renderTarget2D_getDeviceObject(RenderTarget2DRef renderTarget, RenderTarget2DDeviceObject*& outRenderTargetDeviceObject)
-{
-	outRenderTargetDeviceObject = renderTarget->m_deviceObject;
-}
-
-void GraphicsContext::vertexBuffer_getDeviceObject(VertexBufferRef vertexBuffer, VertexBufferDeviceObject*& outVertexBufferDeviceObject)
-{
-	outVertexBufferDeviceObject = vertexBuffer->m_deviceObject;
-}
-
-void GraphicsContext::indexBuffer_getDeviceObject(IndexBufferRef indexBuffer, IndexBufferDeviceObject*& outIndexBufferDeviceObject)
-{
-	outIndexBufferDeviceObject = indexBuffer->m_deviceObject;
 }
 
 END_SAUCE_NAMESPACE

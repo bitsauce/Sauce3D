@@ -55,9 +55,6 @@
     <Filter Include="Source\Graphics\D3D12">
       <UniqueIdentifier>{307e0493-311d-4a01-a768-48ac56d3cdd4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Include\Sauce\Graphics\D3D12">
-      <UniqueIdentifier>{0077931e-c41a-4dda-919c-fb499a17de76}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Common\SDL">
       <UniqueIdentifier>{4d22ad6b-d4b7-44ee-80b4-8ced72fe38e8}</UniqueIdentifier>
     </Filter>
@@ -371,14 +368,17 @@
     <ClInclude Include="..\include\Sauce\Graphics\GraphicsDeviceObjectDesc.h">
       <Filter>Include\Sauce\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Sauce\Graphics\D3D12\D3D12Context.h">
-      <Filter>Include\Sauce\Graphics\D3D12</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Sauce\Common\Window.h">
       <Filter>Include\Sauce\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Common\SDL\SDLWindow.h">
       <Filter>Source\Common\SDL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Graphics\D3D12\d3dx12.h">
+      <Filter>Source\Graphics\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Graphics\D3D12\D3D12Context.h">
+      <Filter>Source\Graphics\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

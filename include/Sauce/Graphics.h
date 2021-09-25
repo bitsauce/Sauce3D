@@ -7,7 +7,6 @@
 #include <Sauce/Math.h>
 #include <Sauce/Graphics/GraphicsContext.h>
 #include <Sauce/Graphics/OpenGL/OpenGLContext.h>
-#include <Sauce/Graphics/D3D12/D3D12Context.h>
 #include <Sauce/Graphics/BlendState.h>
 #include <Sauce/Graphics/Animation.h>
 #include <Sauce/Graphics/SpriteBatch.h>
